@@ -45,19 +45,19 @@ export class WeixinRoute extends BaseRoute {
    */
   public weixin(req: Request, res: Response, next: NextFunction) {
 
-    const signature:string = req.query.signature;
-    const timestamp:string = req.query.timestamp;
-    const nonce:string = req.query.nonce;
-    const echostr:string = req.query.echostr;
+    const signature: string = req.query.signature;
+    const timestamp: string = req.query.timestamp;
+    const nonce: string = req.query.nonce;
+    const echostr: string = req.query.echostr;
     const token = "C2B4FAE05F9E4CD58FC87DFC8F8ECED4";
-    var list = [ token, timestamp, nonce ];
+    var list = [token, timestamp, nonce];
     list.sort();
-    
+
     const hashcode = sha1(list.join(""));
 
     console.log(`[WeixinRoute::weixin] signature=${signature} timestamp=${timestamp} nonce=${nonce} hashcode=${hashcode}.`);
 
-    if(hashcode === signature){
+    if (hashcode === signature) {
       res.send(echostr);
     } else {
       res.send("");
