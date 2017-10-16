@@ -53,7 +53,7 @@ export class WeixinRoute extends BaseRoute {
     var list = [ token, timestamp, nonce ];
     list.sort();
     
-    const hashcode = sha1(list.join());
+    const hashcode = sha1(list.join(""));
 
     console.log(`[WeixinRoute::weixin] signature=${signature} timestamp=${timestamp} nonce=${nonce} hashcode=${hashcode}.`);
 
