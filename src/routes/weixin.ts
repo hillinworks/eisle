@@ -1,7 +1,8 @@
 import { NextFunction, Request, Response, Router } from "express";
 import { BaseRoute } from "./route";
 import { Weixin as WeixinService } from "../platforms/weixin/weixin";
-import parseXml = require('xml-parser');
+import * as xml2js from 'xml2js';
+import { REPL } from "../repl/repl";
 
 export class WeixinRoute extends BaseRoute {
 
@@ -44,7 +45,45 @@ export class WeixinRoute extends BaseRoute {
       res.send("success");
     }
 
-    res.send(parseXml(req.body));
+    req.accepts("text/xml");
+    xml2js.parseString(req.body, (err, result) => {
+      if (err || !result || result.xml.MsgType[0] !== "text") {
+        res.send("success");
+        return;
+      }
+
+      const message = result.xml.Content[0];
+      const replResult = REPL.process(message);
+
+      if (!replResult) {
+        res.send("success");
+        return;
+      }
+
+      const responseObject: any = {
+        xml: {
+          ToUserName: result.xml.FromUserName,
+          FromUserName: result.xml.ToUserName,
+          CreateTime: result.xml.CreateTime,
+          MsgType: replResult.type
+        }
+      };
+
+      switch (replResult.type) {
+        case "text":
+          responseObject.xml.Content = replResult.content;
+          break;
+        case "image":
+          responseObject.xml.Image = {
+            MediaId: replResult.content
+          };
+          break;
+      }
+
+      const response = new xml2js.Builder({ headless: true }).buildObject(responseObject);
+      res.send(response);
+    });
+
   }
 
 }

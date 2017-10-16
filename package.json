@@ -21,7 +21,7 @@
   "homepage": "https://github.com/hillinworks/eisle#readme",
   "dependencies": {
     "@types/sha1": "^1.1.0",
-    "@types/xml-parser": "^1.2.29",
+    "@types/xml2js": "^0.4.0",
     "body-parser": "^1.18.2",
     "cookie-parser": "^1.4.3",
     "errorhandler": "^1.5.0",
@@ -31,7 +31,7 @@
     "morgan": "^1.9.0",
     "pug": "^2.0.0-rc.4",
     "sha1": "^1.1.1",
-    "xml-parser": "^1.2.1"
+    "xml2js": "^0.4.19"
   },
   "devDependencies": {
     "@types/body-parser": "^1.16.5",
