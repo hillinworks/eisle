@@ -1,2 +1,2 @@
-npm run grunt
-npm start
+call npm run grunt
+call npm start
