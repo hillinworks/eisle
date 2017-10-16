@@ -14,7 +14,7 @@ export class Interval {
     }
 
     get octaves(): number {
-        return this.number / 7;
+        return Math.trunc(this.number / 7);
     }
 
     get normalizedNumber(): number {
@@ -65,6 +65,18 @@ export class Interval {
 }
 
 export module Interval {
+
+    // must be declared before the consts below
+    export function isValid(number: number, quality: IntervalQuality): boolean {
+        if (number < 0)
+            throw new RangeError();
+
+        const normalizedNumber = number % 7;
+        if (normalizedNumber === 0 || normalizedNumber === 3 || normalizedNumber === 4)
+            return quality !== IntervalQuality.Major && quality !== IntervalQuality.Minor;
+        else
+            return quality !== IntervalQuality.Perfect;
+    }
 
     // ReSharper disable InconsistentNaming
     export const P1 = new Interval(0, IntervalQuality.Perfect);
@@ -123,16 +135,7 @@ export module Interval {
 // ReSharper restore InconsistentNaming
 
 
-    export function isValid(number: number, quality: IntervalQuality): boolean {
-        if (number < 0)
-            throw new RangeError();
 
-        const normalizedNumber = number % 7;
-        if (normalizedNumber === 0 || normalizedNumber === 3 || normalizedNumber === 4)
-            return quality !== IntervalQuality.Major && quality !== IntervalQuality.Minor;
-        else
-            return quality !== IntervalQuality.Perfect;
-    }
 
 
 }

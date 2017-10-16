@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response, Router } from "express";
 import { BaseRoute } from "./route";
+import { REPL } from '../repl/repl';
 
 
 /**
@@ -21,6 +22,10 @@ export class IndexRoute extends BaseRoute {
 
     router.get("/", (req: Request, res: Response, next: NextFunction) => {
       new IndexRoute().index(req, res, next);
+    });
+
+    router.get("/cmd/:command", (req: Request, res: Response, next: NextFunction) => {
+      new IndexRoute().test(req, res, next);
     });
   }
 
@@ -53,6 +58,12 @@ export class IndexRoute extends BaseRoute {
     };
 
     //render template
+    this.render(req, res, "index", options);
+  }
+
+  public test(req: Request, res: Response, next: NextFunction) {
+    const command = req.param("command");
+    const options = { "message":  REPL.process(command).content };
     this.render(req, res, "index", options);
   }
 }

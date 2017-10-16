@@ -29,6 +29,7 @@ export class NoteName {
     offset(interval: Interval): NoteName {
         if (Accidental.getIsDoubleAccidental(this.accidental))
             throw new Error("offset operator is not available to note names with double accidental");
+            
         const semitones = this.semitones + interval.semitoneOffset;
         const degrees = BaseNoteName.getAbsoluteDegrees(this.baseName) + interval.normalizedNumber;
         return NoteName.fromSemitones(semitones, degrees);
