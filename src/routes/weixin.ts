@@ -35,7 +35,7 @@ export class WeixinRoute extends BaseRoute {
   }
 
   public post(req: Request, res: Response, next: NextFunction) {
-    
+    res.send("success");
   }
 
 }
