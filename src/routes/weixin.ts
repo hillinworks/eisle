@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response, Router } from "express";
 import { BaseRoute } from "./route";
 import { Weixin as WeixinService } from "../platforms/weixin/weixin";
+import parseXml = require('xml-parser');
 
 export class WeixinRoute extends BaseRoute {
 
@@ -20,13 +21,17 @@ export class WeixinRoute extends BaseRoute {
     super();
   }
 
-  public get(req: Request, res: Response, next: NextFunction) {
-
+  private authenticate(req: Request): boolean {
     const signature: string = req.query.signature;
     const timestamp: string = req.query.timestamp;
     const nonce: string = req.query.nonce;
 
-    if (WeixinService.authenticate(signature, timestamp, nonce)) {
+    return WeixinService.authenticate(signature, timestamp, nonce);
+  }
+
+  public get(req: Request, res: Response, next: NextFunction) {
+
+    if (this.authenticate(req)) {
       res.send(req.query.echostr);
     } else {
       res.send("");
@@ -35,7 +40,11 @@ export class WeixinRoute extends BaseRoute {
   }
 
   public post(req: Request, res: Response, next: NextFunction) {
-    res.send("success");
+    if (!this.authenticate(req)) {
+      res.send("success");
+    }
+
+    res.send(parseXml(req.body));
   }
 
 }
