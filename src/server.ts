@@ -6,6 +6,7 @@ import * as path from "path";
 import errorHandler = require("errorhandler");
 import methodOverride = require("method-override");
 import { IndexRoute } from "./routes/index";
+import { WeixinRoute } from "./routes/weixin";
 
 /**
  * The server.
@@ -110,6 +111,7 @@ export class Server {
     router = express.Router();
   
     IndexRoute.create(router);
+    WeixinRoute.create(router);
   
     this.app.use(router);
   }

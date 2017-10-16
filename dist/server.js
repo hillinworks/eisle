@@ -8,6 +8,7 @@ const path = require("path");
 const errorHandler = require("errorhandler");
 const methodOverride = require("method-override");
 const index_1 = require("./routes/index");
+const weixin_1 = require("./routes/weixin");
 class Server {
     static bootstrap() {
         return new Server();
@@ -41,6 +42,7 @@ class Server {
         let router;
         router = express.Router();
         index_1.IndexRoute.create(router);
+        weixin_1.WeixinRoute.create(router);
         this.app.use(router);
     }
 }
