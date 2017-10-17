@@ -1,7 +1,7 @@
-import { Scanner } from '../music-core/Parsing/Scanner';
-import { REPLResult } from './REPLResult';
-import { ICommandProcessor } from './ICommandProcessor';
-import { GuitarChord } from './CommandProcessors/GuitarChord';
+import { Scanner } from "../music-core/Parsing/Scanner";
+import { REPLResult } from "./REPLResult";
+import { ICommandProcessor } from "./ICommandProcessor";
+import { GuitarChord } from "./CommandProcessors/GuitarChord";
 
 export class REPL {
 

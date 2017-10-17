@@ -39,6 +39,7 @@ export class ChordParser {
         const root = noteName.value.toNoteName();
 
         if (this.scanner.isEndOfInput) {
+            // simple major triad: C
             return this.helper.success(Chord.construct(chordName, root, Interval.M3, Interval.P5));
         }
 
@@ -46,54 +47,64 @@ export class ChordParser {
 
         let isFifth = false;
 
-        if (this.scanner.expectChar("5")) { //5th
+        if (this.scanner.expectChar("5")) { // fifth (power chord): C5
 
             this.addIntervals(Interval.P5);
             isFifth = true;
 
-        } else if (this.scanner.expect("ø7")) { // half diminished seventh
+        } else if (this.scanner.expect("ø7")) { // half diminished seventh: Eø7
 
             this.addIntervals(Interval.m3, Interval.d5, Interval.m7);
 
         } else {
+
+            // try read dominant chord: D7, C13
             if (!ParseHelper.isSuccessful(this.helper.absorb(this.readDominant()))) {
-                if (ParseHelper.isSuccessful(this.helper.absorb(this.readTriad()))) {
+
+                // read triad, note this should always success
+                ParseHelper.assert(this.helper.absorb(this.readTriad()));
+
+                // try read simplified added tones: C2, C69
+                if (!ParseHelper.isSuccessful(this.helper.absorb(this.readSimplifiedAddedTone()))) {
+
+                    // try read seventh (e.g. not Am7, Gmaj7)
                     if (!ParseHelper.isSuccessful(this.helper.absorb(this.readSeventh()))) {
 
                         if (ParseHelper.isFailed(this.helper.absorb(this.readExtended()))) {
                             return this.helper.fail();  // failure message is already stored in this.helper, don't relay
                         }
-                    }
 
-                } else {
-                    this.readSimplifiedAddedTone();
+                    }
                 }
             }
         }
 
 
         let bass: NoteName | undefined = undefined;
-        if (!isFifth) {
-            if (ParseHelper.isFailed(this.helper.absorb(this.readSuspended()))) {
+
+        // try read suspended chord: Dsus4
+        if (ParseHelper.isFailed(this.helper.absorb(this.readSuspended()))) {
+            return this.helper.fail();
+        }
+
+        if (!this.addedToneRead) {
+            // try read ordinal added tone: Cadd9
+            if (ParseHelper.isFailed(this.helper.absorb(this.readAddedTone()))) {
                 return this.helper.fail();
             }
+        }
 
-            if (!this.addedToneRead) {
-                if (ParseHelper.isFailed(this.helper.absorb(this.readAddedTone()))) {
-                    return this.helper.fail();
-                }
-            }
+        // try read altered notes: C11#5
+        if (ParseHelper.isFailed(this.helper.absorb(this.readAltered()))) {
+            return this.helper.fail();
+        }
 
-            if (ParseHelper.isFailed(this.helper.absorb(this.readAltered()))) {
-                return this.helper.fail();
-            }
-
-            const readBassResult = this.helper.absorb(this.readBass());
-            if (ParseHelper.isSuccessful(readBassResult)) {
-                bass = readBassResult.value;
-            } else if (ParseHelper.isFailed(readBassResult)) {
-                return this.helper.fail();
-            }
+        // try read slash chord or inverted chord
+        const readBassResult = this.helper.absorb(this.readBass());
+        if (ParseHelper.isSuccessful(readBassResult)) {
+            bass = readBassResult.value;
+        } else if (ParseHelper.isFailed(readBassResult)) {
+            return this.helper.fail();
         }
 
         this.scanner.skipWhitespaces();
@@ -119,7 +130,7 @@ export class ChordParser {
             case "9":
                 switch (this.triadQuality) {
                     case TriadQuality.Diminished:
-                        return this.helper.fail(this.scanner.lastReadRange, Messages.Error_ChordDim9NotSupported); // Cdim9 not supported
+                        return this.helper.fail(this.scanner.lastReadRange, Messages.Error_ChordDim9NotSupported); // Cdim9 not existed (d9 == P8)
                     case TriadQuality.Minor:
                         this.addIntervals(Interval.m7, Interval.M9);  // Cm9
                         return ParseHelper.voidSuccess;
@@ -134,7 +145,7 @@ export class ChordParser {
             case "11":
                 switch (this.triadQuality) {
                     case TriadQuality.Diminished:
-                        return this.helper.fail(this.scanner.lastReadRange, Messages.Error_ChordDim11NotSupported);   // Cdim11 not supported
+                        return this.helper.fail(this.scanner.lastReadRange, Messages.Error_ChordDim11NotSupported);   // Cdim11 not existed
                     case TriadQuality.Minor:
                         this.addIntervals(Interval.m7, Interval.M9, Interval.P11);  // Cm11
                         return ParseHelper.voidSuccess;
@@ -149,7 +160,7 @@ export class ChordParser {
             case "13":
                 switch (this.triadQuality) {
                     case TriadQuality.Diminished:
-                        return this.helper.fail(this.scanner.lastReadRange, Messages.Error_ChordDim13NotSupported);   // Cdim13 not supported
+                        return this.helper.fail(this.scanner.lastReadRange, Messages.Error_ChordDim13NotSupported);   // Cdim13 not existed
                     case TriadQuality.Minor:
                         this.addIntervals(Interval.m7, Interval.M9, Interval.P11, Interval.M13);  // Cm13
                         return ParseHelper.voidSuccess;
@@ -348,15 +359,15 @@ export class ChordParser {
                 this.addedToneRead = true;
                 return ParseHelper.voidSuccess;
             case "2":
-                this.addIntervals(Interval.M9);
+                this.addIntervals(Interval.M2);
                 this.addedToneRead = true;
                 return ParseHelper.voidSuccess;
             case "4":
-                this.addIntervals(Interval.P11);
+                this.addIntervals(Interval.P4);
                 this.addedToneRead = true;
                 return ParseHelper.voidSuccess;
             case "6":
-                this.addIntervals(Interval.M13);
+                this.addIntervals(Interval.M6);
                 this.addedToneRead = true;
                 return ParseHelper.voidSuccess;
         }
@@ -414,7 +425,7 @@ export class ChordParser {
 
     private readTriad(): ParseSuccessOrEmptyResult<void> {
         switch (this.scanner.readAnyPatternOf("maj", "min", "aug", "dim", "M", "m", "Δ", "\\+", "\\-", "°")) {
-            case "":
+            case undefined:
             case "maj":
             case "M":
             case "Δ":

@@ -1,4 +1,4 @@
-﻿import { Element } from "./Element"
+﻿import { Element } from "./Element";
 import { Beat } from "./Beat";
 import { VoicePart } from "./VoicePart";
 import { BeatNote } from "./BeatNote";

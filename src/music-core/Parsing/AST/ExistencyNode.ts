@@ -12,7 +12,7 @@ export class ExistencyNode extends Node {
 
 }
 
-export module ExistencyNode {
+export namespace ExistencyNode {
     export function parseCharExistency(scanner: Scanner, char: string): ParseResult<ExistencyNode> {
         if (scanner.expectChar(char)) {
             return ParseHelper.success(new ExistencyNode(scanner.lastReadRange));

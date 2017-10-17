@@ -1,4 +1,4 @@
-﻿import { Element } from "./Element"
+﻿import { Element } from "./Element";
 import { RhythmSegmentVoice } from "./RhythmSegmentVoice";
 import { PreciseDuration } from "../MusicTheory/PreciseDuration";
 

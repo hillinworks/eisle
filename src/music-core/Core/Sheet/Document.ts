@@ -1,4 +1,4 @@
-﻿import { Element } from "./Element"
+﻿import { Element } from "./Element";
 import { Bar } from "./Bar";
 import { DocumentState } from "./DocumentState";
 

@@ -9,7 +9,7 @@ export enum Ornament {
     InvertedTurn = 35
 }
 
-export module Ornament {
+export namespace Ornament {
     export function toBeatModifier(ornament: Ornament): BeatModifier {
         return ornament as number as BeatModifier;
     }

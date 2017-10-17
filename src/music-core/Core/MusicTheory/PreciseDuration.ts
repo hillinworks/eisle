@@ -54,7 +54,7 @@ export class PreciseDuration {
 }
 
 
-export module PreciseDuration {
+export namespace PreciseDuration {
     export function equalityComparer(first: PreciseDuration, second: PreciseDuration): boolean {
         return first.equals(second);
     }
@@ -80,7 +80,7 @@ export module PreciseDuration {
     export function min<T>(array: T[], selector: (e: T) => PreciseDuration): PreciseDuration {
 
         let min = Number.MAX_SAFE_INTEGER;
-        for (let item of array) {
+        for (const item of array) {
             min = Math.min(min, selector(item).fixedPointValue);
         }
 
@@ -89,7 +89,7 @@ export module PreciseDuration {
 
     export function max<T>(array: T[], selector: (e: T) => PreciseDuration): PreciseDuration {
         let max = 0;
-        for (let item of array) {
+        for (const item of array) {
             max = Math.max(max, selector(item).fixedPointValue);
         }
 
@@ -98,7 +98,7 @@ export module PreciseDuration {
 
     export function sum<T>(array: T[], selector: (e: T) => PreciseDuration): PreciseDuration {
         let sum = 0;
-        for (let item of array) {
+        for (const item of array) {
             sum += selector(item).fixedPointValue;
         }
 

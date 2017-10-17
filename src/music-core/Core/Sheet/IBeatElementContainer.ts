@@ -8,7 +8,7 @@ export interface IBeatElementContainer extends IBarVoiceElement {
 }
 
 // ReSharper disable once InconsistentNaming
-export module IBeatElementContainer {
+export namespace IBeatElementContainer {
     export function getFirstBeat(container: IBeatElementContainer): Beat | undefined {
         while (container.elements !== undefined && container.elements.length > 0) {
             const firstElement = container.elements[0];
@@ -35,7 +35,7 @@ export module IBeatElementContainer {
 
     export function getMinimumBeatDuration(container: IBeatElementContainer): PreciseDuration {
         let minFixedDuration = Number.MAX_VALUE;
-        for (let element of container.elements) {
+        for (const element of container.elements) {
             if (element instanceof Beat) {
                 minFixedDuration = Math.min(minFixedDuration, element.duration.fixedPointValue);
             } else {

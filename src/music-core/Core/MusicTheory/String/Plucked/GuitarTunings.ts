@@ -1,7 +1,7 @@
 ﻿import { Tuning } from "../Tuning";
 import { Pitch } from "../../Pitch";
 
-export module GuitarTunings {
+export namespace GuitarTunings {
     export const standard
         = new Tuning("Standard", Pitch.E(2), Pitch.A(2), Pitch.D(3), Pitch.G(3), Pitch.B(3), Pitch.E(4));
 
@@ -9,7 +9,7 @@ export module GuitarTunings {
         = new Tuning("Drop D", Pitch.D(2), Pitch.A(2), Pitch.D(3), Pitch.G(3), Pitch.B(3), Pitch.E(4));
 
     export const knownTunings: { [key: string]: Tuning } = {};
-    for (let tuning of [standard, dropD]) {
+    for (const tuning of [standard, dropD]) {
         knownTunings[tuning.name!.toLowerCase()] = tuning;
     }
 

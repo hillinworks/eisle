@@ -6,7 +6,7 @@ export enum BeatAccent {
     Marcato = 2
 }
 
-export module BeatAccent {
+export namespace BeatAccent {
     export function toBeatModifier(accent: BeatAccent): BeatModifier {
         return accent as number as BeatModifier;
     }

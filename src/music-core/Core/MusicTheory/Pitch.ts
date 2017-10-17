@@ -35,7 +35,7 @@ export class Pitch {
 
     toString(): string {
         return `${this.noteName.toString()}${this.octaveGroup}`;
-    };
+    }
 
     enharmoniclyEquals(other: Pitch): boolean {
         return this.octaveGroup === other.octaveGroup && this.normalizedSemitones === other.normalizedSemitones;
@@ -52,7 +52,7 @@ export class Pitch {
 }
 
 
-export module Pitch {
+export namespace Pitch {
 
     // ReSharper disable InconsistentNaming
     export function C(octaveGroup: number = neutralOctaveGroup) { return new Pitch(NoteName.C, octaveGroup); }

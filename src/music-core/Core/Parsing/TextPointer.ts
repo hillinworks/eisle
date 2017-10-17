@@ -3,7 +3,7 @@ import { TextSource } from "./TextSource";
 
 export class TextPointer {
 
-    static get zero(): TextPointer { return new TextPointer(0, 0) };
+    static get zero(): TextPointer { return new TextPointer(0, 0); }
 
     row: number;
     column: number;

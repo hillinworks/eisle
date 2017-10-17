@@ -69,7 +69,7 @@ export class NoteValue {
                 break;
         }
 
-        if (this.tuplet != null) {
+        if (this.tuplet != undefined) {
             builder.append("/")
                 .append(this.tuplet);
         }
@@ -78,8 +78,8 @@ export class NoteValue {
     }
 }
 
-export module NoteValue {
-    
+export namespace NoteValue {
+
     export function tryResolveFromDuration(duration: PreciseDuration, complex: boolean = false): NoteValue | undefined {
         for (let baseNoteValue = BaseNoteValue.Large; baseNoteValue >= BaseNoteValue.TwoHundredFiftySixth; --baseNoteValue) {
             if (duration === BaseNoteValue.getDuration(baseNoteValue))
@@ -96,13 +96,13 @@ export module NoteValue {
                 const baseDuration = BaseNoteValue.getDuration(baseNoteValue);
                 const baseInvertedDuration = BaseNoteValue.getInvertedDuration(baseNoteValue);
 
-                for (let augment of searchAugments) {
+                for (const augment of searchAugments) {
                     const augmentedDuration = baseDuration.multiply(NoteValueAugment.getDurationMultiplier(augment));
                     if (duration.equals(augmentedDuration)) {
                         return new NoteValue(baseNoteValue, augment);
                     }
 
-                    for (let tuplet of searchTuplets) {
+                    for (const tuplet of searchTuplets) {
                         if (duration.equals(augmentedDuration.multiply(baseInvertedDuration / tuplet))) {
                             return new NoteValue(baseNoteValue, augment, tuplet);
                         }

@@ -1,5 +1,5 @@
 
-export module AlternationText {
+export namespace AlternationText {
     export const noAlternationIndex = 0;
 
     export enum Type {
@@ -40,7 +40,7 @@ export module AlternationText {
                 index: index,
                 type: alternationTextTypes[text]
             };
-        };
+        }
 
         return undefined;
     }

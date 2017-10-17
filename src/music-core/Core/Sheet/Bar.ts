@@ -35,14 +35,14 @@ export class Bar extends Element {
     get alternativeEndingPosition(): AlternativeEndingPosition {
         const alternation = this.documentState.currentAlternation;
 
-        if (alternation == null) {
+        if (alternation === undefined) {
             return AlternativeEndingPosition.None;
         }
 
-        const isStart = this.previousBar == null
+        const isStart = this.previousBar === undefined
             || this.previousBar.documentState.currentAlternation !== alternation;
 
-        const isEnd = this.nextBar == null
+        const isEnd = this.nextBar === undefined
             || this.nextBar.documentState.currentAlternation !== alternation;
 
         if (isStart) {

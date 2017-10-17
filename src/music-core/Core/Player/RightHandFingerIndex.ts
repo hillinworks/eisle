@@ -7,7 +7,7 @@
 }
 
 
-export module RightHandFingerIndex {
+export namespace RightHandFingerIndex {
 
     export function toShortString(index: RightHandFingerIndex) {
         switch (index) {

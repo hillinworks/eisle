@@ -49,8 +49,8 @@ export class Anchor {
 export enum ParenthesisReadResult {
     Success,
     MissingOpen,
-    MissingClose,
-};
+    MissingClose
+}
 
 function checkInline(char: string, inline: boolean): boolean {
     return !(inline && char === "\n");
@@ -401,6 +401,6 @@ export class Scanner {
     }
 }
 
-export module Scanner {
+export namespace Scanner {
     export type Predicate = (scanner: Scanner) => boolean;
 }

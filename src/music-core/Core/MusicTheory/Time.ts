@@ -20,7 +20,7 @@ export class Time {
     }
 }
 
-export module Time {
+export namespace Time {
     // ReSharper disable InconsistentNaming
     export const T22 = new Time(2, BaseNoteValue.Half);
     export const T44 = new Time(4, BaseNoteValue.Quater);

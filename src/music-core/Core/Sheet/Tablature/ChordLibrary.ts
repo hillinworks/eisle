@@ -9,7 +9,7 @@ export class ChordLibrary {
         this.chords = toMap(chords, c => c.name);
     }
 
-    resolve(chordName:string): IChordDefinition | undefined {
+    resolve(chordName: string): IChordDefinition | undefined {
         return this.chords[chordName];
     }
 }

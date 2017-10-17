@@ -27,7 +27,7 @@ function throwEmptySequence(): never {
 
 function makeHashSet<T>(source: Iterable<T>, hash: Hash<T>): NumberKeyMap<T> {
     const hashSet: NumberKeyMap<T> = {};
-    for (let item of source) {
+    for (const item of source) {
         hashSet[hash(item)] = item;
     }
     return hashSet;
@@ -72,7 +72,7 @@ export function aggregate<T>(source: Iterable<T>,
 export function aggregateWithSeed<T, TAccumulate>(source: Iterable<T>,
     seed: TAccumulate, func: (accumulate: TAccumulate, current: T) => TAccumulate): TAccumulate {
 
-    for (let item of source) {
+    for (const item of source) {
         seed = func(seed, item);
     }
 
@@ -87,7 +87,7 @@ export function aggregateWithSeed<T, TAccumulate>(source: Iterable<T>,
  */
 export function all<T>(source: Iterable<T>, predicate: IndexedPredicate<T>): boolean {
     let i = 0;
-    for (let item of source) {
+    for (const item of source) {
         if (!predicate(item, i)) {
             return false;
         }
@@ -120,7 +120,7 @@ export function allEquals<T, TResult>(source: Iterable<T>, selector: Selector<T,
         if (iterateResult.done) {
             return true;
         }
-        
+
         if (!comparer(seed, selector(iterateResult.value))) {
             return false;
         }
@@ -135,7 +135,7 @@ export function allEquals<T, TResult>(source: Iterable<T>, selector: Selector<T,
  */
 export function any<T>(source: Iterable<T>, predicate: IndexedPredicate<T> = defaultPredicate): boolean {
     let i = 0;
-    for (let item of source) {
+    for (const item of source) {
         if (predicate(item, i)) {
             return true;
         }
@@ -152,7 +152,7 @@ export function any<T>(source: Iterable<T>, predicate: IndexedPredicate<T> = def
  * @return An new Iterable<T> with the specified element appended to the specified sequence.
  */
 export function* append<T>(source: Iterable<T>, element: T): Iterable<T> {
-    for (let item of source) {
+    for (const item of source) {
         yield item;
     }
     yield element;
@@ -167,7 +167,7 @@ export function* append<T>(source: Iterable<T>, element: T): Iterable<T> {
 export function average<T>(source: Iterable<T>, selector: Selector<T, number> = defaultNumberSelector): number {
     let sum = 0;
     let count = 0;
-    for (let item of source) {
+    for (const item of source) {
         sum += selector(item);
         ++count;
     }
@@ -181,7 +181,7 @@ export function average<T>(source: Iterable<T>, selector: Selector<T, number> = 
  * @return An Iterable<TResult> that contains each element of the source sequence asserted to the specified type.
  */
 export function* assertType<T, TResult extends T>(source: Iterable<T>): Iterable<TResult> {
-    for (let item of source) {
+    for (const item of source) {
         yield (item as TResult);
     }
 }
@@ -193,10 +193,10 @@ export function* assertType<T, TResult extends T>(source: Iterable<T>): Iterable
  * @return An Iterable<T> that contains the concatenated elements of the two input sequences.
  */
 export function* concat<T>(first: Iterable<T>, second: Iterable<T>): Iterable<T> {
-    for (let item of first) {
+    for (const item of first) {
         yield item;
     }
-    for (let item of second) {
+    for (const item of second) {
         yield item;
     }
 }
@@ -210,7 +210,7 @@ export function* concat<T>(first: Iterable<T>, second: Iterable<T>): Iterable<T>
  * @return true if the source sequence contains an element that has the specified value; otherwise, false.
  */
 export function contains<T>(source: Iterable<T>, value: T, comparer: EqualityComparer<T> = defaultEqualityComparer): boolean {
-    for (let item of source) {
+    for (const item of source) {
         if (comparer(item, value)) {
             return true;
         }
@@ -227,7 +227,7 @@ export function contains<T>(source: Iterable<T>, value: T, comparer: EqualityCom
  */
 export function count<T>(source: Iterable<T>, predicate: Predicate<T> = defaultPredicate): number {
     let count = 0;
-    for (let item of source) {
+    for (const item of source) {
         if (predicate(item)) {
             ++count;
         }
@@ -270,7 +270,7 @@ export function* defaultIfEmpty<T>(source: Iterable<T>, defaultValue: T): Iterab
 export function* distinct<T>(source: Iterable<T>, comparer: EqualityComparer<T> = defaultEqualityComparer): Iterable<T> {
     const iteratedElements = new Array<T>();
 
-    for (let item of source) {
+    for (const item of source) {
         if (contains(iteratedElements, item, comparer)) {
             continue;
         }
@@ -288,7 +288,7 @@ export function* distinct<T>(source: Iterable<T>, comparer: EqualityComparer<T> 
 export function* distinctHash<T>(source: Iterable<T>, hash: Hash<T> = defaultHash): Iterable<T> {
     const iteratedElements: { [key: number]: T } = {};
 
-    for (let item of source) {
+    for (const item of source) {
         const hashValue = hash(item);
         if (iteratedElements[hashValue] !== undefined) {
             continue;
@@ -322,7 +322,7 @@ export function elementAt<T>(source: Iterable<T>, index: number): T {
  */
 export function elementAtOrUndefined<T>(source: Iterable<T>, index: number): T | undefined {
     let currentIndex = 0;
-    for (let item of source) {
+    for (const item of source) {
         if (currentIndex === index) {
             return item;
         }
@@ -343,7 +343,7 @@ export function elementAtOrUndefined<T>(source: Iterable<T>, index: number): T |
 export function* except<T>(first: Iterable<T>,
     second: Iterable<T>,
     comparer: EqualityComparer<T> = defaultEqualityComparer): Iterable<T> {
-    for (let item of first) {
+    for (const item of first) {
         if (!contains(second, item, comparer)) {
             yield item;
         }
@@ -362,7 +362,7 @@ export function* exceptHash<T>(first: Iterable<T>,
     hash: Hash<T> = defaultHash): Iterable<T> {
 
     const hashedSecond = makeHashSet(second, hash);
-    for (let item of first) {
+    for (const item of first) {
         if (hashedSecond[hash(item)] === undefined) {
             yield item;
         }
@@ -391,7 +391,7 @@ export function first<T>(source: Iterable<T>, predicate: Predicate<T> = defaultP
  * @return undefined if source is empty or if no element passes the test specified by predicate; otherwise, the first element in source that passes the test specified by predicate.
  */
 export function firstOrUndefined<T>(source: Iterable<T>, predicate: Predicate<T> = defaultPredicate): T | undefined {
-    for (let item of source) {
+    for (const item of source) {
         if (predicate(item)) {
             return item;
         }
@@ -403,7 +403,7 @@ export function firstOrUndefined<T>(source: Iterable<T>, predicate: Predicate<T>
 /**
  * Represents a collection of objects that have a common key.
  */
-export interface IGrouping<TKey, TElement> extends Iterable<TElement> { key: TKey };
+export interface IGrouping<TKey, TElement> extends Iterable<TElement> { key: TKey; }
 
 class Grouping<TKey, TElement> implements IGrouping<TKey, TElement> {
     readonly array = new Array<TElement>();
@@ -431,10 +431,10 @@ export function groupBy<TSource, TKey, TElement>(source: Iterable<TSource>,
 
     const groups = new Array<Grouping<TKey, TElement>>();
 
-    for (let item of source) {
+    for (const item of source) {
         const key = keySelector(item);
         let groupFound = false;
-        for (let group of groups) {
+        for (const group of groups) {
             if (keyComparer(key, group.key)) {
                 group.array.push(elementSelector(item));
                 groupFound = true;
@@ -468,7 +468,7 @@ export function* groupByHash<TSource, TKey, TElement>(source: Iterable<TSource>,
 
     const groups: NumberKeyMap<Grouping<TKey, TElement>> = {};
 
-    for (let item of source) {
+    for (const item of source) {
         const key = keySelector(item);
         const keyHashValue = keyHash(key);
 
@@ -479,7 +479,7 @@ export function* groupByHash<TSource, TKey, TElement>(source: Iterable<TSource>,
         groups[keyHashValue].array.push(elementSelector(item));
     }
 
-    for (let key in groups) {
+    for (const key in groups) {
         if (groups.hasOwnProperty(key)) {
             yield groups[key];
         }
@@ -504,11 +504,11 @@ export function* groupJoin<TOuter, TInner, TKey, TResult>(
     resultSelector: (outer: TOuter, inner: Iterable<TInner>) => TResult,
     keyComparer: EqualityComparer<TKey> = defaultEqualityComparer): Iterable<TResult> {
 
-    for (let outerElement of outer) {
+    for (const outerElement of outer) {
         const outerKey = outerKeySelector(outerElement);
 
         const innerCollection = new Array<TInner>();
-        for (let innerElement of inner) {
+        for (const innerElement of inner) {
             const innerKey = innerKeySelector(innerElement);
 
             if (keyComparer(outerKey, innerKey)) {
@@ -528,7 +528,7 @@ export function* groupJoin<TOuter, TInner, TKey, TResult>(
  * @return A sequence that contains the elements that form the set intersection of two sequences.
  */
 export function* intersect<T>(first: Iterable<T>, second: Iterable<T>, comparer: EqualityComparer<T>): Iterable<T> {
-    for (let item of first) {
+    for (const item of first) {
         if (contains(second, item, comparer)) {
             yield item;
         }
@@ -545,7 +545,7 @@ export function* intersect<T>(first: Iterable<T>, second: Iterable<T>, comparer:
 export function* intersectHash<T>(first: Iterable<T>, second: Iterable<T>, hash: Hash<T>): Iterable<T> {
 
     const hashedSecond = makeHashSet(second, hash);
-    for (let item of first) {
+    for (const item of first) {
         if (hashedSecond[hash(item)] !== undefined) {
             yield item;
         }
@@ -570,10 +570,10 @@ export function* join<TOuter, TInner, TKey, TResult>(
     resultSelector: (outer: TOuter, inner: TInner) => TResult,
     keyComparer: EqualityComparer<TKey> = defaultEqualityComparer): Iterable<TResult> {
 
-    for (let outerElement of outer) {
+    for (const outerElement of outer) {
         const outerKey = outerKeySelector(outerElement);
 
-        for (let innerElement of inner) {
+        for (const innerElement of inner) {
             const innerKey = innerKeySelector(innerElement);
 
             if (keyComparer(outerKey, innerKey)) {
@@ -622,7 +622,7 @@ export function lastOrUndefined<T>(source: Iterable<T> | T[], predicate: Predica
     }
 
     let last: T | undefined = undefined;
-    for (let item of source) {
+    for (const item of source) {
         if (predicate(item)) {
             last = item;
         }
@@ -640,7 +640,7 @@ export function lastOrUndefined<T>(source: Iterable<T> | T[], predicate: Predica
  */
 export function max<T>(source: Iterable<T>, selector: Selector<T, number> = defaultNumberSelector): number {
     let max = Number.MIN_VALUE;
-    for (let item of source) {
+    for (const item of source) {
         max = Math.max(max, selector(item));
     }
 
@@ -657,7 +657,7 @@ export function max<T>(source: Iterable<T>, selector: Selector<T, number> = defa
 export function min<T>(source: Iterable<T>, selector: Selector<T, number> = defaultNumberSelector): number {
     let min = Number.MAX_VALUE;
 
-    for (let item of source) {
+    for (const item of source) {
         min = Math.min(min, selector(item));
     }
 
@@ -676,7 +676,7 @@ export function minMax<T>(source: Iterable<T>, selector: Selector<T, number> = d
     let min = Number.MAX_VALUE;
     let max = Number.MIN_VALUE;
 
-    for (let item of source) {
+    for (const item of source) {
         const value = selector(item);
         min = Math.min(min, value);
         max = Math.max(max, value);
@@ -692,7 +692,7 @@ export function minMax<T>(source: Iterable<T>, selector: Selector<T, number> = d
  * @return An Iterable<T> that contains elements from the input sequence of type TResult.
  */
 export function* ofType<T, TResult extends T>(source: Iterable<T>, ctor: Constructor<TResult>): Iterable<TResult> {
-    for (let item of source) {
+    for (const item of source) {
         if (item instanceof ctor) {
             yield item as TResult;
         }
@@ -727,7 +727,7 @@ class OrderedIterable<T> implements IOrderedIterable<T> {
 
         this.source.sort((a: T, b: T) => {
             let result = 0;
-            for (let instruction of this.instructions) {
+            for (const instruction of this.instructions) {
                 result = instruction.comparer(instruction.keySelector(a), instruction.keySelector(b));
                 if (result !== 0) {
                     return result;
@@ -783,7 +783,7 @@ export function orderByDescending<T, TKey>(source: Iterable<T>,
  */
 export function* prepend<T>(source: Iterable<T>, element: T): Iterable<T> {
     yield element;
-    for (let item of source) {
+    for (const item of source) {
         yield item;
     }
 }
@@ -839,7 +839,7 @@ export function* reverse<T>(source: Iterable<T> | T[]): Iterable<T> {
  */
 export function* select<T, TResult>(source: Iterable<T>, selector: IndexedSelector<T, TResult>): Iterable<TResult> {
     let index = 0;
-    for (let item of source) {
+    for (const item of source) {
         yield selector(item, index);
         ++index;
     }
@@ -853,8 +853,8 @@ export function* select<T, TResult>(source: Iterable<T>, selector: IndexedSelect
  */
 export function* selectMany<T, TResult>(source: Iterable<T>, selector: IndexedSelector<T, Iterable<TResult>>): Iterable<TResult> {
     let index = 0;
-    for (let item of source) {
-        for (let child of selector(item, index)) {
+    for (const item of source) {
+        for (const child of selector(item, index)) {
             yield child;
         }
         ++index;
@@ -910,7 +910,7 @@ export function single<T>(source: Iterable<T>, predicate: Predicate<T> = default
  */
 export function singleOrUndefined<T>(source: Iterable<T>, predicate: Predicate<T> = defaultPredicate): T | undefined {
     let result: T | undefined = undefined;
-    for (let item of source) {
+    for (const item of source) {
         if (predicate(item)) {
             if (result !== undefined) {
                 throw new Error("sequence contains more than one element that satisfies specified predicate");
@@ -929,7 +929,7 @@ export function singleOrUndefined<T>(source: Iterable<T>, predicate: Predicate<T
  */
 export function* skip<T>(source: Iterable<T>, count: number): Iterable<T> {
     let index = 0;
-    for (let item of source) {
+    for (const item of source) {
         if (index >= count) {
             yield item;
         }
@@ -946,7 +946,7 @@ export function* skip<T>(source: Iterable<T>, count: number): Iterable<T> {
 export function* skipWhile<T>(source: Iterable<T>, predicate: IndexedPredicate<T>): Iterable<T> {
     let index = 0;
     let skip = true;
-    for (let item of source) {
+    for (const item of source) {
         if (skip) {
             if (predicate(item, index)) {
                 ++index;
@@ -967,7 +967,7 @@ export function* skipWhile<T>(source: Iterable<T>, predicate: IndexedPredicate<T
  */
 export function sum<T>(source: Iterable<T>, selector: Selector<T, number> = defaultNumberSelector): number {
     let sum = 0;
-    for (let item of source) {
+    for (const item of source) {
         sum += selector(item);
     }
 
@@ -982,7 +982,7 @@ export function sum<T>(source: Iterable<T>, selector: Selector<T, number> = defa
  */
 export function* take<T>(source: Iterable<T>, count: number): Iterable<T> {
     let index = 0;
-    for (let item of source) {
+    for (const item of source) {
         if (index < count) {
             yield item;
         } else {
@@ -1000,7 +1000,7 @@ export function* take<T>(source: Iterable<T>, count: number): Iterable<T> {
  */
 export function* takeWhile<T>(source: Iterable<T>, predicate: IndexedPredicate<T>): Iterable<T> {
     let index = 0;
-    for (let item of source) {
+    for (const item of source) {
         if (predicate(item, index)) {
             yield item;
             ++index;
@@ -1040,7 +1040,7 @@ export function toLookup<T, TElement>(source: Iterable<T>,
     keySelector: Selector<T, string>,
     valueSelector: Selector<T, TElement> = defaultSelector): StringKeyMap<Iterable<TElement>> {
     const object: StringKeyMap<TElement[]> = {};
-    for (let item of source) {
+    for (const item of source) {
         const key = keySelector(item);
         const value = valueSelector(item);
         if (object[key] === undefined) {
@@ -1075,7 +1075,7 @@ export function toMap<T, TElement>(source: Iterable<T>,
     keySelector: Selector<T, string>,
     valueSelector: Selector<T, TElement> = defaultSelector): StringKeyMap<TElement> {
     const object: StringKeyMap<TElement> = {};
-    for (let item of source) {
+    for (const item of source) {
         const key = keySelector(item);
         if (object[key] !== undefined) {
             throw new Error("duplicated element");
@@ -1120,13 +1120,13 @@ export function* undefinedIfEmpty<T>(source: Iterable<T>): Iterable<T | undefine
  */
 export function* union<T>(first: Iterable<T>, second: Iterable<T>, comparer: EqualityComparer<T> = defaultEqualityComparer): Iterable<T> {
     const items = new Array<T>();
-    for (let item of first) {
+    for (const item of first) {
         if (!contains(items, item, comparer)) {
             items.push(item);
             yield item;
         }
     }
-    for (let item of second) {
+    for (const item of second) {
         if (!contains(items, item, comparer)) {
             items.push(item);
             yield item;
@@ -1143,14 +1143,14 @@ export function* union<T>(first: Iterable<T>, second: Iterable<T>, comparer: Equ
  */
 export function* unionHash<T>(first: Iterable<T>, second: Iterable<T>, hash: Hash<T> = defaultHash): Iterable<T> {
     const items: NumberKeyMap<T> = {};
-    for (let item of first) {
+    for (const item of first) {
         const hashValue = hash(item);
         if (items[hashValue] === undefined) {
             items[hashValue] = item;
             yield item;
         }
     }
-    for (let item of second) {
+    for (const item of second) {
         const hashValue = hash(item);
         if (items[hashValue] === undefined) {
             items[hashValue] = item;
@@ -1169,7 +1169,7 @@ export function* unionHash<T>(first: Iterable<T>, second: Iterable<T>, hash: Has
 export function withMax<T>(source: Iterable<T>, selector: Selector<T, number>): T[] {
     let max = Number.MIN_VALUE;
     let elements = new Array<T>();
-    for (let item of source) {
+    for (const item of source) {
         const value = selector(item);
         if (max < value) {
             max = value;
@@ -1191,7 +1191,7 @@ export function withMax<T>(source: Iterable<T>, selector: Selector<T, number>): 
 export function withMin<T>(source: Iterable<T>, selector: Selector<T, number>): T[] {
     let min = Number.MAX_VALUE;
     let elements = new Array<T>();
-    for (let item of source) {
+    for (const item of source) {
         const value = selector(item);
         if (min > value) {
             min = value;
@@ -1212,7 +1212,7 @@ export function withMin<T>(source: Iterable<T>, selector: Selector<T, number>): 
  */
 export function* where<T>(source: Iterable<T>, predicate: IndexedPredicate<T>): Iterable<T> {
     let index = 0;
-    for (let item of source) {
+    for (const item of source) {
         if (predicate(item, index)) {
             yield item;
         }
@@ -1776,7 +1776,7 @@ class Sequence<T> implements ISequence<T> {
 
     foreach(action: (element: T, index: number) => void): void {
         let index = 0;
-        for (let item of this.iterable) {
+        for (const item of this.iterable) {
             action(item, index);
             ++index;
         }
@@ -1925,7 +1925,7 @@ class Sequence<T> implements ISequence<T> {
         valueSelector: Selector<T, TElement> = defaultSelector): StringKeyMap<ISequence<TElement>> {
         const rawLookup = toLookup<T, TElement>(this.iterable, keySelector, valueSelector);
         const lookup: StringKeyMap<ISequence<TElement>> = {};
-        for (let key in rawLookup) {
+        for (const key in rawLookup) {
             if (rawLookup.hasOwnProperty(key)) {
                 lookup[key] = new Sequence<TElement>(rawLookup[key]);
             }
@@ -1975,7 +1975,7 @@ const outerRange = range;
 const outerRepeat = repeat;
 
 // ReSharper disable once InconsistentNaming
-export module ISequence {
+export namespace ISequence {
     /**
      * Generates a sequence of integral numbers within a specified range.
      * @param start The value of the first integer in the sequence.

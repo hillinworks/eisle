@@ -1,4 +1,4 @@
-﻿export module RomanNumerals {
+﻿export namespace RomanNumerals {
     export function toRoman(number: number): string {
         if ((number < 0) || (number > 3999)) throw new RangeError();
         if (number < 1) return "";

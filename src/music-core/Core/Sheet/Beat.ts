@@ -1,4 +1,4 @@
-﻿import { Element } from "./Element"
+﻿import { Element } from "./Element";
 import { NoteValue } from "../MusicTheory/NoteValue";
 import { BeatNote } from "./BeatNote";
 import { StrumTechnique } from "../MusicTheory/String/Plucked/StrumTechnique";
@@ -23,7 +23,7 @@ export class Beat extends Element {
     strumTechnique = StrumTechnique.None;
     ornament = Ornament.None;
     noteRepetition = NoteRepetition.None;
-    effectTechniqueParameter?: number; //todo: refactor
+    effectTechniqueParameter?: number; // todo: refactor
     holdAndPause = HoldAndPause.None;
     accent = BeatAccent.Normal;
 

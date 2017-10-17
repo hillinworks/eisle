@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response, Router } from "express";
 import { BaseRoute } from "./route";
 import { Weixin as WeixinService } from "../platforms/weixin/weixin";
-import * as xml2js from 'xml2js';
+import * as xml2js from "xml2js";
 import { REPL } from "../repl/repl";
 
 export class WeixinRoute extends BaseRoute {

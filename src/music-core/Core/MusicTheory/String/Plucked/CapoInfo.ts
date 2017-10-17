@@ -8,7 +8,7 @@
     }
 }
 
-export module CapoInfo {
+export namespace CapoInfo {
     export const affectAllStrings = new Array<number>();
     export const noCapo = new CapoInfo(0);
 }

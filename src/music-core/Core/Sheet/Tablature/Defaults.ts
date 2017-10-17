@@ -1,7 +1,7 @@
 ﻿import { CapoInfo } from "../../MusicTheory/String/Plucked/CapoInfo";
-import { GuitarTunings } from "../../MusicTheory/String/Plucked/GuitarTunings"
+import { GuitarTunings } from "../../MusicTheory/String/Plucked/GuitarTunings";
 
-export module Defaults {
+export namespace Defaults {
     export const strings = 6;
     export const tuning = GuitarTunings.standard;
     export const capo = CapoInfo.noCapo;

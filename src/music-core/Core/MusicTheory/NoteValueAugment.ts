@@ -5,7 +5,7 @@
     ThreeDots = 3
 }
 
-export module NoteValueAugment {
+export namespace NoteValueAugment {
 
     export function getDurationMultiplier(augment: NoteValueAugment): number {
         switch (augment) {

@@ -17,7 +17,7 @@ export class Chord {
     }
 }
 
-export module Chord {
+export namespace Chord {
     export function construct(name: string, root: NoteName, ...intervals: Interval[]): Chord {
         const notes = new Array<NoteName>(intervals.length + 1);
         notes[0] = root;

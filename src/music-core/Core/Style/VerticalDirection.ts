@@ -3,7 +3,7 @@
     Under
 }
 
-export module VerticalDirection {
+export namespace VerticalDirection {
 
     export function select<T>(direction: VerticalDirection, above: (above: void) => T, under: (under: void) => T): T {
         switch (direction) {

@@ -8,7 +8,7 @@ export enum Accidental {
     DoubleFlat
 }
 
-export module Accidental {
+export namespace Accidental {
     export function parse(text: string): Accidental | undefined {
         switch (text) {
             case "":

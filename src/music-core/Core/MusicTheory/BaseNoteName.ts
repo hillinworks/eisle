@@ -5,10 +5,10 @@
     F,
     G,
     A,
-    B,
-};
+    B
+}
 
-export module BaseNoteName {
+export namespace BaseNoteName {
 
     export function parse(noteName: string): BaseNoteName | undefined {
         switch (noteName) {

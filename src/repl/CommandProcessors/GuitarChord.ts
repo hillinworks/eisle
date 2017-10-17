@@ -1,10 +1,10 @@
-import { ICommandProcessor } from '../ICommandProcessor';
-import { REPLResult } from '../REPLResult';
-import { Scanner } from '../../music-core/Parsing/Scanner';
-import { ChordParser } from '../../music-core/Parsing/AST/ChordParser';
-import { LiteralParsers } from '../../music-core/Parsing/LiteralParsers';
-import { ParseHelper } from '../../music-core/Parsing/ParseResult';
-import { REPL } from '../repl';
+import { ICommandProcessor } from "../ICommandProcessor";
+import { REPLResult } from "../REPLResult";
+import { Scanner } from "../../music-core/Parsing/Scanner";
+import { ChordParser } from "../../music-core/Parsing/AST/ChordParser";
+import { LiteralParsers } from "../../music-core/Parsing/LiteralParsers";
+import { ParseHelper } from "../../music-core/Parsing/ParseResult";
+import { REPL } from "../repl";
 
 export class GuitarChord implements ICommandProcessor {
 
@@ -19,7 +19,7 @@ export class GuitarChord implements ICommandProcessor {
             return this.showChordSyntax();
         }
 
-        if(ParseHelper.isEmpty(readChordNameResult)) {
+        if (ParseHelper.isEmpty(readChordNameResult)) {
             return this.showCommandSyntax();
         }
 
@@ -34,7 +34,7 @@ export class GuitarChord implements ICommandProcessor {
 
         const chord = parseChordResult.value;
 
-        return REPLResult.text(chord.name);
+        return REPLResult.text(JSON.stringify(chord.notes));
     }
 
     private showChordSyntax(): REPLResult {

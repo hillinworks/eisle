@@ -1,6 +1,6 @@
 ﻿import { VoicePart } from "./VoicePart";
-import { IBarElement } from "./IBarElement"
+import { IBarElement } from "./IBarElement";
 
 export interface IBarVoiceElement extends IBarElement {
-    readonly voicePart : VoicePart;
+    readonly voicePart: VoicePart;
 }

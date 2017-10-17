@@ -8,7 +8,7 @@
     BeginRepeatAndEnd = 6,
 }
 
-export module BarLine {
+export namespace BarLine {
     export type OpenType = BarLine.Standard | BarLine.BeginRepeat;
     export type CloseType = BarLine.Standard | BarLine.Double | BarLine.End | BarLine.EndRepeat | BarLine.BeginAndEndRepeat;
 

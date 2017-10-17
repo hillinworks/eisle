@@ -7,7 +7,7 @@ export enum GlissDirection {
     ToLower = NoteConnection.SlideOutToLower as number
 }
 
-export module GlissDirection {
+export namespace GlissDirection {
     export function toNoteConnection(direction: GlissDirection): NoteConnection {
         return direction as number as NoteConnection;
     }

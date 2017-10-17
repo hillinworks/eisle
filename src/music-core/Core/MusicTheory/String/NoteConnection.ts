@@ -9,7 +9,7 @@
     Pull = 7
 }
 
-export module NoteConnection {
+export namespace NoteConnection {
 
 
     export type PostBeatType = NoteConnection.None | NoteConnection.SlideOutToHigher | NoteConnection.SlideOutToLower;

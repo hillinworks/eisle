@@ -7,7 +7,7 @@ export enum HoldAndPause {
     Fermata = 14
 }
 
-export module HoldAndPause {
+export namespace HoldAndPause {
 
     export function toBeatModifier(holdAndPause: HoldAndPause): BeatModifier {
         return holdAndPause as number as BeatModifier;

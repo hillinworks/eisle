@@ -64,7 +64,7 @@ export class Interval {
     // todo: implement toString
 }
 
-export module Interval {
+export namespace Interval {
 
     // must be declared before the consts below
     export function isValid(number: number, quality: IntervalQuality): boolean {

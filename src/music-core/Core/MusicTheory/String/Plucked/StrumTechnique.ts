@@ -11,7 +11,7 @@ export enum StrumTechnique {
     PickstrokeUp = 7
 }
 
-export module StrumTechnique {
+export namespace StrumTechnique {
 
 
     export type ChordType = StrumTechnique.None | StrumTechnique.BrushDown | StrumTechnique.BrushUp | StrumTechnique.ArpeggioDown | StrumTechnique.ArpeggioUp | StrumTechnique.Rasgueado;

@@ -1,7 +1,7 @@
-﻿import { Element } from "../Element"
+﻿import { Element } from "../Element";
 import { CapoInfo } from "../../MusicTheory/String/Plucked/CapoInfo";
-import { Defaults } from "./Defaults"
-import {ISequence} from "../../Utilities/LinqLite";
+import { Defaults } from "./Defaults";
+import { ISequence } from "../../Utilities/LinqLite";
 
 export class Capo extends Element {
     capoInfo: CapoInfo;

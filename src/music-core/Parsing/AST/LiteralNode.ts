@@ -12,7 +12,7 @@ export class LiteralNode<T> extends Node {
     }
 }
 
-export module LiteralNode {
+export namespace LiteralNode {
 
     export function valueOrUndefined<T>(node: LiteralNode<T> | undefined): T | undefined {
         if (node === undefined) {

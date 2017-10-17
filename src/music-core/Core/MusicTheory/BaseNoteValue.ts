@@ -16,7 +16,7 @@ export enum BaseNoteValue {
     TwoHundredFiftySixth = -8
 }
 
-export module BaseNoteValue {
+export namespace BaseNoteValue {
 
     export function getDuration(value: BaseNoteValue): PreciseDuration {
         return PreciseDuration.fromDuration(Math.pow(2, value));

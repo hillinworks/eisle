@@ -5,7 +5,7 @@ export enum VoicePart {
     Bass
 }
 
-export module VoicePart {
+export namespace VoicePart {
 
     export function getEpitaxyDirection(voicePart: VoicePart): VerticalDirection {
         switch (voicePart) {

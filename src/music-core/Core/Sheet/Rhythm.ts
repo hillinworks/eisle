@@ -1,4 +1,4 @@
-﻿import { Element } from "./Element"
+﻿import { Element } from "./Element";
 import { RhythmSegment } from "./RhythmSegment";
 import { PreciseDuration } from "../MusicTheory/PreciseDuration";
 import { select } from "../Utilities/LinqLite";

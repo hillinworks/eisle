@@ -1,6 +1,6 @@
 ﻿// ReSharper disable InconsistentNaming
 
-export module Messages {
+export namespace Messages {
 
     export const Error_InvalidNumber = "Invalid number";
 
@@ -86,7 +86,7 @@ export module Messages {
 
     export const Error_InvalidTimeSignature =
         "Unrecognizable time signature, please use a time signature like 4/4. 4/4 assumed.";
-        
+
     export const Error_UnsupportedBeatsInTimeSignature =
         "Time signature with more than 32 beats per bar is not supported. 4/4 assumed.";
 
@@ -330,10 +330,10 @@ export module Messages {
         "Altered 11th is only applicable for chords with more than 6 notes";
 
     export const Error_ChordSuspended2NotAvailable =
-        "Suspended 2th (sus2) is only applicable for major chords";
+        "Suspended 2th (sus2) is only applicable for major or minor chords";
 
     export const Error_ChordSuspended4NotAvailable =
-        "Suspended 4th (sus4) is only applicable for major chords";
+        "Suspended 4th (sus4) is only applicable for major or minor chords";
 
     export const Error_ChordAdded9thNotAvailable =
         "Added 9th is only applicable for triads";

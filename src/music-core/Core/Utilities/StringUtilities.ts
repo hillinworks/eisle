@@ -1,4 +1,4 @@
-﻿export module StringUtilities {
+﻿export namespace StringUtilities {
 
     export function fixedFromCharCode(codePt: number): string {
         if (codePt > 0xFFFF) {
@@ -14,7 +14,7 @@
             (match, i) => args[i] !== undefined
                 ? args[i].toString()
                 : match);
-    };
+    }
 
     /**
      * White space characters are the following Unicode characters:

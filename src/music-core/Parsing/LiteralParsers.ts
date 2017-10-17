@@ -20,7 +20,7 @@ import { StaffType } from "../Core/MusicTheory/StaffType";
 import { ParseResult, ParseResultMaybeEmpty, ParseHelper, ParseSuccessOrEmptyResult } from "./ParseResult";
 import { LogMessage } from "../Core/Logging/LogMessage";
 
-export module LiteralParsers {
+export namespace LiteralParsers {
 
     export function readInteger(scanner: Scanner): ParseSuccessOrEmptyResult<LiteralNode<number>> {
         const value = scanner.readInteger();
@@ -289,7 +289,7 @@ export module LiteralParsers {
                 return ParseHelper.success({
                     technique: LiteralNode.create(NoteEffectTechnique.DeadNote, scanner.lastReadRange)
                 });
-        };
+        }
 
         return ParseHelper.empty();
     }
@@ -317,82 +317,6 @@ export module LiteralParsers {
         }
 
         return ParseHelper.empty();
-    }
-
-    export function readOpenBarLine(scanner: Scanner): ParseSuccessOrEmptyResult<LiteralNode<BarLine.OpenType>> {
-        if (scanner.expect("||:")) {
-            return ParseHelper.success(LiteralNode
-                .create<BarLine.OpenType>(BarLine.BeginRepeat, scanner.lastReadRange));
-        }
-
-        if (scanner.expect("||")) {
-            return ParseHelper.empty(LogMessage.warning(scanner.lastReadRange, Messages.Warning_DoubleBarLineCannotBeOpenLine));
-        }
-
-        if (scanner.expectChar("|")) {
-            return ParseHelper.success(LiteralNode.create<BarLine.OpenType>(BarLine.Standard, scanner.lastReadRange));
-        }
-
-        return ParseHelper.empty();
-    }
-
-    export function readCloseBarLine(scanner: Scanner): ParseSuccessOrEmptyResult<LiteralNode<BarLine.CloseType>> {
-
-        if (scanner.expect(":||:")) {
-            return ParseHelper.success(LiteralNode.create<BarLine.CloseType>(BarLine.BeginAndEndRepeat, scanner.lastReadRange));
-        }
-
-        if (scanner.expect(":||")) {
-            return ParseHelper.success(LiteralNode.create<BarLine.CloseType>(BarLine.EndRepeat, scanner.lastReadRange));
-        }
-
-        if (scanner.peek(3) === "||:") {    // this is a begin repeat for next bar
-            return ParseHelper.empty();
-        }
-
-        if (scanner.expect("||")) {
-            return ParseHelper.success(LiteralNode.create<BarLine.CloseType>(BarLine.Double, scanner.lastReadRange));
-        }
-
-        if (scanner.expectChar("|")) {
-            return ParseHelper.success(LiteralNode.create<BarLine.CloseType>(BarLine.Standard, scanner.lastReadRange));
-        }
-
-        return ParseHelper.empty();
-    }
-
-    export function readStaffType(scanner: Scanner): ParseResult<LiteralNode<StaffType>> {
-
-        switch (scanner.readToLineEnd().trim().toLowerCase()) {
-            case "guitar":
-            case "acoustic guitar":
-                return ParseHelper.success(LiteralNode.create(StaffType.Guitar, scanner.lastReadRange));
-            case "steel":
-            case "steel guitar":
-                return ParseHelper.success(LiteralNode.create(StaffType.SteelGuitar, scanner.lastReadRange));
-            case "nylon":
-            case "nylon guitar":
-            case "classical":
-            case "classical guitar":
-                return ParseHelper.success(LiteralNode.create(StaffType.NylonGuitar, scanner.lastReadRange));
-            case "electric guitar":
-                return ParseHelper.success(LiteralNode.create(StaffType.ElectricGuitar, scanner.lastReadRange));
-            case "bass":
-                return ParseHelper.success(LiteralNode.create(StaffType.Bass, scanner.lastReadRange));
-            case "acoustic bass":
-                return ParseHelper.success(LiteralNode.create(StaffType.AcousticBass, scanner.lastReadRange));
-            case "electric bass":
-                return ParseHelper.success(LiteralNode.create(StaffType.ElectricBass, scanner.lastReadRange));
-            case "ukulele":
-            case "uku":
-                return ParseHelper.success(LiteralNode.create(StaffType.Ukulele, scanner.lastReadRange));
-            case "mandolin":
-                return ParseHelper.success(LiteralNode.create(StaffType.Mandolin, scanner.lastReadRange));
-            case "vocal":
-                return ParseHelper.success(LiteralNode.create(StaffType.Vocal, scanner.lastReadRange));
-        }
-
-        return ParseHelper.fail();
     }
 
 }

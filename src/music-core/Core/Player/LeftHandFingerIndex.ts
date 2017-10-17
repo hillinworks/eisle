@@ -6,7 +6,7 @@
     Pinky = 4,
 }
 
-export module LeftHandFingerIndex {
+export namespace LeftHandFingerIndex {
 
     export function toShortString(index: LeftHandFingerIndex) {
         switch (index) {
