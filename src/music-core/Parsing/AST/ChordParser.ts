@@ -20,6 +20,7 @@ export class ChordParser {
     private helper: ParseHelper;
     private readonly intervals = new Array<Interval>();
     private triadQuality: TriadQuality;
+    private thirdsCount: number;    // how many thirds are consisting this chord (e.g. 2=triad, 3=tetrad)
     private addedToneRead: boolean;
 
     private addIntervals(...intervals: Interval[]): void {
@@ -44,6 +45,7 @@ export class ChordParser {
         }
 
         this.intervals.length = 0;
+        this.thirdsCount = 0;
 
         let isFifth = false;
 
@@ -51,10 +53,12 @@ export class ChordParser {
 
             this.addIntervals(Interval.P5);
             isFifth = true;
+            this.thirdsCount = 2;
 
         } else if (this.scanner.expect("ø7")) { // half diminished seventh: Eø7
 
             this.addIntervals(Interval.m3, Interval.d5, Interval.m7);
+            this.thirdsCount = 3;
 
         } else {
 
@@ -195,7 +199,7 @@ export class ChordParser {
             case "+5":
             case "#5":
             case "♯5":
-                if (this.intervals.length < 3) {
+                if (this.thirdsCount < 3) {
                     return this.helper.fail(this.scanner.lastReadRange, Messages.Error_ChordAltered5thNotAvailable);   // only available to 7th+
                 }
 
@@ -208,7 +212,7 @@ export class ChordParser {
             case "-9":
             case "b9":
             case "♭9":
-                if (this.intervals.length < 5) {
+                if (this.thirdsCount < 5) {
                     return this.helper.fail(this.scanner.lastReadRange, Messages.Error_ChordAltered9thNotAvailable);   // only available to 11th+
                 }
 
@@ -221,7 +225,7 @@ export class ChordParser {
             case "+9":
             case "#9":
             case "♯9":
-                if (this.intervals.length < 5) {
+                if (this.thirdsCount < 5) {
                     return this.helper.fail(this.scanner.lastReadRange, Messages.Error_ChordAltered9thNotAvailable);   // only available to 11th+
                 }
 
@@ -234,7 +238,7 @@ export class ChordParser {
             case "+11":
             case "#11":
             case "♯11":
-                if (this.intervals.length < 6) {
+                if (this.thirdsCount < 6) {
                     return this.helper.fail(this.scanner.lastReadRange, Messages.Error_ChordAltered11thNotAvailable);   // only available to 13th+
                 }
 
@@ -279,7 +283,7 @@ export class ChordParser {
             case "add#9":
             case "add♯9":
 
-                if (this.intervals.length > 2) {
+                if (this.thirdsCount > 2) {
                     return this.helper.fail(this.scanner.lastReadRange, Messages.Error_ChordAdded9thNotAvailable);   // only available to triads
                 }
 
@@ -288,7 +292,7 @@ export class ChordParser {
             case "addb9":
             case "add♭9":
 
-                if (this.intervals.length > 2) {
+                if (this.thirdsCount > 2) {
                     return this.helper.fail(this.scanner.lastReadRange, Messages.Error_ChordAdded9thNotAvailable);   // only available to triads
                 }
 
@@ -296,7 +300,7 @@ export class ChordParser {
                 return ParseHelper.voidSuccess;
             case "add9":
 
-                if (this.intervals.length > 2) {
+                if (this.thirdsCount > 2) {
                     return this.helper.fail(this.scanner.lastReadRange, Messages.Error_ChordAdded9thNotAvailable);  // only available to triads
                 }
 
@@ -305,7 +309,7 @@ export class ChordParser {
             case "add#11":
             case "add♯11":
 
-                if (this.intervals.length > 3) {
+                if (this.thirdsCount > 3) {
                     return this.helper.fail(this.scanner.lastReadRange, Messages.Error_ChordAdded11thNotAvailable);   // only available to triads or seventh
                 }
 
@@ -313,7 +317,7 @@ export class ChordParser {
                 return ParseHelper.voidSuccess;
             case "add11":
 
-                if (this.intervals.length > 3) {
+                if (this.thirdsCount > 3) {
                     return this.helper.fail(this.scanner.lastReadRange, Messages.Error_ChordAdded11thNotAvailable);   // only available to triads or seventh
                 }
 
@@ -322,7 +326,7 @@ export class ChordParser {
             case "add#13":
             case "add♯13":
 
-                if (this.intervals.length > 4) {
+                if (this.thirdsCount > 4) {
                     return this.helper.fail(this.scanner.lastReadRange, Messages.Error_ChordAdded13thNotAvailable);  // only available to triads, sevenths, or ninths
                 }
 
@@ -331,7 +335,7 @@ export class ChordParser {
             case "addb13":
             case "add♭13":
 
-                if (this.intervals.length > 4) {
+                if (this.thirdsCount > 4) {
                     return this.helper.fail(this.scanner.lastReadRange, Messages.Error_ChordAdded13thNotAvailable);  // only available to triads, sevenths, or ninths
                 }
 
@@ -339,7 +343,7 @@ export class ChordParser {
                 return ParseHelper.voidSuccess;
             case "add13":
 
-                if (this.intervals.length > 4) {
+                if (this.thirdsCount > 4) {
                     return this.helper.fail(this.scanner.lastReadRange, Messages.Error_ChordAdded13thNotAvailable);   // only available to triads, sevenths, or ninths
                 }
 
@@ -378,34 +382,43 @@ export class ChordParser {
             case "dom7":
             case "7":
                 this.addIntervals(Interval.M3, Interval.P5, Interval.m7);
+                this.thirdsCount = 3;
 
+                // handle dom9s with 9th sharpen or flatten: C7b9
                 switch (this.scanner.readAnyPatternOf("\\-9", "b9", "♭9", "\\+9", "\\#9", "♯9")) {
                     case "-9":
                     case "b9":
                     case "♭9":
                         this.addIntervals(Interval.m9);
+                        this.thirdsCount = 4;
                         break;
                     case "+9":
                     case "#9":
                     case "♯9":
                         this.addIntervals(Interval.A9);
-                        return ParseHelper.voidSuccess;
+                        this.thirdsCount = 4;
+                        break;
                 }
 
                 return ParseHelper.voidSuccess;
             case "9":
                 this.addIntervals(Interval.M3, Interval.P5, Interval.m7, Interval.M9);
+                this.thirdsCount = 4;
 
+                // handle dom11s with 11th sharpen: D9#11
                 if (this.scanner.readAnyPatternOf("\\+11", "\\#11", "♯11")) {
                     this.addIntervals(Interval.A11);
+                    this.thirdsCount = 5;
                 }
 
                 return ParseHelper.voidSuccess;
             case "11":
                 this.addIntervals(Interval.M3, Interval.P5, Interval.m7, Interval.M9, Interval.P11);
+                this.thirdsCount = 5;
                 return ParseHelper.voidSuccess;
             case "13":
                 this.addIntervals(Interval.M3, Interval.P5, Interval.m7, Interval.M9, Interval.P11, Interval.M13);
+                this.thirdsCount = 6;
                 return ParseHelper.voidSuccess;
         }
 
@@ -419,20 +432,22 @@ export class ChordParser {
             case "M7":
             case "Δ7":
                 this.addIntervals(Interval.M7);  // CmM7
+                this.thirdsCount = 3;
                 return ParseHelper.voidSuccess;
             case "7":
                 switch (this.triadQuality) {
-                    case TriadQuality.Diminished:
-                        this.addIntervals(Interval.d7);  // Cdim7
+                    case TriadQuality.Diminished:   // Cdim7
+                        this.addIntervals(Interval.d7);
+                        this.thirdsCount = 3;
                         return ParseHelper.voidSuccess;
-                    case TriadQuality.Minor:
-                        this.addIntervals(Interval.m7);  // Cm7
+                    case TriadQuality.Minor:    // Cm7
+                    case TriadQuality.Augmented:    // Caug 7
+                        this.addIntervals(Interval.m7);
+                        this.thirdsCount = 3;
                         return ParseHelper.voidSuccess;
-                    case TriadQuality.Major:
-                        this.addIntervals(Interval.M7);  // CM7
-                        return ParseHelper.voidSuccess;
-                    case TriadQuality.Augmented:
-                        this.addIntervals(Interval.m7);  // Caug7
+                    case TriadQuality.Major:    // CM7
+                        this.addIntervals(Interval.M7);
+                        this.thirdsCount = 3;
                         return ParseHelper.voidSuccess;
                 }
                 break;
@@ -449,22 +464,26 @@ export class ChordParser {
             case "Δ":
                 this.addIntervals(Interval.M3, Interval.P5);
                 this.triadQuality = TriadQuality.Major;
+                this.thirdsCount = 2;
                 return ParseHelper.voidSuccess;
             case "min":
             case "m":
                 this.addIntervals(Interval.m3, Interval.P5);
                 this.triadQuality = TriadQuality.Minor;
+                this.thirdsCount = 2;
                 return ParseHelper.voidSuccess;
             case "aug":
             case "+":
                 this.addIntervals(Interval.M3, Interval.A5);
                 this.triadQuality = TriadQuality.Augmented;
+                this.thirdsCount = 2;
                 return ParseHelper.voidSuccess;
             case "dim":
             case "-":
             case "°":
                 this.addIntervals(Interval.m3, Interval.d5);
                 this.triadQuality = TriadQuality.Diminished;
+                this.thirdsCount = 2;
                 return ParseHelper.voidSuccess;
         }
 
