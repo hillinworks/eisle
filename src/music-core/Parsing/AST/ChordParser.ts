@@ -73,7 +73,6 @@ export class ChordParser {
                         if (ParseHelper.isFailed(this.helper.absorb(this.readExtended()))) {
                             return this.helper.fail();  // failure message is already stored in this.helper, don't relay
                         }
-
                     }
                 }
             }
@@ -379,9 +378,28 @@ export class ChordParser {
             case "dom7":
             case "7":
                 this.addIntervals(Interval.M3, Interval.P5, Interval.m7);
+
+                switch (this.scanner.readAnyPatternOf("\\-9", "b9", "♭9", "\\+9", "\\#9", "♯9")) {
+                    case "-9":
+                    case "b9":
+                    case "♭9":
+                        this.addIntervals(Interval.m9);
+                        break;
+                    case "+9":
+                    case "#9":
+                    case "♯9":
+                        this.addIntervals(Interval.A9);
+                        return ParseHelper.voidSuccess;
+                }
+
                 return ParseHelper.voidSuccess;
             case "9":
                 this.addIntervals(Interval.M3, Interval.P5, Interval.m7, Interval.M9);
+
+                if (this.scanner.readAnyPatternOf("\\+11", "\\#11", "♯11")) {
+                    this.addIntervals(Interval.A11);
+                }
+
                 return ParseHelper.voidSuccess;
             case "11":
                 this.addIntervals(Interval.M3, Interval.P5, Interval.m7, Interval.M9, Interval.P11);
