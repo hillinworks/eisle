@@ -68,9 +68,6 @@ export namespace Interval {
 
     // must be declared before the consts below
     export function isValid(number: number, quality: IntervalQuality): boolean {
-        if (number < 0)
-            throw new RangeError();
-
         const normalizedNumber = number % 7;
         if (normalizedNumber === 0 || normalizedNumber === 3 || normalizedNumber === 4)
             return quality !== IntervalQuality.Major && quality !== IntervalQuality.Minor;
@@ -132,10 +129,60 @@ export namespace Interval {
     export const d13 = new Interval(12, IntervalQuality.Diminished);
     export const d14 = new Interval(13, IntervalQuality.Diminished);
     export const d15 = new Interval(14, IntervalQuality.Diminished);
-// ReSharper restore InconsistentNaming
+    // ReSharper restore InconsistentNaming
 
+    const semitoneToIntervalLookup = [
+        Interval.P1,
+        Interval.m2,
+        Interval.M2,
+        Interval.m3,
+        Interval.M3,
+        Interval.P4,
+        Interval.A4,
+        Interval.P5,
+        Interval.m6,
+        Interval.M6,
+        Interval.m7,
+        Interval.M7
+    ];
 
+    // [0][-1] is used for the following case:
+    //      fromSemitones(12, 6)
+    // which should return A7.
+    const semitoneToIntervalSnappedToDegreeLookup: { [key: number]: Interval }[] = [
+    /*0*/ { [-1]: new Interval(-1, IntervalQuality.Augmented), 0: Interval.P1, 1: Interval.d2 },
+    /*1*/ { 0: Interval.A1, 1: Interval.m2 },
+    /*2*/ { 1: Interval.M2, 2: Interval.d3 },
+    /*3*/ { 1: Interval.A2, 2: Interval.m3 },
+    /*4*/ { 2: Interval.M3, 3: Interval.d4 },
+    /*5*/ { 2: Interval.A3, 3: Interval.P4 },
+    /*6*/ { 3: Interval.A4, 4: Interval.d5 },
+    /*7*/ { 4: Interval.P5, 5: Interval.d6 },
+    /*8*/ { 4: Interval.A5, 5: Interval.m6 },
+    /*9*/ { 5: Interval.M6, 6: Interval.d7 },
+    /*10*/ { 5: Interval.A6, 6: Interval.m7 },
+    /*11*/ { 6: Interval.M7, 0: Interval.d8 },
+    ];
 
+    export function fromSemitones(semitones: number, degreeToSnap?: number): Interval {
+        const baseSemitones = semitones % 12;
+        const octaves = Math.trunc(semitones / 12);
+        const additionalDegrees = octaves * 7;
+        const baseDegreeToSnap = degreeToSnap === undefined
+            ? undefined
+            : degreeToSnap - additionalDegrees;
+        const baseInterval = baseDegreeToSnap === undefined
+            ? semitoneToIntervalLookup[baseSemitones]
+            : semitoneToIntervalSnappedToDegreeLookup[baseSemitones][degreeToSnap];
+
+        if (baseInterval === undefined)
+            throw new RangeError("cannot resolve to specified degree");
+
+        if (octaves === 0)
+            return baseInterval;
+
+        return new Interval(baseInterval.number + additionalDegrees, baseInterval.quality);
+    }
 
 
 }

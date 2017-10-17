@@ -13,7 +13,6 @@ export class NoteName {
         this.accidental = accidental;
     }
 
-
     get semitones(): number {
         return (BaseNoteName.getSemitones(this.baseName) + Accidental.getSemitoneOffset(this.accidental) + 12) % 12;
     }
@@ -35,19 +34,27 @@ export class NoteName {
         return NoteName.fromSemitones(semitones, degrees);
     }
 
+    // Calculate intervals between two note names. The latter will always be treated as the higher one.
+    getIntervalTo(other: NoteName): Interval {
+        const degrees = (BaseNoteName.getAbsoluteDegrees(other.baseName) + 7 - BaseNoteName.getAbsoluteDegrees(this.baseName)) % 7;
+        const semitones = (other.semitones + 12 - this.semitones) % 12;
+        return Interval.fromSemitones(semitones, degrees);
+    }
+
     toString(): string {
+        const baseName = BaseNoteName[this.baseName];
         switch (this.accidental) {
             case Accidental.Sharp:
-                return `${this.baseName}♯`;
+                return `${baseName}♯`;
             case Accidental.Flat:
-                return `${this.baseName}♭`;
+                return `${baseName}♭`;
             case Accidental.DoubleSharp:
-                return `${this.baseName}${StringUtilities.fixedFromCharCode(0x1d12a)}`;
+                return `${baseName}${StringUtilities.fixedFromCharCode(0x1d12a)}`;
             case Accidental.DoubleFlat:
-                return `${this.baseName}${StringUtilities.fixedFromCharCode(0x1d12b)}`;
+                return `${baseName}${StringUtilities.fixedFromCharCode(0x1d12b)}`;
             case Accidental.Natural:
             default:
-                return BaseNoteName[this.baseName];
+                return baseName;
         }
     }
 }
@@ -95,8 +102,18 @@ export namespace NoteName {
 
 
     const semitoneToNoteNameLookup = [
-        NoteName.C, NoteName.CSharp, NoteName.D, NoteName.DSharp, NoteName.E, NoteName.F, NoteName.FSharp, NoteName.G,
-        NoteName.GSharp, NoteName.A, NoteName.ASharp, NoteName.B
+        NoteName.C,
+        NoteName.CSharp,
+        NoteName.D,
+        NoteName.DSharp,
+        NoteName.E,
+        NoteName.F,
+        NoteName.FSharp,
+        NoteName.G,
+        NoteName.GSharp,
+        NoteName.A,
+        NoteName.ASharp,
+        NoteName.B
     ];
 
     const semitoneToNoteNameSnappedToDegreeLookup: { [key: number]: NoteName }[] = [
