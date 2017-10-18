@@ -1,12 +1,12 @@
-﻿import { Scanner } from "../Scanner";
-import { Interval } from "../../Core/MusicTheory/Interval";
-import { ParseResult, ParseHelper, ParseSuccessOrEmptyResult, ParseResultMaybeEmpty } from "../ParseResult";
-import { NoteNameNode } from "./NoteNameNode";
-import { Chord } from "../../Core/MusicTheory/Chord";
-import { NoteName } from "../../Core/MusicTheory/NoteName";
-import { TextRange } from "../../Core/Parsing/TextRange";
-import { Messages } from "../Messages";
-import { ChordType } from "../../Core/MusicTheory/ChordType";
+﻿import { Scanner } from "./Scanner";
+import { Interval } from "../Core/MusicTheory/Interval";
+import { ParseResult, ParseHelper, ParseSuccessOrEmptyResult, ParseResultMaybeEmpty } from "./ParseResult";
+import { NoteNameNode } from "./AST/NoteNameNode";
+import { Chord } from "../Core/MusicTheory/Chord";
+import { NoteName } from "../Core/MusicTheory/NoteName";
+import { TextRange } from "../Core/Parsing/TextRange";
+import { ChordParseMessages } from "./ChordParseMessages";
+import { ChordType } from "../Core/MusicTheory/ChordType";
 
 export class ChordParser {
 
@@ -42,18 +42,18 @@ export class ChordParser {
         } else {
 
             // try read dominant chord: D7, C13
-            if (!ParseHelper.isSuccessful(this.helper.absorb(this.readDominant()))) {
+            if (!ParseHelper.isSuccessful(this.readDominant())) {
 
                 // read triad, note this should always success
-                ParseHelper.assert(this.helper.absorb(this.readTriad()));
+                ParseHelper.assert(this.readTriad());
 
                 // try read simplified added tones: C2, C69
-                if (!ParseHelper.isSuccessful(this.helper.absorb(this.readSimplifiedAddedTone()))) {
+                if (!ParseHelper.isSuccessful(this.readSimplifiedAddedTone())) {
 
                     // try read seventh (e.g. not Am7, Gmaj7)
-                    if (!ParseHelper.isSuccessful(this.helper.absorb(this.readSeventh()))) {
+                    if (!ParseHelper.isSuccessful(this.readSeventh())) {
 
-                        if (ParseHelper.isFailed(this.helper.absorb(this.readExtended()))) {
+                        if (ParseHelper.isFailed(this.readExtended())) {
                             return this.helper.fail();  // failure message is already stored in this.helper, don't relay
                         }
                     }
@@ -62,17 +62,17 @@ export class ChordParser {
         }
 
         // handle extended altered notes: C9#11
-        if (ParseHelper.isFailed(this.helper.absorb(this.readExtendedAltered()))) {
+        if (ParseHelper.isFailed(this.readExtendedAltered())) {
             return this.helper.fail();
         }
 
         // try read suspended chord: Dsus4
-        if (ParseHelper.isFailed(this.helper.absorb(this.readSuspended()))) {
+        if (ParseHelper.isFailed(this.readSuspended())) {
             return this.helper.fail();
         }
 
         while (true) {
-            const readAddedToneResult = this.helper.absorb(this.readAddedTone())
+            const readAddedToneResult = this.readAddedTone();
             // try read ordinal added tone: Cadd9
             if (ParseHelper.isFailed(readAddedToneResult)) {
                 return this.helper.fail();
@@ -84,20 +84,20 @@ export class ChordParser {
         }
 
         while (true) {
-            const readAlteredResult = this.helper.absorb(this.readAltered());
+            const readAlteredResult = this.readAltered();
             // try read altered notes: C11#5
             if (ParseHelper.isFailed(readAlteredResult)) {
                 return this.helper.fail();
             }
 
-            if(ParseHelper.isEmpty(readAlteredResult)) {
+            if (ParseHelper.isEmpty(readAlteredResult)) {
                 break;
             }
         }
 
         let bass: NoteName | undefined = undefined;
         // try read slash chord or inverted chord
-        const readBassResult = this.helper.absorb(this.readBass());
+        const readBassResult = this.readBass();
         if (ParseHelper.isSuccessful(readBassResult)) {
             bass = readBassResult.value;
         } else if (ParseHelper.isFailed(readBassResult)) {
@@ -109,7 +109,7 @@ export class ChordParser {
             return this.helper.fail(new TextRange(this.scanner.textPointer,
                 this.scanner.remainingLine.length,
                 this.scanner.source),
-                Messages.Error_ChordNameUnexpectedText,
+                ChordParseMessages.Error_ChordNameUnexpectedText,
                 this.scanner.remainingLine);
         }
 
@@ -117,7 +117,6 @@ export class ChordParser {
         chord.bass = bass;
 
         return this.helper.success(chord);
-
     }
 
 
@@ -126,51 +125,51 @@ export class ChordParser {
             case "9":
                 switch (this.chordType & ChordType.TriadMask) {
                     case ChordType.DiminishedTriad:
-                        return this.helper.fail(this.scanner.lastReadRange, Messages.Error_ChordDim9NotSupported); // Cdim9 not existed (d9 == P8)
+                        return this.helper.fail(this.scanner.lastReadRange, ChordParseMessages.Error_ChordDim9NotSupported); // Cdim9 not existed
                     case ChordType.MinorTriad:  // Cm9
                         this.chordType |= ChordType.m7 | ChordType.M9 | ChordType.ExtendedNinthChord;
-                        return ParseHelper.voidSuccess;
+                        return this.helper.voidSuccess();
                     case ChordType.MajorTriad:  // Cmaj9
                         this.chordType |= ChordType.M7 | ChordType.M9 | ChordType.ExtendedNinthChord;
-                        return ParseHelper.voidSuccess;
+                        return this.helper.voidSuccess();
                     case ChordType.AugmentedTriad:  // Caug9
                         this.chordType |= ChordType.m7 | ChordType.M9 | ChordType.ExtendedNinthChord;
-                        return ParseHelper.voidSuccess;
+                        return this.helper.voidSuccess();
                 }
                 throw new Error();  // should not reach here
             case "11":
                 switch (this.chordType & ChordType.TriadMask) {
                     case ChordType.DiminishedTriad:
-                        return this.helper.fail(this.scanner.lastReadRange, Messages.Error_ChordDim11NotSupported);   // Cdim11 not existed
+                        return this.helper.fail(this.scanner.lastReadRange, ChordParseMessages.Error_ChordDim11NotSupported);   // Cdim11 not existed
                     case ChordType.MinorTriad:  // Cm11
                         this.chordType |= ChordType.m7 | ChordType.M9 | ChordType.P11 | ChordType.ExtendedEleventhChord;
-                        return ParseHelper.voidSuccess;
+                        return this.helper.voidSuccess();
                     case ChordType.MajorTriad:  // Cmaj11
                         this.chordType |= ChordType.M7 | ChordType.M9 | ChordType.P11 | ChordType.ExtendedEleventhChord;
-                        return ParseHelper.voidSuccess;
+                        return this.helper.voidSuccess();
                     case ChordType.AugmentedTriad:  // Caug11
                         this.chordType |= ChordType.m7 | ChordType.M9 | ChordType.P11 | ChordType.ExtendedEleventhChord;
-                        return ParseHelper.voidSuccess;
+                        return this.helper.voidSuccess();
                 }
                 throw new Error();  // should not reach here
             case "13":
                 switch (this.chordType & ChordType.TriadMask) {
                     case ChordType.DiminishedTriad:
-                        return this.helper.fail(this.scanner.lastReadRange, Messages.Error_ChordDim13NotSupported);   // Cdim13 not existed
+                        return this.helper.fail(this.scanner.lastReadRange, ChordParseMessages.Error_ChordDim13NotSupported);   // Cdim13 not existed
                     case ChordType.MinorTriad:  // Cm13
                         this.chordType |= ChordType.m7 | ChordType.M9 | ChordType.P11 | ChordType.M13 | ChordType.ExtendedThirteenthChord;
-                        return ParseHelper.voidSuccess;
+                        return this.helper.voidSuccess();
                     case ChordType.MajorTriad:  // Cmaj13
                         this.chordType |= ChordType.M7 | ChordType.M9 | ChordType.P11 | ChordType.M13 | ChordType.ExtendedThirteenthChord;
-                        return ParseHelper.voidSuccess;
+                        return this.helper.voidSuccess();
                     case ChordType.AugmentedTriad:  // Caug13
                         this.chordType |= ChordType.m7 | ChordType.M9 | ChordType.P11 | ChordType.M13 | ChordType.ExtendedThirteenthChord;
-                        return ParseHelper.voidSuccess;
+                        return this.helper.voidSuccess();
                 }
                 throw new Error();  // should not reach here
         }
 
-        return ParseHelper.empty();
+        return this.helper.empty();
     }
 
     private readBass(): ParseResultMaybeEmpty<NoteName> {
@@ -180,12 +179,32 @@ export class ChordParser {
 
         const noteName = this.helper.absorb(NoteNameNode.parse(this.scanner));
         if (!ParseHelper.isSuccessful(noteName)) {
-            return this.helper.fail(this.scanner.lastReadRange, Messages.Error_ChordMissingOrInvalidBassNote);
+            return this.helper.fail(this.scanner.lastReadRange, ChordParseMessages.Error_ChordMissingOrInvalidBassNote);
         }
 
         this.chordType |= ChordType.SlashOrInverted;
 
         return this.helper.success(noteName.value!.toNoteName());
+    }
+
+    private checkTritone(): boolean {
+
+        if ((this.chordType & ChordType.Mask5) === ChordType.d5) {
+            this.helper.warning(this.scanner.lastReadRange, ChordParseMessages.Warning_AlreadyHaveDiminishedFifth);
+            return true;
+        }
+
+        if ((this.chordType & ChordType.Mask11) === ChordType.A11) {
+            this.helper.warning(this.scanner.lastReadRange, ChordParseMessages.Warning_AlreadyHaveAugmentedEleventh);
+            return true;
+        } else {
+            if ((this.chordType & ChordType.Mask4) === ChordType.A4) {
+                this.helper.warning(this.scanner.lastReadRange, ChordParseMessages.Warning_AlreadyHaveAugmentedFourth);
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private readAltered(): ParseResultMaybeEmpty<void> {
@@ -195,71 +214,73 @@ export class ChordParser {
             case "-5":
             case "b5":
             case "♭5":
-                if ((this.chordType & ChordType.SeventhChord) < ChordType.SeventhChord) {
-                    return this.helper.fail(this.scanner.lastReadRange, Messages.Error_ChordAltered5thNotAvailable);   // only available to 7th+
-                }
 
-                if ((this.chordType & ChordType.Mask5) === ChordType.d5) {
-                    // todo: already has it
+                if (this.checkTritone()) {
+                    return this.helper.empty();
                 }
 
                 this.chordType = this.chordType & ~ChordType.Mask5 | ChordType.d5 | ChordType.WithAlteredNotes;
-                return ParseHelper.voidSuccess;
+                return this.helper.voidSuccess();
             case "+5":
             case "#5":
             case "♯5":
-                if ((this.chordType & ChordType.SeventhChord) < ChordType.SeventhChord) {
-                    return this.helper.fail(this.scanner.lastReadRange, Messages.Error_ChordAltered5thNotAvailable);   // only available to 7th+
-                }
 
                 if ((this.chordType & ChordType.Mask5) === ChordType.A5) {
-                    // todo: already has it
+                    this.helper.warning(this.scanner.lastReadRange, ChordParseMessages.Warning_AlreadyHaveAugmentedFifth);
+                    return this.helper.empty();
+                } else if ((this.chordType & ChordType.Mask6) === ChordType.m6) {
+                    this.helper.warning(this.scanner.lastReadRange, ChordParseMessages.Warning_AlreadyHaveMinorSixth);
+                    return this.helper.empty();
                 }
 
                 this.chordType = this.chordType & ~ChordType.Mask5 | ChordType.A5 | ChordType.WithAlteredNotes;
-                return ParseHelper.voidSuccess;
+                return this.helper.voidSuccess();
             case "-9":
             case "b9":
             case "♭9":
-                if ((this.chordType & ChordType.ExtendedEleventhChord) < ChordType.ExtendedEleventhChord) {
-                    return this.helper.fail(this.scanner.lastReadRange, Messages.Error_ChordAltered9thNotAvailable);   // only available to 11th+
+
+                if ((this.chordType & ChordType.Mask9) === ChordType.m9) {
+                    this.helper.warning(this.scanner.lastReadRange, ChordParseMessages.Warning_AlreadyHaveMinorNinth);
+                    return this.helper.empty();
+                } else if ((this.chordType & ChordType.Mask2) === ChordType.m2) {
+                    this.helper.warning(this.scanner.lastReadRange, ChordParseMessages.Warning_AlreadyHaveMinorSecond);
+                    return this.helper.empty();
                 }
 
-                if ((this.chordType & ChordType.Mask2) === ChordType.m2) {
-                    // already has it
-                }
 
-                this.chordType = this.chordType & ~ChordType.Mask2 | ChordType.m9 | ChordType.WithAlteredNotes;
-                return ParseHelper.voidSuccess;
+                this.chordType = this.chordType & ~ChordType.Mask9 | ChordType.m9 | ChordType.WithAlteredNotes;
+                return this.helper.voidSuccess();
             case "+9":
             case "#9":
             case "♯9":
-                if ((this.chordType & ChordType.ExtendedEleventhChord) < ChordType.ExtendedEleventhChord) {
-                    return this.helper.fail(this.scanner.lastReadRange, Messages.Error_ChordAltered9thNotAvailable);   // only available to 11th+
+
+                if ((this.chordType & ChordType.Mask9) === ChordType.A9) {
+                    this.helper.warning(this.scanner.lastReadRange, ChordParseMessages.Warning_AlreadyHaveAugmentedNinth);
+                    return this.helper.empty();
+                } else if ((this.chordType & ChordType.Mask2) === ChordType.A2) {
+                    this.helper.warning(this.scanner.lastReadRange, ChordParseMessages.Warning_AlreadyHaveAugmentedSecond);
+                    return this.helper.empty();
+                } else if ((this.chordType & ChordType.Mask3) === ChordType.m3) {
+                    this.helper.warning(this.scanner.lastReadRange, ChordParseMessages.Warning_AlreadyHaveMinorThird);
+                    return this.helper.empty();
                 }
 
-                if ((this.chordType & ChordType.Mask2) === ChordType.A2) {
-                    // already has it
-                }
 
-                this.chordType = this.chordType & ~ChordType.Mask2 | ChordType.A9 | ChordType.WithAlteredNotes;
-                return ParseHelper.voidSuccess;
+                this.chordType = this.chordType & ~ChordType.Mask9 | ChordType.A9 | ChordType.WithAlteredNotes;
+                return this.helper.voidSuccess();
             case "+11":
             case "#11":
             case "♯11":
-                if ((this.chordType & ChordType.ExtendedThirteenthChord) < ChordType.ExtendedThirteenthChord) {
-                    return this.helper.fail(this.scanner.lastReadRange, Messages.Error_ChordAltered11thNotAvailable);   // only available to 13th+
+
+                if (this.checkTritone()) {
+                    return this.helper.empty();
                 }
 
-                if ((this.chordType & ChordType.Mask4) === ChordType.A4) {
-                    // already has it
-                }
-
-                this.chordType = this.chordType & ~ChordType.Mask4 | ChordType.A11 | ChordType.WithAlteredNotes;
-                return ParseHelper.voidSuccess;
+                this.chordType = this.chordType & ~ChordType.Mask11 | ChordType.A11 | ChordType.WithAlteredNotes;
+                return this.helper.voidSuccess();
         }
 
-        return ParseHelper.empty();
+        return this.helper.empty();
     }
 
     private readSuspended(): ParseResultMaybeEmpty<void> {
@@ -268,135 +289,165 @@ export class ChordParser {
             case "sus2":
 
                 if ((this.chordType & ChordType.Mask3) !== ChordType.M3) {
-                    return this.helper.fail(this.scanner.lastReadRange, Messages.Error_ChordSuspended2NotAvailable);
+                    this.helper.warning(this.scanner.lastReadRange, ChordParseMessages.Warning_ChordSuspended2NotAvailable);
+                    return this.helper.empty();
                 }
 
                 this.chordType = this.chordType & ~ChordType.Mask3 | ChordType.M2;
-                return ParseHelper.voidSuccess;
+                return this.helper.voidSuccess();
 
             case "sus4":
             case "sus":
                 if ((this.chordType & ChordType.Mask3) !== ChordType.M3) {
-                    return this.helper.fail(this.scanner.lastReadRange, Messages.Error_ChordSuspended4NotAvailable);
+                    this.helper.warning(this.scanner.lastReadRange, ChordParseMessages.Warning_ChordSuspended4NotAvailable);
+                    return this.helper.empty();
                 }
 
                 this.chordType = this.chordType & ~ChordType.Mask3 | ChordType.P4;
-                return ParseHelper.voidSuccess;
+                return this.helper.voidSuccess();
         }
 
-        return ParseHelper.empty();
+        return this.helper.empty();
+    }
+
+    private checkAddNinth(): boolean {
+
+        if ((this.chordType & ChordType.Mask9) > 0) {
+            this.helper.warning(this.scanner.lastReadRange, ChordParseMessages.Warning_AlreadyHaveNinthWhileAddingTone);
+            return true;
+        } else if ((this.chordType & ChordType.Mask2) > 0) {
+            this.helper.warning(this.scanner.lastReadRange, ChordParseMessages.Warning_AlreadyHaveSecondWhileAddingTone);
+            return true;
+        }
+
+        if ((this.chordType & ChordType.BasicChordTypeMask) === ChordType.SeventhChord) {
+            this.helper.warning(this.scanner.lastReadRange, ChordParseMessages.Warning_AddNinthOnSeventhChord);
+        }
+
+        return false;
+
+    }
+
+    private checkAddEleventh(): boolean {
+
+        if ((this.chordType & ChordType.Mask11) > 0) {
+            this.helper.warning(this.scanner.lastReadRange, ChordParseMessages.Warning_AlreadyHaveEleventhWhileAddingTone);
+            return true;
+        } else if ((this.chordType & ChordType.Mask4) > 0) {
+            this.helper.warning(this.scanner.lastReadRange, ChordParseMessages.Warning_AlreadyHaveFourthWhileAddingTone);
+            return true;
+        }
+
+        if ((this.chordType & ChordType.BasicChordTypeMask) === ChordType.ExtendedNinthChord) {
+            this.helper.warning(this.scanner.lastReadRange, ChordParseMessages.Warning_AddEleventhOnNinthChord);
+        }
+
+        return false;
+    }
+
+    private checkAddThirteenth(): boolean {
+
+        if ((this.chordType & ChordType.Mask13) > 0) {
+            this.helper.warning(this.scanner.lastReadRange, ChordParseMessages.Warning_AlreadyHaveThirteenthWhileAddingTone);
+            return true;
+        } else if ((this.chordType & ChordType.Mask6) > 0) {
+            this.helper.warning(this.scanner.lastReadRange, ChordParseMessages.Warning_AlreadyHaveSixthWhileAddingTone);
+            return true;
+        }
+
+        if ((this.chordType & ChordType.BasicChordTypeMask) === ChordType.ExtendedEleventhChord) {
+            this.helper.warning(this.scanner.lastReadRange, ChordParseMessages.Warning_AddThirteenthOnEleventhChord);
+        }
+
+        return false;
     }
 
     private readAddedTone(): ParseResultMaybeEmpty<void> {
         this.scanner.skipWhitespaces();
-        switch (this.scanner.readAnyPatternOf("add\\#9", "add♯9", "addb9", "add♭9", "add9", "add\\#11", "add♯11", "add11", "add\\#13", "add♯13", "addb13", "add♭13", "add13")) {
+
+
+        switch (this.scanner.readAnyPatternOf(
+            "add\\#9", "add♯9", "addb9", "add♭9", "add9",
+            "add\\#11", "add♯11", "add11",
+            "add\\#13", "add♯13", "addb13", "add♭13", "add13")) {
             case "add#9":
             case "add♯9":
 
-                if ((this.chordType & ChordType.BasicChordTypeMask) > ChordType.Triad) {
-                    return this.helper.fail(this.scanner.lastReadRange, Messages.Error_ChordAdded9thNotAvailable);   // only available to triads
+                if (this.checkAddNinth()) {
+                    return this.helper.empty();
                 }
-
-                if ((this.chordType & ChordType.Mask2) === ChordType.A2) {
-                    // todo: already have it
-                }
-
                 this.chordType |= ChordType.A9 | ChordType.AddedTone;
 
-                return ParseHelper.voidSuccess;
+                return this.helper.voidSuccess();
+
             case "addb9":
             case "add♭9":
 
-                if ((this.chordType & ChordType.BasicChordTypeMask) > ChordType.Triad) {
-                    return this.helper.fail(this.scanner.lastReadRange, Messages.Error_ChordAdded9thNotAvailable);   // only available to triads
-                }
-
-                if ((this.chordType & ChordType.Mask2) === ChordType.m2) {
-                    // todo: already have it
+                if (this.checkAddNinth()) {
+                    return this.helper.empty();
                 }
 
                 this.chordType |= ChordType.m9 | ChordType.AddedTone;
 
-                return ParseHelper.voidSuccess;
+                return this.helper.voidSuccess();
+
+
             case "add9":
 
-                if ((this.chordType & ChordType.BasicChordTypeMask) > ChordType.Triad) {
-                    return this.helper.fail(this.scanner.lastReadRange, Messages.Error_ChordAdded9thNotAvailable);  // only available to triads
-                }
-
-                if ((this.chordType & ChordType.Mask2) === ChordType.M2) {
-                    // todo: already have it
+                if (this.checkAddNinth()) {
+                    return this.helper.empty();
                 }
 
                 this.chordType |= ChordType.M9 | ChordType.AddedTone;
 
-                return ParseHelper.voidSuccess;
+                return this.helper.voidSuccess();
+
             case "add#11":
             case "add♯11":
 
-                if ((this.chordType & ChordType.BasicChordTypeMask) > ChordType.SeventhChord) {
-                    return this.helper.fail(this.scanner.lastReadRange, Messages.Error_ChordAdded11thNotAvailable);   // only available to triads or seventh
-                }
-
-                if ((this.chordType & ChordType.Mask4) === ChordType.A11) {
-                    // todo: already have it
+                if (this.checkAddEleventh()) {
+                    return this.helper.empty();
                 }
 
                 this.chordType |= ChordType.A11 | ChordType.AddedTone;
-                return ParseHelper.voidSuccess;
+                return this.helper.voidSuccess();
             case "add11":
 
-                if ((this.chordType & ChordType.BasicChordTypeMask) > ChordType.SeventhChord) {
-                    return this.helper.fail(this.scanner.lastReadRange, Messages.Error_ChordAdded11thNotAvailable);   // only available to triads or seventh
-                }
-
-                if ((this.chordType & ChordType.Mask4) === ChordType.P11) {
-                    // todo: already have it
+                if (this.checkAddEleventh()) {
+                    return this.helper.empty();
                 }
 
                 this.chordType |= ChordType.P11 | ChordType.AddedTone;
-                return ParseHelper.voidSuccess;
+                return this.helper.voidSuccess();
             case "add#13":
             case "add♯13":
 
-                if ((this.chordType & ChordType.BasicChordTypeMask) > ChordType.ExtendedNinthChord) {
-                    return this.helper.fail(this.scanner.lastReadRange, Messages.Error_ChordAdded13thNotAvailable);  // only available to triads, sevenths, or ninths
-                }
-
-                if ((this.chordType & ChordType.Mask6) === ChordType.A13) {
-                    // todo: already have it
+                if (this.checkAddThirteenth()) {
+                    return this.helper.empty();
                 }
 
                 this.chordType |= ChordType.A13 | ChordType.AddedTone;
-                return ParseHelper.voidSuccess;
+                return this.helper.voidSuccess();
             case "addb13":
             case "add♭13":
 
-                if ((this.chordType & ChordType.BasicChordTypeMask) > ChordType.ExtendedNinthChord) {
-                    return this.helper.fail(this.scanner.lastReadRange, Messages.Error_ChordAdded13thNotAvailable);  // only available to triads, sevenths, or ninths
-                }
-
-                if ((this.chordType & ChordType.Mask6) === ChordType.m13) {
-                    // todo: already have it
+                if (this.checkAddThirteenth()) {
+                    return this.helper.empty();
                 }
 
                 this.chordType |= ChordType.m13 | ChordType.AddedTone;
-                return ParseHelper.voidSuccess;
+                return this.helper.voidSuccess();
             case "add13":
 
-                if ((this.chordType & ChordType.BasicChordTypeMask) > ChordType.ExtendedNinthChord) {
-                    return this.helper.fail(this.scanner.lastReadRange, Messages.Error_ChordAdded13thNotAvailable);   // only available to triads, sevenths, or ninths
-                }
-
-                if ((this.chordType & ChordType.Mask6) === ChordType.M13) {
-                    // todo: already have it
+                if (this.checkAddThirteenth()) {
+                    return this.helper.empty();
                 }
 
                 this.chordType |= ChordType.M13 | ChordType.AddedTone;
-                return ParseHelper.voidSuccess;
+                return this.helper.voidSuccess();
         }
 
-        return ParseHelper.empty();
+        return this.helper.empty();
     }
 
     private readSimplifiedAddedTone(): ParseSuccessOrEmptyResult<void> {
@@ -404,27 +455,29 @@ export class ChordParser {
             case "6/9":
             case "69":
                 this.chordType |= ChordType.AddedTone | ChordType.M6 | ChordType.M9;
-                return ParseHelper.voidSuccess;
+                return this.helper.voidSuccess();
             case "2":
                 this.chordType |= ChordType.AddedTone | ChordType.M2;
-                return ParseHelper.voidSuccess;
+                return this.helper.voidSuccess();
             case "4":
                 this.chordType |= ChordType.AddedTone | ChordType.P4;
-                return ParseHelper.voidSuccess;
+                return this.helper.voidSuccess();
             case "6":
                 this.chordType |= ChordType.AddedTone | ChordType.M6;
-                return ParseHelper.voidSuccess;
+                return this.helper.voidSuccess();
         }
-        return ParseHelper.empty();
+        return this.helper.empty();
     }
 
     private readExtendedAltered(): ParseSuccessOrEmptyResult<void> {
         if ((this.chordType & ChordType.SeventhChord) !== ChordType.SeventhChord) {
-            return ParseHelper.empty();
+            // this is not even a seventh chord (which is then not possible to be an extended chord, either)
+            return this.helper.empty();
         }
 
         if ((this.chordType & ChordType.Mask6) !== 0) {
-            return ParseHelper.empty();
+            // already have 6th/13th
+            return this.helper.empty();
         }
 
         const has7th = (this.chordType & ChordType.Mask7) !== 0;
@@ -452,7 +505,7 @@ export class ChordParser {
                     success = true;
                     break;
                 default:
-                    return ParseHelper.empty();
+                    return this.helper.empty();
             }
         }
 
@@ -463,7 +516,7 @@ export class ChordParser {
                     | ChordType.ExtendedEleventhChord;
                 success = true;
             } else {
-                return ParseHelper.empty();
+                return this.helper.empty();
             }
         }
 
@@ -487,12 +540,12 @@ export class ChordParser {
                     success = true;
                     break;
                 default:
-                    return ParseHelper.empty();
+                    return this.helper.empty();
             }
 
         }
 
-        return success ? ParseHelper.voidSuccess : ParseHelper.empty();
+        return success ? this.helper.voidSuccess() : this.helper.empty();
     }
 
     private readDominant(): ParseSuccessOrEmptyResult<void> {
@@ -500,19 +553,19 @@ export class ChordParser {
             case "dom7":
             case "7":
                 this.chordType = ChordType.DominantSeventh;
-                return ParseHelper.voidSuccess;
+                return this.helper.voidSuccess();
             case "9":
                 this.chordType = ChordType.DominantNinth;
-                return ParseHelper.voidSuccess;
+                return this.helper.voidSuccess();
             case "11":
                 this.chordType = ChordType.DominantEleventh;
-                return ParseHelper.voidSuccess;
+                return this.helper.voidSuccess();
             case "13":
                 this.chordType = ChordType.DominantThirteenth;
-                return ParseHelper.voidSuccess;
+                return this.helper.voidSuccess();
         }
 
-        return ParseHelper.empty();
+        return this.helper.empty();
     }
 
     private readSeventh(): ParseSuccessOrEmptyResult<void> {
@@ -522,24 +575,24 @@ export class ChordParser {
             case "M7":
             case "Δ7":
                 this.chordType |= ChordType.SeventhChord | ChordType.M7;
-                return ParseHelper.voidSuccess;
+                return this.helper.voidSuccess();
             case "7":
                 switch (this.chordType & ChordType.TriadMask) {
                     case ChordType.DiminishedTriad:   // Cdim7
                         this.chordType |= ChordType.SeventhChord | ChordType.d7;
-                        return ParseHelper.voidSuccess;
+                        return this.helper.voidSuccess();
                     case ChordType.MinorTriad:    // Cm7
                     case ChordType.AugmentedTriad:    // Caug7
                         this.chordType |= ChordType.SeventhChord | ChordType.m7;
-                        return ParseHelper.voidSuccess;
+                        return this.helper.voidSuccess();
                     case ChordType.MajorTriad:    // CM7
                         this.chordType |= ChordType.SeventhChord | ChordType.M7;
-                        return ParseHelper.voidSuccess;
+                        return this.helper.voidSuccess();
                 }
                 break;
         }
 
-        return ParseHelper.empty();
+        return this.helper.empty();
     }
 
     private readTriad(): ParseSuccessOrEmptyResult<void> {
@@ -549,22 +602,22 @@ export class ChordParser {
             case "M":
             case "Δ":
                 this.chordType = ChordType.MajorTriad;
-                return ParseHelper.voidSuccess;
+                return this.helper.voidSuccess();
             case "min":
             case "m":
                 this.chordType = ChordType.MinorTriad;
-                return ParseHelper.voidSuccess;
+                return this.helper.voidSuccess();
             case "aug":
             case "+":
                 this.chordType = ChordType.AugmentedTriad;
-                return ParseHelper.voidSuccess;
+                return this.helper.voidSuccess();
             case "dim":
             case "-":
             case "°":
                 this.chordType = ChordType.DiminishedTriad;
-                return ParseHelper.voidSuccess;
+                return this.helper.voidSuccess();
         }
 
-        return ParseHelper.empty();
+        return this.helper.empty();
     }
 }

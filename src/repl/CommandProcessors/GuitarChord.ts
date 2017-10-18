@@ -1,7 +1,7 @@
 import { ICommandProcessor } from "../ICommandProcessor";
 import { REPLResult } from "../REPLResult";
 import { Scanner } from "../../music-core/Parsing/Scanner";
-import { ChordParser } from "../../music-core/Parsing/AST/ChordParser";
+import { ChordParser } from "../../music-core/Parsing/ChordParser";
 import { LiteralParsers } from "../../music-core/Parsing/LiteralParsers";
 import { ParseHelper } from "../../music-core/Parsing/ParseResult";
 import { REPL } from "../repl";
