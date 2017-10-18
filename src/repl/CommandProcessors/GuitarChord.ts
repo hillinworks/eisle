@@ -6,6 +6,7 @@ import { LiteralParsers } from "../../music-core/Parsing/LiteralParsers";
 import { ParseHelper } from "../../music-core/Parsing/ParseResult";
 import { REPL } from "../repl";
 import { select, L } from "../../music-core/Core/Utilities/LinqLite";
+import { ChordName } from "../../music-core/Core/MusicTheory/ChordName";
 
 export class GuitarChord implements ICommandProcessor {
 
@@ -29,13 +30,12 @@ export class GuitarChord implements ICommandProcessor {
         const parseChordResult = parser.parse(chordName);
 
         if (ParseHelper.isFailed(parseChordResult)) {
-            console.log(`Failed to parse chord '${chordName}': \n ${parseChordResult.messages}`);
-            return this.showChordSyntax();
+            return REPLResult.text(`Failed to parse chord '${chordName}': \n ${parseChordResult.messages}`);
         }
 
         const chord = parseChordResult.value;
 
-        return REPLResult.text(JSON.stringify(L(chord.getNotes()).select(n => n.toString()).toArray()));
+        return REPLResult.text(ChordName.getOrdinalNamePlain(chord) + "\n" + JSON.stringify(L(chord.getNotes()).select(n => n.toString()).toArray()));
     }
 
     private showChordSyntax(): REPLResult {

@@ -1088,6 +1088,38 @@ export function toMap<T, TElement>(source: Iterable<T>,
 
 
 /**
+ * Creates an array map object from a sequence according to specified key selector and element selector functions.
+ * @param source An Iterable<T> to create a map object from.
+ * @param keySelector A function to extract a number key from each element.
+ * @param valueSelector A transform function to produce a result element value from each element.
+ * @return A map object that contains values of type TElement selected from the input sequence.
+ */
+export function toArrayMap<T, TElement>(source: Iterable<T>,
+    keySelector: Selector<T, number>,
+    valueSelector: Selector<T, TElement>): NumberKeyMap<TElement>;
+/**
+ * Creates an array map object from a sequence according to specified key selector function.
+ * @param source An Iterable<T> to create a map object from.
+ * @param keySelector A function to extract a number key from each element.
+ * @return A map object that contains values of type TElement selected from the input sequence.
+ */
+export function toArrayMap<T>(source: Iterable<T>, keySelector: Selector<T, number>): NumberKeyMap<T>;
+export function toArrayMap<T, TElement>(source: Iterable<T>,
+    keySelector: Selector<T, number>,
+    valueSelector: Selector<T, TElement> = defaultSelector): NumberKeyMap<TElement> {
+    const object: StringKeyMap<TElement> = {};
+    for (const item of source) {
+        const key = keySelector(item);
+        if (object[key] !== undefined) {
+            throw new Error("duplicated element");
+        }
+        object[key] = valueSelector(item);
+    }
+
+    return object;
+}
+
+/**
  * Returns undefined in a singleton collection if the sequence is empty.
  * @param source The sequence to return a default value for if it is empty.
  * @return An Iterable<T | undefined> object that contains undefined if source is empty; otherwise, source.
@@ -1631,6 +1663,21 @@ export interface ISequence<T> extends Iterable<T> {
         valueSelector: Selector<T, TElement>): StringKeyMap<TElement>;
 
     /**
+     * Creates an array map object from this sequence according to specified key selector function.
+     * @param keySelector A function to extract a number key from each element.
+     * @return A map object that contains values of type TElement selected from this sequence.
+     */
+    toArrayMap(keySelector: Selector<T, number>): NumberKeyMap<T>;
+    /**
+     * Creates an array map object from this sequence according to specified key selector and element selector functions.
+     * @param keySelector A function to extract a number key from each element.
+     * @param valueSelector A transform function to produce a result element value from each element.
+     * @return A map object that contains values of type TElement selected from this sequence.
+     */
+    toArrayMap<TElement>(keySelector: Selector<T, number>,
+        valueSelector: Selector<T, TElement>): NumberKeyMap<TElement>;
+
+    /**
      * Returns undefined in a singleton collection if this sequence is empty.
      * @return An Iterable<T | undefined> object that contains undefined if this sequence is empty; otherwise, this sequence.
      */
@@ -1939,6 +1986,14 @@ class Sequence<T> implements ISequence<T> {
     toMap<TElement>(keySelector: Selector<T, string>,
         valueSelector: Selector<T, TElement> = defaultSelector): StringKeyMap<TElement> {
         return toMap(this.iterable, keySelector, valueSelector);
+    }
+
+    toArrayMap<TElement>(keySelector: Selector<T, number>,
+        valueSelector: Selector<T, TElement>): NumberKeyMap<TElement>;
+    toArrayMap(keySelector: Selector<T, number>): NumberKeyMap<T>;
+    toArrayMap<TElement>(keySelector: Selector<T, number>,
+        valueSelector: Selector<T, TElement> = defaultSelector): NumberKeyMap<TElement> {
+        return toArrayMap(this.iterable, keySelector, valueSelector);
     }
 
     undefinedIfEmpty(): ISequence<T | undefined> {

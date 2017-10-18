@@ -80,7 +80,7 @@ export enum ChordType {
     A13 = A6 | OttavaAlta13,
     d13 = d6 | OttavaAlta13,
 
-    BasicChordTypeMask = 0b11111111 << 20,
+    BaseChordTypeMask = 0b11111111 << 20,
     PowerChord = 0b00000001 << 20,
     Triad = 0b000000010 << 20,
     SeventhChord = 0b00000110 << 20,
@@ -102,15 +102,75 @@ export enum ChordType {
     Suspended4 = Triad | P4 | P5,
     Fifth = PowerChord | P5,
     Sixth = AddedTone | MajorTriad | M6,
+    SeventhMask = SeventhChord | TriadMask | Mask7,
     DominantSeventh = SeventhChord | MajorTriad | m7,
     MajorSeventh = SeventhChord | MajorTriad | M7,
     MinorSeventh = SeventhChord | MinorTriad | m7,
     AugmentedSeventh = SeventhChord | AugmentedTriad | m7,
-    HalfDiminishedSeventh = SeventhChord | MinorTriad | M7,
+    HalfDiminishedSeventh = SeventhChord | DiminishedTriad | m7,
     DiminishedSeventh = SeventhChord | DiminishedTriad | d7,
     DominantNinth = DominantSeventh | ExtendedNinthChord | M9,
     DominantEleventh = DominantNinth | ExtendedEleventhChord | P11,
-    DominantThirteenth = DominantEleventh | ExtendedThirteenthChord | M13
+    DominantThirteenth = DominantEleventh | ExtendedThirteenthChord | M13,
+
+    BT_Mask = Mask3 | Mask5 | Mask7,
+    BT_MaskWithSuspension = Mask2 | Mask3 | Mask4 | Mask5 | Mask7,
+
+    BT_MajorTriadOmittingFifth = M3,
+    BT_MinorTriadOmittingFifth = m3,
+
+    BT_PowerChord = P5,
+    BT_PowerChordSharpenFifth = A5,
+    BT_PowerChordFlattenFifth = d5,
+
+    BT_MajorTriad = M3 | P5,
+    BT_MinorTriad = m3 | P5,
+    BT_DiminishedTriad = m3 | d5,
+    BT_AugmentedTriad = M3 | A5,
+
+    BT_MinorTriadSharpenFifth = m3 | A5,
+    BT_MajorTriadFlattenFifth = M3 | d5,
+
+    BT_SuspendedSecond = M2 | P5,
+    BT_SuspendedFourth = P4 | P5,
+    BT_DiminishedSuspendedSecond = M2 | d5,
+    BT_DiminishedSuspendedFourth = P4 | d5,
+    BT_AugmentedSuspendedSecond = M2 | A5,
+    BT_AugmentedSuspendedFourth = P4 | A5,
+
+    BT_DominantSeventhOmittingFifth = M3 | m7,
+    BT_MajorSeventhOmittingFifth = M3 | M7,
+    BT_MinorSeventhOmittingFifth = m3 | m7,
+    BT_MinorMajorSeventhOmittingFifth = m3 | M7,
+
+    BT_DominantSeventh = M3 | P5 | m7,
+    BT_DominantSeventhFlattenFifth = M3 | d5 | m7,
+    BT_MajorSeventh = M3 | P5 | M7,
+    BT_MinorSeventh = m3 | P5 | m7,
+    BT_AugmentedSeventh = M3 | A5 | m7,
+    BT_AugmentedMajorSeventh = M3 | A5 | M7,
+    BT_MinorMajorSeventh = m3 | P5 | M7,
+    BT_HalfDiminishedSeventh = m3 | d5 | m7,
+    BT_DiminishedSeventh = m3 | d5 | d7,
+    BT_DiminishedMajorSeventh = m3 | d5 | M7,
+
+    BT_DominantSeventhSuspendedSecond = M2 | P5 | m7,
+    BT_DominantSeventhSuspendedFourth = P4 | P5 | m7,
+    BT_DominantSeventhFlattenFifthSuspendedSecond = M2 | d5 | m7,
+    BT_DominantSeventhFlattenFifthSuspendedFourth = P4 | d5 | m7,
+    BT_MajorSeventhSuspendedSecond = M2 | P5 | M7,
+    BT_MajorSeventhSuspendedFourth = P4 | P5 | M7,
+    BT_AugmentedSeventhSuspendedSecond = M2 | A5 | m7,
+    BT_AugmentedSeventhSuspendedFourth = P4 | A5 | m7,
+    BT_AugmentedMajorSeventhSuspendedSecond = M2 | A5 | M7,
+    BT_AugmentedMajorSeventhSuspendedFourth = P4 | A5 | M7,
+    BT_HalfDiminishedSeventhSuspendedSecond = M2 | d5 | m7,
+    BT_HalfDiminishedSeventhSuspendedFourth = P4 | d5 | m7,
+    BT_DiminishedSeventhSuspendedSecond = M2 | d5 | d7,
+    BT_DiminishedSeventhSuspendedFourth = P4 | d5 | d7,
+    BT_DiminishedMajorSeventhSuspendedSecond = M2 | d5 | M7,
+    BT_DiminishedMajorSeventhSuspendedFourth = P4 | d5 | M7,
+
 }
 
 export namespace ChordType {

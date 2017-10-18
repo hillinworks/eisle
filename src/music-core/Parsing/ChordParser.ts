@@ -13,11 +13,14 @@ export class ChordParser {
     private scanner: Scanner;
     private helper: ParseHelper;
     private chordType: ChordType;
+    private explicitMajor: boolean;
 
     parse(chordName: string): ParseResult<Chord> {
 
         this.helper = new ParseHelper();
         this.scanner = new Scanner(chordName.trim());
+
+        this.explicitMajor = false;
 
         const noteName = this.helper.absorb(NoteNameNode.parse(this.scanner));
         if (!ParseHelper.isSuccessful(noteName)) {
@@ -187,19 +190,19 @@ export class ChordParser {
         return this.helper.success(noteName.value!.toNoteName());
     }
 
-    private checkTritone(): boolean {
+    private checkTritone(alteredNote: string): boolean {
 
         if ((this.chordType & ChordType.Mask5) === ChordType.d5) {
-            this.helper.warning(this.scanner.lastReadRange, ChordParseMessages.Warning_AlreadyHaveDiminishedFifth);
+            this.helper.warning(this.scanner.lastReadRange, ChordParseMessages.Warning_AlreadyHaveDiminishedFifth, alteredNote);
             return true;
         }
 
         if ((this.chordType & ChordType.Mask11) === ChordType.A11) {
-            this.helper.warning(this.scanner.lastReadRange, ChordParseMessages.Warning_AlreadyHaveAugmentedEleventh);
+            this.helper.warning(this.scanner.lastReadRange, ChordParseMessages.Warning_AlreadyHaveAugmentedEleventh, alteredNote);
             return true;
         } else {
             if ((this.chordType & ChordType.Mask4) === ChordType.A4) {
-                this.helper.warning(this.scanner.lastReadRange, ChordParseMessages.Warning_AlreadyHaveAugmentedFourth);
+                this.helper.warning(this.scanner.lastReadRange, ChordParseMessages.Warning_AlreadyHaveAugmentedFourth, alteredNote);
                 return true;
             }
         }
@@ -209,13 +212,14 @@ export class ChordParser {
 
     private readAltered(): ParseResultMaybeEmpty<void> {
         this.scanner.skipWhitespaces();
-        switch (this.scanner.readAnyPatternOf("\\-5", "b5", "♭5", "\\+5", "\\#5", "♯5", "\\-9", "b9", "♭9", "\\+9", "\\#9", "♯9", "\\+11", "\\#11", "♯11")) {
+        const alteredNote = this.scanner.readAnyPatternOf("\\-5", "b5", "♭5", "\\+5", "\\#5", "♯5", "\\-9", "b9", "♭9", "\\+9", "\\#9", "♯9", "\\+11", "\\#11", "♯11");
+        switch (alteredNote) {
 
             case "-5":
             case "b5":
             case "♭5":
 
-                if (this.checkTritone()) {
+                if (this.checkTritone(alteredNote)) {
                     return this.helper.empty();
                 }
 
@@ -226,10 +230,10 @@ export class ChordParser {
             case "♯5":
 
                 if ((this.chordType & ChordType.Mask5) === ChordType.A5) {
-                    this.helper.warning(this.scanner.lastReadRange, ChordParseMessages.Warning_AlreadyHaveAugmentedFifth);
+                    this.helper.warning(this.scanner.lastReadRange, ChordParseMessages.Warning_AlreadyHaveAugmentedFifth, alteredNote);
                     return this.helper.empty();
                 } else if ((this.chordType & ChordType.Mask6) === ChordType.m6) {
-                    this.helper.warning(this.scanner.lastReadRange, ChordParseMessages.Warning_AlreadyHaveMinorSixth);
+                    this.helper.warning(this.scanner.lastReadRange, ChordParseMessages.Warning_AlreadyHaveMinorSixth, alteredNote);
                     return this.helper.empty();
                 }
 
@@ -240,13 +244,12 @@ export class ChordParser {
             case "♭9":
 
                 if ((this.chordType & ChordType.Mask9) === ChordType.m9) {
-                    this.helper.warning(this.scanner.lastReadRange, ChordParseMessages.Warning_AlreadyHaveMinorNinth);
+                    this.helper.warning(this.scanner.lastReadRange, ChordParseMessages.Warning_AlreadyHaveMinorNinth, alteredNote);
                     return this.helper.empty();
                 } else if ((this.chordType & ChordType.Mask2) === ChordType.m2) {
-                    this.helper.warning(this.scanner.lastReadRange, ChordParseMessages.Warning_AlreadyHaveMinorSecond);
+                    this.helper.warning(this.scanner.lastReadRange, ChordParseMessages.Warning_AlreadyHaveMinorSecond, alteredNote);
                     return this.helper.empty();
                 }
-
 
                 this.chordType = this.chordType & ~ChordType.Mask9 | ChordType.m9 | ChordType.WithAlteredNotes;
                 return this.helper.voidSuccess();
@@ -255,16 +258,15 @@ export class ChordParser {
             case "♯9":
 
                 if ((this.chordType & ChordType.Mask9) === ChordType.A9) {
-                    this.helper.warning(this.scanner.lastReadRange, ChordParseMessages.Warning_AlreadyHaveAugmentedNinth);
+                    this.helper.warning(this.scanner.lastReadRange, ChordParseMessages.Warning_AlreadyHaveAugmentedNinth, alteredNote);
                     return this.helper.empty();
                 } else if ((this.chordType & ChordType.Mask2) === ChordType.A2) {
-                    this.helper.warning(this.scanner.lastReadRange, ChordParseMessages.Warning_AlreadyHaveAugmentedSecond);
+                    this.helper.warning(this.scanner.lastReadRange, ChordParseMessages.Warning_AlreadyHaveAugmentedSecond, alteredNote);
                     return this.helper.empty();
                 } else if ((this.chordType & ChordType.Mask3) === ChordType.m3) {
-                    this.helper.warning(this.scanner.lastReadRange, ChordParseMessages.Warning_AlreadyHaveMinorThird);
+                    this.helper.warning(this.scanner.lastReadRange, ChordParseMessages.Warning_AlreadyHaveMinorThird, alteredNote);
                     return this.helper.empty();
                 }
-
 
                 this.chordType = this.chordType & ~ChordType.Mask9 | ChordType.A9 | ChordType.WithAlteredNotes;
                 return this.helper.voidSuccess();
@@ -272,7 +274,7 @@ export class ChordParser {
             case "#11":
             case "♯11":
 
-                if (this.checkTritone()) {
+                if (this.checkTritone(alteredNote)) {
                     return this.helper.empty();
                 }
 
@@ -310,144 +312,136 @@ export class ChordParser {
         return this.helper.empty();
     }
 
-    private checkAddNinth(): boolean {
+    private checkAddSecondOrNinth(addedTone: string): boolean {
 
         if ((this.chordType & ChordType.Mask9) > 0) {
-            this.helper.warning(this.scanner.lastReadRange, ChordParseMessages.Warning_AlreadyHaveNinthWhileAddingTone);
+            this.helper.warning(this.scanner.lastReadRange, ChordParseMessages.Warning_AlreadyHaveNinthWhileAddingTone, addedTone);
             return true;
         } else if ((this.chordType & ChordType.Mask2) > 0) {
-            this.helper.warning(this.scanner.lastReadRange, ChordParseMessages.Warning_AlreadyHaveSecondWhileAddingTone);
+            this.helper.warning(this.scanner.lastReadRange, ChordParseMessages.Warning_AlreadyHaveSecondWhileAddingTone, addedTone);
             return true;
         }
 
-        if ((this.chordType & ChordType.BasicChordTypeMask) === ChordType.SeventhChord) {
-            this.helper.warning(this.scanner.lastReadRange, ChordParseMessages.Warning_AddNinthOnSeventhChord);
-        }
-
-        return false;
+        return true;
 
     }
 
-    private checkAddEleventh(): boolean {
+    private checkAddFourthOrEleventh(addedTone: string): boolean {
 
         if ((this.chordType & ChordType.Mask11) > 0) {
-            this.helper.warning(this.scanner.lastReadRange, ChordParseMessages.Warning_AlreadyHaveEleventhWhileAddingTone);
+            this.helper.warning(this.scanner.lastReadRange, ChordParseMessages.Warning_AlreadyHaveEleventhWhileAddingTone, addedTone);
             return true;
         } else if ((this.chordType & ChordType.Mask4) > 0) {
-            this.helper.warning(this.scanner.lastReadRange, ChordParseMessages.Warning_AlreadyHaveFourthWhileAddingTone);
+            this.helper.warning(this.scanner.lastReadRange, ChordParseMessages.Warning_AlreadyHaveFourthWhileAddingTone, addedTone);
             return true;
         }
 
-        if ((this.chordType & ChordType.BasicChordTypeMask) === ChordType.ExtendedNinthChord) {
-            this.helper.warning(this.scanner.lastReadRange, ChordParseMessages.Warning_AddEleventhOnNinthChord);
-        }
-
-        return false;
+        return true;
     }
 
-    private checkAddThirteenth(): boolean {
+    private checkAddSixthOrThirteenth(addedTone: string): boolean {
 
         if ((this.chordType & ChordType.Mask13) > 0) {
-            this.helper.warning(this.scanner.lastReadRange, ChordParseMessages.Warning_AlreadyHaveThirteenthWhileAddingTone);
+            this.helper.warning(this.scanner.lastReadRange, ChordParseMessages.Warning_AlreadyHaveThirteenthWhileAddingTone, addedTone);
             return true;
         } else if ((this.chordType & ChordType.Mask6) > 0) {
-            this.helper.warning(this.scanner.lastReadRange, ChordParseMessages.Warning_AlreadyHaveSixthWhileAddingTone);
+            this.helper.warning(this.scanner.lastReadRange, ChordParseMessages.Warning_AlreadyHaveSixthWhileAddingTone, addedTone);
             return true;
         }
 
-        if ((this.chordType & ChordType.BasicChordTypeMask) === ChordType.ExtendedEleventhChord) {
-            this.helper.warning(this.scanner.lastReadRange, ChordParseMessages.Warning_AddThirteenthOnEleventhChord);
-        }
-
-        return false;
+        return true;
     }
 
     private readAddedTone(): ParseResultMaybeEmpty<void> {
         this.scanner.skipWhitespaces();
 
+        const anchor = this.scanner.makeAnchor();
 
-        switch (this.scanner.readAnyPatternOf(
-            "add\\#9", "add♯9", "addb9", "add♭9", "add9",
-            "add\\#11", "add♯11", "add11",
-            "add\\#13", "add♯13", "addb13", "add♭13", "add13")) {
-            case "add#9":
-            case "add♯9":
-
-                if (this.checkAddNinth()) {
-                    return this.helper.empty();
-                }
-                this.chordType |= ChordType.A9 | ChordType.AddedTone;
-
-                return this.helper.voidSuccess();
-
-            case "addb9":
-            case "add♭9":
-
-                if (this.checkAddNinth()) {
-                    return this.helper.empty();
-                }
-
-                this.chordType |= ChordType.m9 | ChordType.AddedTone;
-
-                return this.helper.voidSuccess();
-
-
-            case "add9":
-
-                if (this.checkAddNinth()) {
-                    return this.helper.empty();
-                }
-
-                this.chordType |= ChordType.M9 | ChordType.AddedTone;
-
-                return this.helper.voidSuccess();
-
-            case "add#11":
-            case "add♯11":
-
-                if (this.checkAddEleventh()) {
-                    return this.helper.empty();
-                }
-
-                this.chordType |= ChordType.A11 | ChordType.AddedTone;
-                return this.helper.voidSuccess();
-            case "add11":
-
-                if (this.checkAddEleventh()) {
-                    return this.helper.empty();
-                }
-
-                this.chordType |= ChordType.P11 | ChordType.AddedTone;
-                return this.helper.voidSuccess();
-            case "add#13":
-            case "add♯13":
-
-                if (this.checkAddThirteenth()) {
-                    return this.helper.empty();
-                }
-
-                this.chordType |= ChordType.A13 | ChordType.AddedTone;
-                return this.helper.voidSuccess();
-            case "addb13":
-            case "add♭13":
-
-                if (this.checkAddThirteenth()) {
-                    return this.helper.empty();
-                }
-
-                this.chordType |= ChordType.m13 | ChordType.AddedTone;
-                return this.helper.voidSuccess();
-            case "add13":
-
-                if (this.checkAddThirteenth()) {
-                    return this.helper.empty();
-                }
-
-                this.chordType |= ChordType.M13 | ChordType.AddedTone;
-                return this.helper.voidSuccess();
+        if (!this.scanner.expect("add")) {
+            return ParseHelper.empty();
         }
 
-        return this.helper.empty();
+        const addedTone = this.scanner.readAnyPatternOf(
+            "\\#2", "♯2", "b2", "♭2", "2",
+            "\\#4", "♯4", "4",
+            "\\#6", "♯6", "b6", "♭6", "6",
+            "\\#9", "♯9", "b9", "♭9", "9",
+            "\\#11", "♯11", "11",
+            "\\#13", "♯13", "b13", "♭13", "13");
+
+        const _this = this;
+        function setAddedTone(validator: (t: string) => boolean, tone: ChordType): ParseResultMaybeEmpty<void> {
+            if (!validator.bind(_this)("add" + addedTone)) {
+                return _this.helper.empty();
+            }
+            _this.chordType |= tone | ChordType.AddedTone;
+
+            return _this.helper.voidSuccess();
+        }
+
+        switch (addedTone) {
+
+            case "#2":
+            case "♯2":
+                return setAddedTone(this.checkAddSecondOrNinth, ChordType.A2);
+
+            case "b2":
+            case "♭2":
+                return setAddedTone(this.checkAddSecondOrNinth, ChordType.m2);
+
+            case "2":
+                return setAddedTone(this.checkAddSecondOrNinth, ChordType.M2);
+
+            case "#4":
+            case "♯4":
+                return setAddedTone(this.checkAddFourthOrEleventh, ChordType.A4);
+
+            case "4":
+                return setAddedTone(this.checkAddFourthOrEleventh, ChordType.P4);
+
+            case "#6":
+            case "♯6":
+                return setAddedTone(this.checkAddSixthOrThirteenth, ChordType.A6);
+
+            case "b6":
+            case "♭6":
+                return setAddedTone(this.checkAddSixthOrThirteenth, ChordType.m6);
+
+            case "6":
+                return setAddedTone(this.checkAddSixthOrThirteenth, ChordType.M6);
+
+            case "#9":
+            case "♯9":
+                return setAddedTone(this.checkAddSecondOrNinth, ChordType.A9);
+
+            case "b9":
+            case "♭9":
+                return setAddedTone(this.checkAddSecondOrNinth, ChordType.m9);
+
+            case "9":
+                return setAddedTone(this.checkAddSecondOrNinth, ChordType.M9);
+
+            case "#11":
+            case "♯11":
+                return setAddedTone(this.checkAddFourthOrEleventh, ChordType.A11);
+
+            case "11":
+                return setAddedTone(this.checkAddFourthOrEleventh, ChordType.P11);
+
+            case "#13":
+            case "♯13":
+                return setAddedTone(this.checkAddSixthOrThirteenth, ChordType.A13);
+
+            case "b13":
+            case "♭13":
+                return setAddedTone(this.checkAddSixthOrThirteenth, ChordType.m13);
+
+            case "13":
+                return setAddedTone(this.checkAddSixthOrThirteenth, ChordType.M13);
+
+            default:
+                return this.helper.fail(anchor.range, ChordParseMessages.Error_UnknownAddedTone);
+        }
     }
 
     private readSimplifiedAddedTone(): ParseSuccessOrEmptyResult<void> {
@@ -549,8 +543,9 @@ export class ChordParser {
     }
 
     private readDominant(): ParseSuccessOrEmptyResult<void> {
-        switch (this.scanner.readAnyPatternOf("dom7", "7", "9", "11", "13")) {
-            case "dom7":
+
+        this.scanner.expect("dom"); // consume 'dom' if existed
+        switch (this.scanner.readAnyPatternOf("7", "9", "11", "13")) {
             case "7":
                 this.chordType = ChordType.DominantSeventh;
                 return this.helper.voidSuccess();
@@ -570,26 +565,20 @@ export class ChordParser {
 
     private readSeventh(): ParseSuccessOrEmptyResult<void> {
         this.scanner.skipWhitespaces();
-        switch (this.scanner.readAnyPatternOf("maj7", "M7", "Δ7", "7")) {
-            case "maj7":
-            case "M7":
-            case "Δ7":
-                this.chordType |= ChordType.SeventhChord | ChordType.M7;
-                return this.helper.voidSuccess();
-            case "7":
-                switch (this.chordType & ChordType.TriadMask) {
-                    case ChordType.DiminishedTriad:   // Cdim7
-                        this.chordType |= ChordType.SeventhChord | ChordType.d7;
-                        return this.helper.voidSuccess();
-                    case ChordType.MinorTriad:    // Cm7
-                    case ChordType.AugmentedTriad:    // Caug7
-                        this.chordType |= ChordType.SeventhChord | ChordType.m7;
-                        return this.helper.voidSuccess();
-                    case ChordType.MajorTriad:    // CM7
-                        this.chordType |= ChordType.SeventhChord | ChordType.M7;
-                        return this.helper.voidSuccess();
-                }
-                break;
+        if (this.scanner.expect("7")) {
+            switch (this.chordType & ChordType.TriadMask) {
+                case ChordType.DiminishedTriad:   // Cdim7
+                    this.chordType |= ChordType.SeventhChord | ChordType.d7;
+                    return this.helper.voidSuccess();
+                case ChordType.MinorTriad:    // Cm7
+                case ChordType.AugmentedTriad:    // Caug7
+                    this.chordType |= ChordType.SeventhChord | ChordType.m7;
+                    return this.helper.voidSuccess();
+                case ChordType.MajorTriad:    // CM7
+                    // because dom7 is already handled elsewhere, we are facing a maj7 here
+                    this.chordType |= ChordType.SeventhChord | ChordType.M7;
+                    return this.helper.voidSuccess();
+            }
         }
 
         return this.helper.empty();
@@ -598,9 +587,13 @@ export class ChordParser {
     private readTriad(): ParseSuccessOrEmptyResult<void> {
         switch (this.scanner.readAnyPatternOf("maj", "min", "aug", "dim", "M", "m", "Δ", "\\+", "\\-", "°")) {
             case undefined:
+                this.explicitMajor = false;
+                this.chordType = ChordType.MajorTriad;
+                return this.helper.voidSuccess();
             case "maj":
             case "M":
             case "Δ":
+                this.explicitMajor = true;
                 this.chordType = ChordType.MajorTriad;
                 return this.helper.voidSuccess();
             case "min":
