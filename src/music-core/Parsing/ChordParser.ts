@@ -295,6 +295,10 @@ export class ChordParser {
                     return this.helper.empty();
                 }
 
+                if ((this.chordType & ChordType.Mask2) !== 0) {
+                    return this.helper.fail(this.scanner.lastReadRange, ChordParseMessages.Error_ChordAlreadyHaveSecondWhenSuspending);
+                }
+
                 this.chordType = this.chordType & ~ChordType.Mask3 | ChordType.M2;
                 return this.helper.voidSuccess();
 
@@ -303,6 +307,10 @@ export class ChordParser {
                 if ((this.chordType & ChordType.Mask3) !== ChordType.M3) {
                     this.helper.warning(this.scanner.lastReadRange, ChordParseMessages.Warning_ChordSuspended4NotAvailable);
                     return this.helper.empty();
+                }
+
+                if ((this.chordType & ChordType.Mask4) !== 0) {
+                    this.helper.fail(this.scanner.lastReadRange, ChordParseMessages.Error_ChordAlreadyHaveFourthWhenSuspending);
                 }
 
                 this.chordType = this.chordType & ~ChordType.Mask3 | ChordType.P4;

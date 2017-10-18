@@ -23,4 +23,7 @@ export namespace ChordParseMessages {
     export const Warning_AlreadyHaveNinthWhileAddingTone = "和弦里已经包含了九度音，{0}将被忽略";
     export const Warning_AlreadyHaveEleventhWhileAddingTone = "和弦里已经包含了十一度音，{0}将被忽略";
     export const Warning_AlreadyHaveThirteenthWhileAddingTone = "和弦里已经包含了十三度音，{0}将被忽略";
+
+    export const Error_ChordAlreadyHaveSecondWhenSuspending = "和弦里已经包含了二度或九度音，不能在此和弦上使用挂二音";
+    export const Error_ChordAlreadyHaveFourthWhenSuspending = "和弦里已经包含了四度或十一度音，不能在此和弦上使用挂四音";
 }
