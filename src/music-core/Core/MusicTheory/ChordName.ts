@@ -66,8 +66,27 @@ export namespace ChordName {
     };
 
     export function getOrdinalName(chord: Chord): { baseName: string, superscript: string, subscript: string } {
-        let nameRule = baseNameLookup[chord.type & ChordType.BT_MaskWithSuspension]
-            || baseNameLookup[chord.type & ChordType.BT_Mask];
+
+        let testType = chord.type;
+
+        // remove 9th, 11th and 13th so they won't conflict with 2nd, 4th and 6th
+        if (testType & ChordType.OttavaAlta9) {
+            testType &= ~ChordType.Mask9;
+        }
+
+        if (testType & ChordType.OttavaAlta11) {
+            testType &= ~ChordType.Mask11;
+        }
+
+        if (testType & ChordType.OttavaAlta13) {
+            testType &= ~ChordType.Mask13;
+        }
+
+        const isSus2 = (testType & ChordType.Mask2) === ChordType.M2;
+        const isSus4 = (testType & ChordType.Mask4) === ChordType.P4;
+
+        let nameRule = baseNameLookup[testType & ChordType.BT_MaskWithSuspension]
+            || baseNameLookup[testType & ChordType.BT_Mask];
 
         if (!nameRule) {
             return { baseName: "", superscript: "", subscript: "" };
@@ -77,109 +96,92 @@ export namespace ChordName {
 
         nameRule.baseName = chord.root.toString() + nameRule.baseName;
 
-        let extension = nameRule.extendable ? 7 : undefined;
-        let extensionSealed = false;
+        let extension = nameRule.extendable ? "7" : undefined;
         let extendable = nameRule.extendable;
         const alterBuilder = new StringBuilder();
         const addBuilder = new StringBuilder();
 
-        function addAlteredNote(note: string) {
+        function increaseExtensionOrAdd(note: string) {
             if (extendable) {
-                extensionSealed = true;
+                extension = note;
+            } else {
+                addBuilder.append("add").append(note);
+            }
+        }
+
+        function appendAlteredOrAdded(note: string) {
+            if (extendable) {
+                extendable = false;
                 alterBuilder.append(note);
             } else {
                 addBuilder.append("add").append(note);
             }
         }
 
+        function appendAdded(note: string) {
+            extendable = false;
+            addBuilder.append("add").append(note);
+        }
+
         const ninth = chord.type & ChordType.Mask9;
         const eleventh = chord.type & ChordType.Mask11;
         const thirteenth = chord.type & ChordType.Mask13;
 
-        switch (ninth) {
-            case ChordType.M9:
-                if (extendable && !extensionSealed) {
-                    extension = 9;
-                } else {
-                    addBuilder.append("add9");
-                }
-                break;
-            case ChordType.A9:
-                addAlteredNote("♯9"); break;
-            case ChordType.m9:
-                addAlteredNote("♭9"); break;
-            case ChordType.M2:
-                extensionSealed = true;
-                addBuilder.append("add2");
-                break;
-            case ChordType.A2:
-                extensionSealed = true;
-                addBuilder.append("add♯2");
-                break;
-            case ChordType.m2:
-                extensionSealed = true;
-                addBuilder.append("add♭2");
-                break;
-            case undefined:
-                extensionSealed = true;
-                extendable = false;
-                break;
+        if (isSus2) {
+            extendable = false;
+        } else {
+            switch (ninth) {
+                case ChordType.M9:
+                    increaseExtensionOrAdd("9"); break;
+                case ChordType.A9:
+                    appendAlteredOrAdded("♯9"); break;
+                case ChordType.m9:
+                    appendAlteredOrAdded("♭9"); break;
+                case ChordType.M2:
+                    appendAdded("2"); break;
+                case ChordType.A2:
+                    appendAdded("♯2"); break;
+                case ChordType.m2:
+                    appendAdded("♭2"); break;
+                case 0:
+                    extendable = false; break;
+            }
         }
 
-        switch (eleventh) {
-            case ChordType.P11:
-                if (extendable && !extensionSealed) {
-                    extension = 11;
-                } else {
-                    addBuilder.append("add11");
-                }
-                break;
-            case ChordType.A11:
-                addAlteredNote("♯11"); break;
-            case ChordType.d11:
-                addAlteredNote("♭11"); break;
-            case ChordType.P4:
-                extensionSealed = true;
-                addBuilder.append("add4");
-                break;
-            case ChordType.A4:
-                extensionSealed = true;
-                addBuilder.append("add♯4");
-                break;
-            case ChordType.d4:
-                extensionSealed = true;
-                addBuilder.append("add♭4");
-                break;
-            case undefined:
-                extensionSealed = true;
-                extendable = true;
-                break;
+        if (isSus4) {
+            extendable = false;
+        } else {
+            switch (eleventh) {
+                case ChordType.P11:
+                    increaseExtensionOrAdd("11"); break;
+                case ChordType.A11:
+                    appendAlteredOrAdded("♯11"); break;
+                case ChordType.d11:
+                    appendAlteredOrAdded("♭11"); break;
+                case ChordType.P4:
+                    appendAdded("4"); break;
+                case ChordType.A4:
+                    appendAdded("♯4"); break;
+                case ChordType.d4:
+                    appendAdded("♭4"); break;
+                case 0:
+                    extendable = false; break;
+            }
         }
 
         switch (thirteenth) {
             case ChordType.M13:
-                if (extendable && !extensionSealed) {
-                    extension = 13;
-                } else {
-                    addBuilder.append("add13");
-                }
-                break;
+                increaseExtensionOrAdd("13"); break;
             case ChordType.A13:
-                addAlteredNote("♯13"); break;
+                appendAlteredOrAdded("♯13"); break;
             case ChordType.m13:
-                addAlteredNote("♭13"); break;
+                appendAlteredOrAdded("♭13"); break;
             case ChordType.M6:
-                extensionSealed = true;
-                addBuilder.append("add6");
-                break;
+                addBuilder.append("6"); break;
             case ChordType.A6:
-                extensionSealed = true;
-                addBuilder.append("add♯6");
-                break;
+                appendAdded("♯6"); break;
             case ChordType.m6:
-                extensionSealed = true;
-                addBuilder.append("add♭6");
-                break;
+                appendAdded("♭6"); break;
         }
 
         if (extension) {
