@@ -41,7 +41,7 @@ export namespace LiteralParsers {
     }
 
     export function readChordName(scanner: Scanner): ParseSuccessOrEmptyResult<LiteralNode<string>> {
-        return readString(scanner, "[a-zA-Z0-9][a-zA-Z0-9\\*\\$\\#♯♭\\-\\+\\?'\\`\\~\\&\\^\\!]*");
+        return readString(scanner, "[a-zA-Z0-9][a-zA-Z0-9\\*\\$\\#♯♭\\-\\+\\?'\\`\\~\\&\\^\\!\\/]*");
     }
 
     export function readBaseNoteValue(scanner: Scanner): ParseResult<LiteralNode<BaseNoteValue>> {

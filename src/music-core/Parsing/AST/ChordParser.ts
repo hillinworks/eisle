@@ -71,16 +71,28 @@ export class ChordParser {
             return this.helper.fail();
         }
 
-        if ((this.chordType & ChordType.AddedTone) === 0) {
+        while (true) {
+            const readAddedToneResult = this.helper.absorb(this.readAddedTone())
             // try read ordinal added tone: Cadd9
-            if (ParseHelper.isFailed(this.helper.absorb(this.readAddedTone()))) {
+            if (ParseHelper.isFailed(readAddedToneResult)) {
                 return this.helper.fail();
+            }
+
+            if (ParseHelper.isEmpty(readAddedToneResult)) {
+                break;
             }
         }
 
-        // try read altered notes: C11#5
-        if (ParseHelper.isFailed(this.helper.absorb(this.readAltered()))) {
-            return this.helper.fail();
+        while (true) {
+            const readAlteredResult = this.helper.absorb(this.readAltered());
+            // try read altered notes: C11#5
+            if (ParseHelper.isFailed(readAlteredResult)) {
+                return this.helper.fail();
+            }
+
+            if(ParseHelper.isEmpty(readAlteredResult)) {
+                break;
+            }
         }
 
         let bass: NoteName | undefined = undefined;
@@ -178,7 +190,21 @@ export class ChordParser {
 
     private readAltered(): ParseResultMaybeEmpty<void> {
         this.scanner.skipWhitespaces();
-        switch (this.scanner.readAnyPatternOf("\\+5", "\\#5", "♯5", "\\-9", "b9", "♭9", "\\+9", "\\#9", "♯9", "\\+11", "\\#11", "♯11")) {
+        switch (this.scanner.readAnyPatternOf("\\-5", "b5", "♭5", "\\+5", "\\#5", "♯5", "\\-9", "b9", "♭9", "\\+9", "\\#9", "♯9", "\\+11", "\\#11", "♯11")) {
+
+            case "-5":
+            case "b5":
+            case "♭5":
+                if ((this.chordType & ChordType.SeventhChord) < ChordType.SeventhChord) {
+                    return this.helper.fail(this.scanner.lastReadRange, Messages.Error_ChordAltered5thNotAvailable);   // only available to 7th+
+                }
+
+                if ((this.chordType & ChordType.Mask5) === ChordType.d5) {
+                    // todo: already has it
+                }
+
+                this.chordType = this.chordType & ~ChordType.Mask5 | ChordType.d5 | ChordType.WithAlteredNotes;
+                return ParseHelper.voidSuccess;
             case "+5":
             case "#5":
             case "♯5":

@@ -11,53 +11,74 @@ import { Interval } from "./Interval";
  */
 export enum ChordType {
 
-    NoteMask = 0b111,
+    NoteMask3Bits = 0b111,
+    NoteMask2Bits = 0b11,
 
-    Mask2 = NoteMask,
+    // 3 bits for 2nds
+    Mask2 = NoteMask3Bits,
     m2 = 1,
     M2 = 2,
     A2 = 3,
+    d2 = 4,
 
-    Mask3 = NoteMask << 3,
+    // 3 bits for 3rds
+    Mask3 = NoteMask3Bits << 3,
     m3 = 1 << 3,
     M3 = 2 << 3,
     A3 = 3 << 3,
     d3 = 4 << 3,
 
-    Mask4 = NoteMask << 6,
+    // 2 bits for 4ths
+    Mask4 = NoteMask2Bits << 6,
     P4 = 1 << 6,
     A4 = 2 << 6,
+    d4 = 3 << 6,
 
-    Mask5 = NoteMask << 9,
-    P5 = 1 << 9,
-    A5 = 2 << 9,
-    d5 = 3 << 9,
+    // 2 bits for 5ths
+    Mask5 = NoteMask2Bits << 8,
+    P5 = 1 << 8,
+    A5 = 2 << 8,
+    d5 = 3 << 8,
 
-    Mask6 = NoteMask << 12,
-    m6 = 1 << 12,
-    M6 = 2 << 12,
-    A6 = 3 << 12,
+    // 3 bits for 6ths
+    Mask6 = NoteMask3Bits << 10,
+    m6 = 1 << 10,
+    M6 = 2 << 10,
+    A6 = 3 << 10,
+    d6 = 4 << 10,
 
-    Mask7 = NoteMask << 15,
-    m7 = 1 << 15,
-    M7 = 2 << 15,
-    d7 = 3 << 15,
+    // 3 bits for 7ths
+    Mask7 = NoteMask3Bits << 13,
+    m7 = 1 << 13,
+    M7 = 2 << 13,
+    A7 = 3 << 13,
+    d7 = 4 << 13,
 
-    OttavaAlta = 1 << 19,
+    // 1 bit for 9ths (and sharing 3 bits from 2nds)
+    OttavaAlta9 = 1 << 16,
 
-    Mask9 = Mask2 | OttavaAlta,
-    m9 = m2 | OttavaAlta,
-    M9 = M2 | OttavaAlta,
-    A9 = A2 | OttavaAlta,
+    Mask9 = Mask2 | OttavaAlta9,
+    m9 = m2 | OttavaAlta9,
+    M9 = M2 | OttavaAlta9,
+    A9 = A2 | OttavaAlta9,
+    d9 = d2 | OttavaAlta9,
 
-    Mask11 = Mask4 | OttavaAlta,
-    P11 = P4 | OttavaAlta,
-    A11 = A4 | OttavaAlta,
+    // 1 bit for 11ths (and sharing 3 bits from 4ths)
+    OttavaAlta11 = 1 << 17,
 
-    Mask13 = Mask6 | OttavaAlta,
-    m13 = m6 | OttavaAlta,
-    M13 = M6 | OttavaAlta,
-    A13 = A6 | OttavaAlta,
+    Mask11 = Mask4 | OttavaAlta11,
+    P11 = P4 | OttavaAlta11,
+    A11 = A4 | OttavaAlta11,
+    d11 = d4 | OttavaAlta11,
+
+    // 1 bit for 13ths (and sharing 3 bits from 6ths)
+    OttavaAlta13 = 1 << 18,
+
+    Mask13 = Mask6 | OttavaAlta13,
+    m13 = m6 | OttavaAlta13,
+    M13 = M6 | OttavaAlta13,
+    A13 = A6 | OttavaAlta13,
+    d13 = d6 | OttavaAlta13,
 
     BasicChordTypeMask = 0b11111111 << 20,
     PowerChord = 0b00000001 << 20,
@@ -110,33 +131,40 @@ export namespace ChordType {
         [ChordType.m2]: Interval.m2,
         [ChordType.M2]: Interval.M2,
         [ChordType.A2]: Interval.A2,
+        [ChordType.d2]: Interval.d2,
         [ChordType.m3]: Interval.m3,
         [ChordType.M3]: Interval.M3,
         [ChordType.A3]: Interval.A3,
         [ChordType.d3]: Interval.d3,
         [ChordType.P4]: Interval.P4,
         [ChordType.A4]: Interval.A4,
+        [ChordType.d4]: Interval.d4,
         [ChordType.P5]: Interval.P5,
         [ChordType.A5]: Interval.A5,
         [ChordType.d5]: Interval.d5,
         [ChordType.m6]: Interval.m6,
         [ChordType.M6]: Interval.M6,
         [ChordType.A6]: Interval.A6,
+        [ChordType.d6]: Interval.d6,
         [ChordType.m7]: Interval.m7,
         [ChordType.M7]: Interval.M7,
+        [ChordType.A7]: Interval.A7,
         [ChordType.d7]: Interval.d7,
         [ChordType.m9]: Interval.m9,
         [ChordType.M9]: Interval.M9,
         [ChordType.A9]: Interval.A9,
+        [ChordType.d9]: Interval.d9,
         [ChordType.P11]: Interval.P11,
         [ChordType.A11]: Interval.A11,
+        [ChordType.d11]: Interval.d11,
         [ChordType.m13]: Interval.m13,
         [ChordType.M13]: Interval.M13,
-        [ChordType.A13]: Interval.A13
+        [ChordType.A13]: Interval.A13,
+        [ChordType.d13]: Interval.d13
     };
 
     export function getIntervals(type: ChordType): Interval[] {
-        const intervals: Interval[] = [];
+        let intervals: Interval[] = [];
 
         function addInterval(mask: ChordType, leastValue: ChordType = 0): boolean {
             const value = type & mask;
@@ -151,19 +179,19 @@ export namespace ChordType {
         addInterval(ChordType.Mask5);
         addInterval(ChordType.Mask7);
 
-        if (!addInterval(ChordType.Mask9, ChordType.OttavaAlta)) {
+        if (!addInterval(ChordType.Mask9, ChordType.OttavaAlta9)) {
             addInterval(ChordType.Mask2);
         }
 
-        if (!addInterval(ChordType.Mask11, ChordType.OttavaAlta)) {
+        if (!addInterval(ChordType.Mask11, ChordType.OttavaAlta11)) {
             addInterval(ChordType.Mask4);
         }
 
-        if (!addInterval(ChordType.Mask13, ChordType.OttavaAlta)) {
+        if (!addInterval(ChordType.Mask13, ChordType.OttavaAlta13)) {
             addInterval(ChordType.Mask6);
         }
 
-        intervals.sort(i => -i.number);
+        intervals = intervals.sort((a, b) => a.number - b.number);
         return intervals;
     }
 
