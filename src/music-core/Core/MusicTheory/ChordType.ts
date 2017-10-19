@@ -14,71 +14,77 @@ export enum ChordType {
     NoteMask3Bits = 0b111,
     NoteMask2Bits = 0b11,
 
+    Position2 = 0,
     // 3 bits for 2nds
-    Mask2 = NoteMask3Bits,
-    m2 = 1,
-    M2 = 2,
-    A2 = 3,
-    d2 = 4,
+    Mask2 = NoteMask3Bits << Position2,
+    d2 = 1 << Position2,
+    m2 = 2 << Position2,
+    M2 = 3 << Position2,
+    A2 = 4 << Position2,
 
+    Position3 = Position2 + 3,
     // 3 bits for 3rds
-    Mask3 = NoteMask3Bits << 3,
-    m3 = 1 << 3,
-    M3 = 2 << 3,
-    A3 = 3 << 3,
-    d3 = 4 << 3,
+    Mask3 = NoteMask3Bits << Position3,
+    d3 = 1 << Position3,
+    m3 = 2 << Position3,
+    M3 = 3 << Position3,
+    A3 = 4 << Position3,
 
+    Position4 = Position3 + 3,
     // 2 bits for 4ths
-    Mask4 = NoteMask2Bits << 6,
-    P4 = 1 << 6,
-    A4 = 2 << 6,
-    d4 = 3 << 6,
+    Mask4 = NoteMask2Bits << Position4,
+    d4 = 1 << Position4,
+    P4 = 2 << Position4,
+    A4 = 3 << Position4,
 
+    Position5 = Position4 + 2,
     // 2 bits for 5ths
-    Mask5 = NoteMask2Bits << 8,
-    P5 = 1 << 8,
-    A5 = 2 << 8,
-    d5 = 3 << 8,
+    Mask5 = NoteMask2Bits << Position5,
+    d5 = 1 << Position5,
+    P5 = 2 << Position5,
+    A5 = 3 << Position5,
 
+    Position6 = Position5 + 2,
     // 3 bits for 6ths
-    Mask6 = NoteMask3Bits << 10,
-    m6 = 1 << 10,
-    M6 = 2 << 10,
-    A6 = 3 << 10,
-    d6 = 4 << 10,
+    Mask6 = NoteMask3Bits << Position6,
+    d6 = 1 << Position6,
+    m6 = 2 << Position6,
+    M6 = 3 << Position6,
+    A6 = 4 << Position6,
 
+    Position7 = Position6 + 3,
     // 3 bits for 7ths
-    Mask7 = NoteMask3Bits << 13,
-    m7 = 1 << 13,
-    M7 = 2 << 13,
-    A7 = 3 << 13,
-    d7 = 4 << 13,
+    Mask7 = NoteMask3Bits << Position7,
+    d7 = 1 << Position7,
+    m7 = 2 << Position7,
+    M7 = 3 << Position7,
+    A7 = 4 << Position7,
 
     // 1 bit for 9ths (and sharing 3 bits from 2nds)
     OttavaAlta9 = 1 << 16,
 
     Mask9 = Mask2 | OttavaAlta9,
+    d9 = d2 | OttavaAlta9,
     m9 = m2 | OttavaAlta9,
     M9 = M2 | OttavaAlta9,
     A9 = A2 | OttavaAlta9,
-    d9 = d2 | OttavaAlta9,
 
     // 1 bit for 11ths (and sharing 3 bits from 4ths)
     OttavaAlta11 = 1 << 17,
 
     Mask11 = Mask4 | OttavaAlta11,
+    d11 = d4 | OttavaAlta11,
     P11 = P4 | OttavaAlta11,
     A11 = A4 | OttavaAlta11,
-    d11 = d4 | OttavaAlta11,
 
     // 1 bit for 13ths (and sharing 3 bits from 6ths)
     OttavaAlta13 = 1 << 18,
 
     Mask13 = Mask6 | OttavaAlta13,
+    d13 = d6 | OttavaAlta13,
     m13 = m6 | OttavaAlta13,
     M13 = M6 | OttavaAlta13,
     A13 = A6 | OttavaAlta13,
-    d13 = d6 | OttavaAlta13,
 
     BaseChordTypeMask = 0b11111111 << 20,
     PowerChord = 0b00000001 << 20,
@@ -175,17 +181,41 @@ export enum ChordType {
 
 export namespace ChordType {
 
-    const intervalMasks = [
-        ChordType.Mask2,
-        ChordType.Mask3,
-        ChordType.Mask4,
-        ChordType.Mask5,
-        ChordType.Mask6,
-        ChordType.Mask7,
-        ChordType.Mask9,
-        ChordType.Mask11,
-        ChordType.Mask13,
-    ];
+    export const degreePositions: { [degree: number]: ChordType } = {
+        2: ChordType.Position2,
+        3: ChordType.Position3,
+        4: ChordType.Position4,
+        5: ChordType.Position5,
+        6: ChordType.Position6,
+        7: ChordType.Position7,
+        9: ChordType.Position2,
+        11: ChordType.Position4,
+        13: ChordType.Position6
+    };
+
+    export const degreeMasks: { [degree: number]: ChordType } = {
+        2: ChordType.Mask2,
+        3: ChordType.Mask3,
+        4: ChordType.Mask4,
+        5: ChordType.Mask5,
+        6: ChordType.Mask6,
+        7: ChordType.Mask7,
+        9: ChordType.Mask9,
+        11: ChordType.Mask11,
+        13: ChordType.Mask13,
+    };
+
+    export const advancedDegreeMasks: { [degree: number]: ChordType } = {
+        2: ChordType.Mask9,
+        3: ChordType.Mask3,
+        4: ChordType.Mask11,
+        5: ChordType.Mask5,
+        6: ChordType.Mask13,
+        7: ChordType.Mask7,
+        9: ChordType.Mask9,
+        11: ChordType.Mask11,
+        13: ChordType.Mask13,
+    };
 
     const intervalLookup: { [type: number]: Interval } = {
         [ChordType.m2]: Interval.m2,
