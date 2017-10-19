@@ -65,7 +65,7 @@ export namespace ChordName {
 
     };
 
-    export function getOrdinalName(chord: Chord): { baseName: string, superscript: string, subscript: string } {
+    export function getOrdinalName(chord: Chord): { baseName: string, superscript: string, subscript: string, bass?: string } {
 
         let testType = chord.type;
 
@@ -93,8 +93,6 @@ export namespace ChordName {
         }
 
         nameRule = Object.assign({}, nameRule);
-
-        nameRule.baseName = chord.root.toString() + nameRule.baseName;
 
         let extension = nameRule.extendable ? "7" : undefined;
         let extendable = nameRule.extendable;
@@ -184,21 +182,25 @@ export namespace ChordName {
                 appendAdded("♭6"); break;
         }
 
-        if (extension) {
-            nameRule.superscript = nameRule.superscript.replace("*", extension.toString());
-        }
+        const result = {
+            baseName: chord.root.toString() + nameRule.baseName,
+            superscript: extension ? nameRule.superscript.replace("*", extension.toString()) : nameRule.superscript,
+            subscript: nameRule.subscript + alterBuilder.toString() + addBuilder.toString(),
+            bass: chord.bass ? chord.bass.toString() : undefined
+        };
 
-        if (chord.bass) {
-            nameRule.subscript += "/" + chord.bass.toString();
-        }
-
-        nameRule.subscript += alterBuilder.toString() + addBuilder.toString();
-
-        return nameRule;
+        return result;
     }
 
     export function getOrdinalNamePlain(chord: Chord): string {
-        const nameRule = getOrdinalName(chord);
-        return nameRule.baseName + nameRule.superscript + nameRule.subscript;
+        const name = getOrdinalName(chord);
+        const builder = new StringBuilder();
+        builder.append(name.baseName)
+            .append(name.superscript)
+            .append(name.subscript);
+        if (name.bass) {
+            builder.append("/").append(name.bass);
+        }
+        return builder.toString();
     }
 }

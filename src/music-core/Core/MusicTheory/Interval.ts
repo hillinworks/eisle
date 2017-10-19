@@ -1,4 +1,5 @@
 ﻿import { IntervalQuality } from "./IntervalQuality";
+import { StringBuilder } from "../Utilities/StringBuilder";
 
 export class Interval {
 
@@ -61,6 +62,25 @@ export class Interval {
         return other && this.number === other.number && this.quality === other.quality;
     }
 
+
+    toString(): string {
+        const builder = new StringBuilder();
+        switch (this.quality) {
+            case IntervalQuality.Perfect:
+                builder.append("P"); break;
+            case IntervalQuality.Major:
+                builder.append("M"); break;
+            case IntervalQuality.Minor:
+                builder.append("m"); break;
+            case IntervalQuality.Augmented:
+                builder.append("A"); break;
+            case IntervalQuality.Diminished:
+                builder.append("d"); break;
+        }
+
+        builder.append((this.number + 1).toString());
+        return builder.toString();
+    }
     // todo: implement toString
 }
 

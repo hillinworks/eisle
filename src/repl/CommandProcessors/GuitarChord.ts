@@ -5,9 +5,12 @@ import { ChordParser } from "../../music-core/Parsing/ChordParser";
 import { LiteralParsers } from "../../music-core/Parsing/LiteralParsers";
 import { ParseHelper } from "../../music-core/Parsing/ParseResult";
 import { REPL } from "../repl";
-import { select, L } from "../../music-core/Core/Utilities/LinqLite";
+import { select, L, join } from "../../music-core/Core/Utilities/LinqLite";
 import { ChordName } from "../../music-core/Core/MusicTheory/ChordName";
 import { StringBuilder } from "../../music-core/Core/Utilities/StringBuilder";
+import { ChordFingering } from "../../music-core/Core/MusicTheory/String/ChordFingering";
+import { Tuning } from "../../music-core/Core/MusicTheory/String/Tuning";
+import { GuitarTunings } from "../../music-core/Core/MusicTheory/String/Plucked/GuitarTunings";
 
 export class GuitarChord implements ICommandProcessor {
 
@@ -41,6 +44,25 @@ export class GuitarChord implements ICommandProcessor {
         resultBuilder.appendLine(JSON.stringify(L(chord.getNotes()).select(n => n.toString()).toArray()));
         if (parseChordResult.messages.length > 0) {
             resultBuilder.appendLine(parseChordResult.messages);
+        }
+
+        const fingerings = ChordFingering.getChordFingerings(chord, GuitarTunings.standard);
+        for (const fingering of fingerings) {
+            for (const fret of fingering.fingerings) {
+                if (isNaN(fret)) {
+                    resultBuilder.append("x ");
+                } else {
+                    resultBuilder.append(fret.toString()).append(" ");
+                }
+            }
+
+            if (fingering.omittedIntervals.length > 0) {
+                resultBuilder.append(" (omitted: ")
+                    .append(L(fingering.omittedIntervals).select(i => i.toString()).toArray().join(", "))
+                    .append(")");
+            }
+
+            resultBuilder.appendLine();
         }
 
         return REPLResult.text(resultBuilder.toString());
