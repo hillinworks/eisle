@@ -39,7 +39,7 @@ export class GuitarChord implements ICommandProcessor {
         const resultBuilder = new StringBuilder();
         resultBuilder.appendLine(ChordName.getOrdinalNamePlain(chord));
         resultBuilder.appendLine(JSON.stringify(L(chord.getNotes()).select(n => n.toString()).toArray()));
-        if(parseChordResult.messages.length>0) {
+        if (parseChordResult.messages.length > 0) {
             resultBuilder.appendLine(parseChordResult.messages);
         }
 
