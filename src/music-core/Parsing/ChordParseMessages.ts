@@ -65,5 +65,8 @@ export namespace ChordParseMessages {
     export const Error_AlteringWithFlattenFourth = "减四度音相当于大三度，因此不能降低和弦中的四度音";
     export const Error_AlteringWithFlattenEleventh = "减十一度音相当于大十度（大三度），因此不能降低和弦中的十一度音";
 
+    export const Error_AddingFlattenFourth = "减四度音相当于大三度，不能作为添加音";
+    export const Error_AddingFlattenEleventh = "减十一度音相当于大十度（大三度），不能作为添加音";
+
     export const Error_DegreeToAlterExpected = "'{0}'后面应该接上需要改变的度数";
 }

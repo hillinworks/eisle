@@ -442,12 +442,12 @@ export class ChordParser {
         }
 
         const addedTone = this.scanner.readAnyPatternOf(
-            "\\#2", "♯2", "b2", "♭2", "2",
-            "\\#4", "♯4", "4",
-            "\\#6", "♯6", "b6", "♭6", "6",
-            "\\#9", "♯9", "b9", "♭9", "9",
-            "\\#11", "♯11", "11",
-            "\\#13", "♯13", "b13", "♭13", "13");
+            "\\#2", "♯2", "+2", "b2", "♭2", "-2", "2",
+            "\\#4", "♯4", "+4", "♭4", "-4", "4",
+            "\\#6", "♯6", "+6", "b6", "♭6", "-6", "6",
+            "\\#9", "♯9", "+9", "b9", "♭9", "-9", "9",
+            "\\#11", "♯11", "+11", "♭11", "-11", "11",
+            "\\#13", "♯13", "+13", "b13", "♭13", "-13", "13");
 
         const _this = this;
         function setAddedTone(validator: (t: string) => boolean, tone: ChordType): ParseResultMaybeEmpty<void> {
@@ -463,10 +463,12 @@ export class ChordParser {
 
             case "#2":
             case "♯2":
+            case "+2":
                 return setAddedTone(this.checkAddSecondOrNinth, ChordType.A2);
 
             case "b2":
             case "♭2":
+            case "-2":
                 return setAddedTone(this.checkAddSecondOrNinth, ChordType.m2);
 
             case "2":
@@ -474,17 +476,25 @@ export class ChordParser {
 
             case "#4":
             case "♯4":
+            case "+4":
                 return setAddedTone(this.checkAddFourthOrEleventh, ChordType.A4);
 
             case "4":
                 return setAddedTone(this.checkAddFourthOrEleventh, ChordType.P4);
 
+            case "b4":
+            case "♭4":
+            case "-4":
+                return this.helper.fail(this.scanner.lastReadRange, ChordParseMessages.Error_AddingFlattenFourth);
+
             case "#6":
             case "♯6":
+            case "+6":
                 return setAddedTone(this.checkAddSixthOrThirteenth, ChordType.A6);
 
             case "b6":
             case "♭6":
+            case "-6":
                 return setAddedTone(this.checkAddSixthOrThirteenth, ChordType.m6);
 
             case "6":
@@ -492,10 +502,12 @@ export class ChordParser {
 
             case "#9":
             case "♯9":
+            case "+9":
                 return setAddedTone(this.checkAddSecondOrNinth, ChordType.A9);
 
             case "b9":
             case "♭9":
+            case "-9":
                 return setAddedTone(this.checkAddSecondOrNinth, ChordType.m9);
 
             case "9":
@@ -503,17 +515,26 @@ export class ChordParser {
 
             case "#11":
             case "♯11":
+            case "+11":
                 return setAddedTone(this.checkAddFourthOrEleventh, ChordType.A11);
 
             case "11":
                 return setAddedTone(this.checkAddFourthOrEleventh, ChordType.P11);
 
+
+            case "b11":
+            case "♭11":
+            case "-11":
+                return this.helper.fail(this.scanner.lastReadRange, ChordParseMessages.Error_AddingFlattenEleventh);
+
             case "#13":
             case "♯13":
+            case "+13":
                 return setAddedTone(this.checkAddSixthOrThirteenth, ChordType.A13);
 
             case "b13":
             case "♭13":
+            case "-13":
                 return setAddedTone(this.checkAddSixthOrThirteenth, ChordType.m13);
 
             case "13":
