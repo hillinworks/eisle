@@ -1358,7 +1358,7 @@ export interface ISequence<T> extends Iterable<T> {
      * @param predicate A function to test each element for a condition.
      * @return A number that represents how many elements in this sequence satisfy the condition in the predicate function.
      */
-    count(predicate: Predicate<T>): number;
+    count(predicate?: Predicate<T>): number;
 
     /**
      * Returns the elements of this sequence or the specified value in a singleton collection if the sequence is empty.
@@ -1782,7 +1782,7 @@ class Sequence<T> implements ISequence<T> {
     }
 
     count(predicate: Predicate<T> = defaultPredicate): number {
-        return count(this.iterable);
+        return count(this.iterable, predicate);
     }
 
     defaultIfEmpty(defaultValue: T): ISequence<T> {

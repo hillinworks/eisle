@@ -5,7 +5,7 @@ import { ChordParser } from "../../music-core/Parsing/ChordParser";
 import { LiteralParsers } from "../../music-core/Parsing/LiteralParsers";
 import { ParseHelper } from "../../music-core/Parsing/ParseResult";
 import { REPL } from "../repl";
-import { select, L, join } from "../../music-core/Core/Utilities/LinqLite";
+import { select, L, join, contains } from "../../music-core/Core/Utilities/LinqLite";
 import { ChordName } from "../../music-core/Core/MusicTheory/ChordName";
 import { StringBuilder } from "../../music-core/Core/Utilities/StringBuilder";
 import { ChordFingering } from "../../music-core/Core/MusicTheory/String/ChordFingering";
@@ -48,6 +48,9 @@ export class GuitarChord implements ICommandProcessor {
 
         const fingerings = ChordFingering.getChordFingerings(chord, GuitarTunings.standard);
         for (const fingering of fingerings) {
+
+            resultBuilder.append("<").append(fingering.difficulty).append("> ");
+
             for (const fret of fingering.fingerings) {
                 if (isNaN(fret)) {
                     resultBuilder.append("x ");
@@ -55,6 +58,24 @@ export class GuitarChord implements ICommandProcessor {
                     resultBuilder.append(fret.toString()).append(" ");
                 }
             }
+
+            resultBuilder.append(" [");
+            for (let i = 0; i < fingering.fretting.length; ++i) {
+                const fretting = fingering.fretting[i];
+                if (isNaN(fretting.fret)) {
+                    continue;
+                }
+
+                resultBuilder.append(i.toString());
+                resultBuilder.append(":");
+                resultBuilder.append(fretting.from.toString());
+                if (fretting.from !== fretting.to) {
+                    resultBuilder.append("-").append(fretting.to.toString());
+                }
+
+                resultBuilder.append(", ");
+            }
+            resultBuilder.append("]");
 
             if (fingering.omittedIntervals.length > 0) {
                 resultBuilder.append(" (omitted: ")

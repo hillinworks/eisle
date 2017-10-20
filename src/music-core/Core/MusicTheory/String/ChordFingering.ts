@@ -3,8 +3,9 @@ import { Tuning } from "./Tuning";
 import { NoteName } from "../NoteName";
 import { Pitch } from "../Pitch";
 import { ChordType } from "../ChordType";
-import { first, repeat, except, L, contains, all, skip, range } from "../../Utilities/LinqLite";
+import { first, repeat, except, L, contains, all, skip, range, count, min, sum } from "../../Utilities/LinqLite";
 import { Interval } from "../Interval";
+import { ChordFingerArranger, FingerRange } from "./ChordFingerArranger";
 
 
 export namespace ChordFingering {
@@ -18,6 +19,8 @@ export namespace ChordFingering {
 export class ChordFingeringCandidate {
     readonly fingerings: number[];
     readonly omittedIntervals: Interval[];
+    fretting: FingerRange[];
+    difficulty: number;
 
     constructor(fingering: number[], omittedInterval: Interval[]) {
         this.fingerings = fingering;
@@ -26,7 +29,7 @@ export class ChordFingeringCandidate {
 }
 
 const MaxFretToFindRoot = 11;
-const MaxFingeringFretWidth = 5;
+const MaxFingeringFretWidth = 4;
 
 class ChordFingeringResolver {
 
@@ -52,27 +55,48 @@ class ChordFingeringResolver {
         }
 
         candidates = this.simplifyCandidates(candidates);
+        this.arrangeFretting(candidates);
         this.sortCandidates(candidates);
         return candidates;
     }
 
+    private arrangeFretting(candidates: ChordFingeringCandidate[]) {
+        for (let i = candidates.length - 1; i >= 0; --i) {
+            const candidate = candidates[i];
+            const fretting = ChordFingerArranger.arrangeFingers(candidate.fingerings);
+
+            if (fretting === undefined) {
+                candidates.splice(i, 1);
+                continue;
+            }
+
+            candidate.fretting = fretting;
+
+            const fretRange = L(candidate.fingerings).where(f => !isNaN(f) && f > 0).minMax();
+            const fretSpan = fretRange.max - fretRange.min + 1;
+
+            candidate.difficulty = sum(fretting, f => isNaN(f.fromString) ? 0 : f.toString - f.fromString + 1)
+                + fretSpan * 1
+                + fretRange.min * 0.2;
+        }
+    }
+
     private sortCandidates(candidates: ChordFingeringCandidate[]) {
         candidates.sort((a, b) => {
-            if (a.omittedIntervals.length != b.omittedIntervals.length) {
+            if (a.omittedIntervals.length !== b.omittedIntervals.length) {
                 return a.omittedIntervals.length - b.omittedIntervals.length;
             }
 
+            if (a.difficulty !== b.difficulty) {
+                return a.difficulty - b.difficulty;
+            }
+
             for (let i = 0; i < a.fingerings.length; ++i) {
-                const fa = a.fingerings[i];
-                const fb = b.fingerings[i];
+                const fa = isNaN(a.fingerings[i]) ? 0 : a.fingerings[i];
+                const fb = isNaN(b.fingerings[i]) ? 0 : b.fingerings[i];
+
                 if (fa === fb) {
                     continue;
-                } else if (isNaN(fa) && isNaN(fb)) {
-                    continue;
-                } else if (isNaN(fa)) {
-                    return -fb;
-                } else if (isNaN(fb)) {
-                    return fa;
                 } else {
                     return fa - fb;
                 }
@@ -274,5 +298,25 @@ class ChordFingeringResolver {
                 this.resolveChordFingeringsRecursive(candidates, newFingerings, allNotes, newRemainingNotes, omittedIntervals, newMinFret, newMaxFret);
             }
         }
+    }
+
+    private evaluateFingeringDifficulty(fingerings: number[]): number {
+        // every note to press: +1
+        // barre chord: +1 per string
+        // base fret: +0.2 per fret
+        // fret span: +1 per fret
+
+        const fingers = ChordFingerArranger.arrangeFingers(fingerings);
+
+        if (fingers === undefined) {
+            return -1;
+        }
+
+        const fretRange = L(fingerings).where(f => !isNaN(f) && f > 0).minMax();
+        const fretSpan = fretRange.max - fretRange.min + 1;
+
+        return sum(fingers, f => isNaN(f.fromString) ? 0 : f.toString - f.fromString + 1)
+            + fretSpan * 1
+            + fretRange.min * 0.2;
     }
 }
