@@ -76,7 +76,7 @@ class ChordFingeringResolver {
             const fretSpan = fretRange.max - fretRange.min + 1;
 
             candidate.difficulty = sum(fretting, f => isNaN(f.from) ? 0 : f.to - f.from + 1)
-                + fretSpan * 1
+                + fretSpan * 1 + (fretSpan <= 3 ? 0 : (fretSpan - 3) * 5)
                 + fretRange.min * 0.2;
         }
     }
@@ -298,25 +298,5 @@ class ChordFingeringResolver {
                 this.resolveChordFingeringsRecursive(candidates, newFingerings, allNotes, newRemainingNotes, omittedIntervals, newMinFret, newMaxFret);
             }
         }
-    }
-
-    private evaluateFingeringDifficulty(fingerings: number[]): number {
-        // every note to press: +1
-        // barre chord: +1 per string
-        // base fret: +0.2 per fret
-        // fret span: +1 per fret
-
-        const fingers = ChordFingerArranger.arrangeFingers(fingerings);
-
-        if (fingers === undefined) {
-            return -1;
-        }
-
-        const fretRange = L(fingerings).where(f => !isNaN(f) && f > 0).minMax();
-        const fretSpan = fretRange.max - fretRange.min + 1;
-
-        return sum(fingers, f => isNaN(f.from) ? 0 : f.to - f.from + 1)
-            + fretSpan * 1
-            + fretRange.min * 0.2;
     }
 }

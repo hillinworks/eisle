@@ -60,21 +60,27 @@ export class GuitarChord implements ICommandProcessor {
             }
 
             resultBuilder.append(" [");
+            let isFirst = true;
             for (let i = 0; i < fingering.fretting.length; ++i) {
                 const fretting = fingering.fretting[i];
                 if (isNaN(fretting.fret)) {
                     continue;
                 }
 
-                resultBuilder.append(i.toString());
-                resultBuilder.append(":");
-                resultBuilder.append(fretting.from.toString());
-                if (fretting.from !== fretting.to) {
-                    resultBuilder.append("-").append(fretting.to.toString());
+                if (!isFirst) {
+                    resultBuilder.append(", ");
                 }
 
-                resultBuilder.append(", ");
+                isFirst = false;
+
+                resultBuilder.append(i.toString());
+                resultBuilder.append(":");
+                resultBuilder.append((fretting.from + 1).toString());
+                if (fretting.from !== fretting.to) {
+                    resultBuilder.append("-").append((fretting.to + 1).toString());
+                }
             }
+
             resultBuilder.append("]");
 
             if (fingering.omittedIntervals.length > 0) {
