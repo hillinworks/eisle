@@ -75,7 +75,7 @@ class ChordFingeringResolver {
             const fretRange = L(candidate.fingerings).where(f => !isNaN(f) && f > 0).minMax();
             const fretSpan = fretRange.max - fretRange.min + 1;
 
-            candidate.difficulty = sum(fretting, f => isNaN(f.fromString) ? 0 : f.toString - f.fromString + 1)
+            candidate.difficulty = sum(fretting, f => isNaN(f.from) ? 0 : f.to - f.from + 1)
                 + fretSpan * 1
                 + fretRange.min * 0.2;
         }
@@ -315,7 +315,7 @@ class ChordFingeringResolver {
         const fretRange = L(fingerings).where(f => !isNaN(f) && f > 0).minMax();
         const fretSpan = fretRange.max - fretRange.min + 1;
 
-        return sum(fingers, f => isNaN(f.fromString) ? 0 : f.toString - f.fromString + 1)
+        return sum(fingers, f => isNaN(f.from) ? 0 : f.to - f.from + 1)
             + fretSpan * 1
             + fretRange.min * 0.2;
     }
