@@ -394,12 +394,12 @@ export class ChordParser {
 
     private checkAddSecondOrNinth(addedTone: string): boolean {
 
-        if ((this.chordType & ChordType.Mask9) > 0) {
+        if ((this.chordType & ChordType.Mask9) > ChordType.OttavaAlta9) {
             this.helper.warning(this.scanner.lastReadRange, ChordParseMessages.Warning_AlreadyHaveNinthWhileAddingTone, addedTone);
-            return true;
+            return false;
         } else if ((this.chordType & ChordType.Mask2) > 0) {
             this.helper.warning(this.scanner.lastReadRange, ChordParseMessages.Warning_AlreadyHaveSecondWhileAddingTone, addedTone);
-            return true;
+            return false;
         }
 
         return true;
@@ -408,12 +408,12 @@ export class ChordParser {
 
     private checkAddFourthOrEleventh(addedTone: string): boolean {
 
-        if ((this.chordType & ChordType.Mask11) > 0) {
+        if ((this.chordType & ChordType.Mask11) > ChordType.OttavaAlta11) {
             this.helper.warning(this.scanner.lastReadRange, ChordParseMessages.Warning_AlreadyHaveEleventhWhileAddingTone, addedTone);
-            return true;
+            return false;
         } else if ((this.chordType & ChordType.Mask4) > 0) {
             this.helper.warning(this.scanner.lastReadRange, ChordParseMessages.Warning_AlreadyHaveFourthWhileAddingTone, addedTone);
-            return true;
+            return false;
         }
 
         return true;
@@ -421,12 +421,12 @@ export class ChordParser {
 
     private checkAddSixthOrThirteenth(addedTone: string): boolean {
 
-        if ((this.chordType & ChordType.Mask13) > 0) {
+        if ((this.chordType & ChordType.Mask13) > ChordType.OttavaAlta13) {
             this.helper.warning(this.scanner.lastReadRange, ChordParseMessages.Warning_AlreadyHaveThirteenthWhileAddingTone, addedTone);
-            return true;
+            return false;
         } else if ((this.chordType & ChordType.Mask6) > 0) {
             this.helper.warning(this.scanner.lastReadRange, ChordParseMessages.Warning_AlreadyHaveSixthWhileAddingTone, addedTone);
-            return true;
+            return false;
         }
 
         return true;
@@ -442,16 +442,18 @@ export class ChordParser {
         }
 
         const addedTone = this.scanner.readAnyPatternOf(
-            "\\#2", "♯2", "+2", "b2", "♭2", "-2", "2",
-            "\\#4", "♯4", "+4", "♭4", "-4", "4",
-            "\\#6", "♯6", "+6", "b6", "♭6", "-6", "6",
-            "\\#9", "♯9", "+9", "b9", "♭9", "-9", "9",
-            "\\#11", "♯11", "+11", "♭11", "-11", "11",
-            "\\#13", "♯13", "+13", "b13", "♭13", "-13", "13");
+            "\\#2", "♯2", "\\+2", "b2", "♭2", "\\-2", "2",
+            "\\#4", "♯4", "\\+4", "♭4", "\\-4", "4",
+            "\\#6", "♯6", "\\+6", "b6", "♭6", "\\-6", "6",
+            "\\#9", "♯9", "\\+9", "b9", "♭9", "\\-9", "9",
+            "\\#11", "♯11", "\\+11", "b11", "♭11", "\\-11", "11",
+            "\\#13", "♯13", "\\+13", "b13", "♭13", "\\-13", "13");
+
+        const ordinizedAddedTone = addedTone.replace(/[b\-]/, "♭").replace(/[\#\+]/, "♯");
 
         const _this = this;
         function setAddedTone(validator: (t: string) => boolean, tone: ChordType): ParseResultMaybeEmpty<void> {
-            if (!validator.bind(_this)("add" + addedTone)) {
+            if (!validator.bind(_this)("add" + ordinizedAddedTone)) {
                 return _this.helper.empty();
             }
             _this.chordType |= tone | ChordType.AddedTone;
