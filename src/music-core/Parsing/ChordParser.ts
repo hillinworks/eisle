@@ -181,7 +181,7 @@ export class ChordParser {
             return this.helper.fail(this.scanner.lastReadRange, ChordParseMessages.Error_DegreeToAlterExpected, value);
         }
 
-        const alteredNote = alternation + degree.toString();
+        const alteredNote = (value === 1 ? "♯" : "♭") + degree.toString();
         // fail on non-alterable degrees
         if (degree !== 2 && degree !== 4 && degree !== 5 && degree !== 6 && degree !== 9 && degree !== 11 && degree !== 13) {
             return this.helper.fail(this.scanner.lastReadRange, ChordParseMessages.Error_UnalterableDegree, alteredNote);
@@ -192,7 +192,7 @@ export class ChordParser {
         switch (degree) {
             case 5:
                 if ((this.chordType & ChordType.Mask5) === 0) {
-                    return this.helper.fail(this.scanner.lastReadRange, ChordParseMessages.Error_AlteringNonExistingFifth);
+                    return this.helper.fail(this.scanner.lastReadRange, ChordParseMessages.Error_AlteringNonExistingFifth, alteredNote);
                 }
                 break;
             case 2:
@@ -200,14 +200,14 @@ export class ChordParser {
                 const ninth = this.chordType & ChordType.Mask9;
                 if (ninth === 0) {
                     return this.helper.fail(this.scanner.lastReadRange,
-                        degree === 2 ? ChordParseMessages.Error_AlteringNonExistingSecond : ChordParseMessages.Error_AlteringNonExistingNinth);
+                        degree === 2 ? ChordParseMessages.Error_AlteringNonExistingSecond : ChordParseMessages.Error_AlteringNonExistingNinth, alteredNote);
                 } else {
                     const isSecond = (this.chordType & ChordType.OttavaAlta9) === 0;
                     if (isSecond && degree === 9) {
-                        this.helper.warning(this.scanner.lastReadRange, ChordParseMessages.Warning_AlteringNinthWhileHavingSecond);
+                        this.helper.warning(this.scanner.lastReadRange, ChordParseMessages.Warning_AlteringNinthWhileHavingSecond, alteredNote);
                         degree = 2;
                     } else if (!isSecond && degree === 2) {
-                        this.helper.warning(this.scanner.lastReadRange, ChordParseMessages.Warning_AlteringSecondWhileHavingNinth);
+                        this.helper.warning(this.scanner.lastReadRange, ChordParseMessages.Warning_AlteringSecondWhileHavingNinth, alteredNote);
                         degree = 9;
                     }
                 }
@@ -217,14 +217,14 @@ export class ChordParser {
                 const eleventh = this.chordType & ChordType.Mask11;
                 if (eleventh === 0) {
                     return this.helper.fail(this.scanner.lastReadRange,
-                        degree === 4 ? ChordParseMessages.Error_AlteringNonExistingFourth : ChordParseMessages.Error_AlteringNonExistingEleventh);
+                        degree === 4 ? ChordParseMessages.Error_AlteringNonExistingFourth : ChordParseMessages.Error_AlteringNonExistingEleventh, alteredNote);
                 } else {
                     const isFourth = (this.chordType & ChordType.OttavaAlta11) === 0;
                     if (isFourth && degree === 11) {
-                        this.helper.warning(this.scanner.lastReadRange, ChordParseMessages.Warning_AlteringEleventhWhileHavingFourth);
+                        this.helper.warning(this.scanner.lastReadRange, ChordParseMessages.Warning_AlteringEleventhWhileHavingFourth, alteredNote);
                         degree = 4;
                     } else if (!isFourth && degree === 4) {
-                        this.helper.warning(this.scanner.lastReadRange, ChordParseMessages.Warning_AlteringFourthWhileHavingEleventh);
+                        this.helper.warning(this.scanner.lastReadRange, ChordParseMessages.Warning_AlteringFourthWhileHavingEleventh, alteredNote);
                         degree = 11;
                     }
                 }
@@ -234,14 +234,14 @@ export class ChordParser {
                 const thirteenth = this.chordType & ChordType.Mask13;
                 if (thirteenth === 0) {
                     return this.helper.fail(this.scanner.lastReadRange,
-                        degree === 6 ? ChordParseMessages.Error_AlteringNonExistingSixth : ChordParseMessages.Error_AlteringNonExistingThirteenth);
+                        degree === 6 ? ChordParseMessages.Error_AlteringNonExistingSixth : ChordParseMessages.Error_AlteringNonExistingThirteenth, alteredNote);
                 } else {
                     const isSixth = (this.chordType & ChordType.OttavaAlta13) === 0;
                     if (isSixth && degree === 13) {
-                        this.helper.warning(this.scanner.lastReadRange, ChordParseMessages.Warning_AlteringThirteenthWhileHavingSixth);
+                        this.helper.warning(this.scanner.lastReadRange, ChordParseMessages.Warning_AlteringThirteenthWhileHavingSixth, alteredNote);
                         degree = 6;
                     } else if (!isSixth && degree === 6) {
-                        this.helper.warning(this.scanner.lastReadRange, ChordParseMessages.Warning_AlteringSixthWhileHavingThirteenth);
+                        this.helper.warning(this.scanner.lastReadRange, ChordParseMessages.Warning_AlteringSixthWhileHavingThirteenth, alteredNote);
                         degree = 13;
                     }
                 }
@@ -692,15 +692,15 @@ export class ChordParser {
             switch (triadType) {
                 case ChordType.DiminishedTriad:   // Cdim7
                     this.chordType |= ChordType.SeventhChord | ChordType.d7;
-                    return this.helper.voidSuccess();
+                    break;
                 case ChordType.MinorTriad:    // Cm7
                 case ChordType.AugmentedTriad:    // Caug7
                     this.chordType |= ChordType.SeventhChord | ChordType.m7;
-                    return this.helper.voidSuccess();
+                    break;
                 case ChordType.MajorTriad:    // CM7
                     // because dom7 is already handled elsewhere, we are facing a maj7 here
                     this.chordType |= ChordType.SeventhChord | ChordType.M7;
-                    return this.helper.voidSuccess();
+                    break;
             }
         }
 
@@ -718,14 +718,14 @@ export class ChordParser {
                 if (triadType === ChordType.DiminishedTriad) {
                     return this.helper.fail(this.scanner.lastReadRange, ChordParseMessages.Error_ChordDim11NotSupported); // Cdim9 not existed
                 }
-                this.chordType |= ChordType.P11 | ChordType.ExtendedEleventhChord;
+                this.chordType |= ChordType.M9 | ChordType.P11 | ChordType.ExtendedEleventhChord;
                 return this.helper.voidSuccess();
             case "13":
 
                 if (triadType === ChordType.DiminishedTriad) {
                     return this.helper.fail(this.scanner.lastReadRange, ChordParseMessages.Error_ChordDim13NotSupported); // Cdim9 not existed
                 }
-                this.chordType |= ChordType.M13 | ChordType.ExtendedThirteenthChord;
+                this.chordType |= ChordType.M9 | ChordType.P11 | ChordType.M13 | ChordType.ExtendedThirteenthChord;
                 return this.helper.voidSuccess();
         }
 

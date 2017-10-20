@@ -33,7 +33,7 @@ export class IndexRoute extends BaseRoute {
 
   public test(req: Request, res: Response, next: NextFunction) {
     const command = req.param("command");
-    const options = { "message":  REPL.process(command).content };
+    const options = { "message": REPL.process(command).content.replace(/\n/g, "<br />") };
     this.render(req, res, "index", options);
   }
 }

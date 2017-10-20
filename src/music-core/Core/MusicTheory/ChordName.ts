@@ -184,7 +184,7 @@ export namespace ChordName {
 
         const result = {
             baseName: chord.root.toString() + nameRule.baseName,
-            superscript: extension ? nameRule.superscript.replace("*", extension.toString()) : nameRule.superscript,
+            superscript: extension ? nameRule.superscript.replace(/\*/g, extension.toString()) : nameRule.superscript,
             subscript: nameRule.subscript + alterBuilder.toString() + addBuilder.toString(),
             bass: chord.bass ? chord.bass.toString() : undefined
         };
