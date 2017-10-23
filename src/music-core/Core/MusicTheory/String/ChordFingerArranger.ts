@@ -253,6 +253,14 @@ class Arranger {
                 return undefined;
             }
 
+            const fingerIndex = context.arrangeResult.length;
+            if (fingerIndex !== 1) {
+                if (barreEnd - barreStart > 2) {
+                    // fingers other than index finger can at most barre 3 strings
+                    return undefined;
+                }
+            }
+
             context.arrangeResult.push(new FingerRange(context.columnIndex + this.fretRange.min, barreStart, barreEnd));
         } else {
             for (; context.stringIndex < this.fingerings.length; ++context.stringIndex) {

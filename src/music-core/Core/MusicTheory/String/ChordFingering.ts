@@ -75,9 +75,28 @@ class ChordFingeringResolver {
             const fretRange = L(candidate.fingerings).where(f => !isNaN(f) && f > 0).minMax();
             const fretSpan = fretRange.max - fretRange.min + 1;
 
-            candidate.difficulty = sum(fretting, f => isNaN(f.from) ? 0 : f.to - f.from + 1)
-                + fretSpan * 1 + (fretSpan <= 3 ? 0 : (fretSpan - 3) * 5)
-                + fretRange.min * 0.2;
+            let difficulty = 0;
+            difficulty += fretSpan * 1;
+            if (fretSpan > 3) {
+                // additional penalty for wide-span
+                difficulty += (fretSpan - 3) * 5;
+            }
+
+            difficulty += fretRange.min * 0.2;
+
+            for (let i = 0; i < fretting.length; ++i) {
+                const finger = fretting[i];
+                if (isNaN(finger.from)) {
+                    continue;
+                }
+                if (finger.from === finger.to) {
+                    difficulty += 1;
+                } else {
+                    difficulty += (finger.to - finger.from + 1) * [0, 1, 2, 1.5, 3][i];
+                }
+            }
+
+            candidate.difficulty = difficulty;
         }
     }
 
@@ -295,7 +314,14 @@ class ChordFingeringResolver {
                     candidates.push(new ChordFingeringCandidate(newFingerings, omittedIntervals));
                 }
             } else {
-                this.resolveChordFingeringsRecursive(candidates, newFingerings, allNotes, newRemainingNotes, omittedIntervals, newMinFret, newMaxFret);
+                this.resolveChordFingeringsRecursive(
+                    candidates,
+                    newFingerings,
+                    allNotes,
+                    newRemainingNotes,
+                    omittedIntervals,
+                    newMinFret,
+                    newMaxFret);
             }
         }
     }

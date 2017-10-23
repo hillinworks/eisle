@@ -31,6 +31,7 @@
     "@types/sha1": "^1.1.0",
     "@types/xml2js": "^0.4.0",
     "body-parser": "^1.18.2",
+    "canvas-prebuilt": "^1.6.5-prerelease.1",
     "concurrently": "^3.5.0",
     "cookie-parser": "^1.4.3",
     "errorhandler": "^1.5.0",
