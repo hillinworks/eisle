@@ -4,7 +4,7 @@ import { REPL } from "../repl/repl";
 import { NoteName } from "../music-core/Core/MusicTheory/NoteName";
 import { ChordType } from "../music-core/Core/MusicTheory/ChordType";
 import { Chord } from "../music-core/Core/MusicTheory/Chord";
-import { ChordFingering, ChordFingeringCandidate } from "../music-core/Core/MusicTheory/String/ChordFingering";
+import { ChordFretting, ChordFrettingCandidate } from "../music-core/Core/MusicTheory/String/ChordFretting";
 import { GuitarTunings } from "../music-core/Core/MusicTheory/String/Plucked/GuitarTunings";
 import { L } from "../music-core/Core/Utilities/LinqLite";
 import { StringBuilder } from "../music-core/Core/Utilities/StringBuilder";

@@ -8,7 +8,7 @@ import { REPL } from "../repl";
 import { select, L, join, contains } from "../../music-core/Core/Utilities/LinqLite";
 import { ChordName } from "../../music-core/Core/MusicTheory/ChordName";
 import { StringBuilder } from "../../music-core/Core/Utilities/StringBuilder";
-import { ChordFingering } from "../../music-core/Core/MusicTheory/String/ChordFingering";
+import { ChordFretting } from "../../music-core/Core/MusicTheory/String/ChordFretting";
 import { Tuning } from "../../music-core/Core/MusicTheory/String/Tuning";
 import { GuitarTunings } from "../../music-core/Core/MusicTheory/String/Plucked/GuitarTunings";
 
@@ -46,12 +46,12 @@ export class GuitarChord implements ICommandProcessor {
             resultBuilder.appendLine(parseChordResult.messages);
         }
 
-        const fingerings = ChordFingering.getChordFingerings(chord, GuitarTunings.standard);
+        const fingerings = ChordFretting.getChordFingerings(chord, GuitarTunings.standard);
         for (const fingering of fingerings) {
 
             resultBuilder.append("<").append(fingering.difficulty).append("> ");
 
-            for (const fret of fingering.fingerings) {
+            for (const fret of fingering.frets) {
                 if (isNaN(fret)) {
                     resultBuilder.append("x ");
                 } else {
@@ -61,8 +61,8 @@ export class GuitarChord implements ICommandProcessor {
 
             resultBuilder.append(" [");
             let isFirst = true;
-            for (let i = 0; i < fingering.fretting.length; ++i) {
-                const fretting = fingering.fretting[i];
+            for (let i = 0; i < fingering.fingering.length; ++i) {
+                const fretting = fingering.fingering[i];
                 if (isNaN(fretting.fret)) {
                     continue;
                 }
