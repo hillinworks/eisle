@@ -4,10 +4,11 @@ import { REPL } from "../repl/repl";
 import { NoteName } from "../music-core/Core/MusicTheory/NoteName";
 import { ChordType } from "../music-core/Core/MusicTheory/ChordType";
 import { Chord } from "../music-core/Core/MusicTheory/Chord";
-import { ChordFretting, ChordFrettingCandidate } from "../music-core/Core/MusicTheory/String/ChordFretting";
+import { ChordDetail } from "../music-core/Core/MusicTheory/String/ChordDetail";
 import { GuitarTunings } from "../music-core/Core/MusicTheory/String/Plucked/GuitarTunings";
 import { L } from "../music-core/Core/Utilities/LinqLite";
 import { StringBuilder } from "../music-core/Core/Utilities/StringBuilder";
+import { ChordDiagram } from "../eisle-core/chord/ChordDiagram";
 
 
 export class IndexRoute extends BaseRoute {
@@ -31,26 +32,10 @@ export class IndexRoute extends BaseRoute {
   public index(req: Request, res: Response, next: NextFunction) {
     this.title = "Home | Echo Isles";
 
-    const Canvas = require("canvas-prebuilt")
-      , Image = Canvas.Image
-      , canvas = new Canvas(200, 200)
-      , ctx = canvas.getContext("2d");
-
-    ctx.font = "30px Impact";
-    ctx.rotate(.1);
-    ctx.fillText("Awesome!", 50, 100);
-
-    const te = ctx.measureText("Awesome!");
-    ctx.strokeStyle = "rgba(0,0,0,0.5)";
-    ctx.beginPath();
-    ctx.lineTo(50, 102);
-    ctx.lineTo(50 + te.width, 102);
-    ctx.stroke();
-
-    console.log("<img src=\"" + canvas.toDataURL() + "\" />");
+    const img = ChordDiagram.draw(undefined, undefined);
 
     const options: Object = {
-      "message": "<img src=\"" + canvas.toDataURL() + "\" />"
+      "message": "<img src=\"" + img + "\" />"
     };
 
     this.render(req, res, "index", options);

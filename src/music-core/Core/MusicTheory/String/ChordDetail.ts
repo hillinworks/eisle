@@ -3,35 +3,39 @@ import { Tuning } from "./Tuning";
 import { NoteName } from "../NoteName";
 import { Pitch } from "../Pitch";
 import { ChordType } from "../ChordType";
-import { first, repeat, except, L, contains, all, skip, range, count, min, sum } from "../../Utilities/LinqLite";
+import { first, repeat, except, L, contains, all, skip, range, count, min, sum, select } from "../../Utilities/LinqLite";
 import { Interval } from "../Interval";
 import { ChordFingering, FingerRange } from "./ChordFingering";
 
-
-export namespace ChordFretting {
-
-    export function getChordFingerings(chord: Chord, tuning: Tuning): ChordFrettingCandidate[] {
-        return new ChordFrettingResolver(chord, tuning).resolve();
-    }
-
-}
-
-export class ChordFrettingCandidate {
-    readonly frets: number[];
-    readonly omittedIntervals: Interval[];
+export class ChordDetail {
+    readonly chord: Chord;
+    readonly notes: ReadonlyArray<NoteName>;
+    readonly frets: ReadonlyArray<number>;
+    readonly omittedIntervals: ReadonlyArray<Interval>;
     fingering: FingerRange[];
     difficulty: number;
 
-    constructor(frets: number[], omittedInterval: Interval[]) {
+    constructor(chord: Chord, notes: ReadonlyArray<NoteName>, frets: ReadonlyArray<number>, omittedInterval: ReadonlyArray<Interval>) {
+        this.chord = chord;
+        this.notes = notes;
         this.frets = frets;
         this.omittedIntervals = omittedInterval;
     }
 }
 
+export namespace ChordDetail {
+
+    export function getChordDetail(chord: Chord, tuning: Tuning): ChordDetail[] {
+        return new ChordDetailResolver(chord, tuning).resolve();
+    }
+
+}
+
+
 const MaxFretToFindRoot = 11;
 const MaxChordFretWidth = 4;
 
-class ChordFrettingResolver {
+class ChordDetailResolver {
 
     private readonly chord: Chord;
     private readonly tuning: Tuning;
@@ -43,13 +47,13 @@ class ChordFrettingResolver {
         this.tuning = tuning;
     }
 
-    resolve(): ChordFrettingCandidate[] {
+    resolve(): ChordDetail[] {
         this.notes = this.chord.getNotes();
         this.omittedIntervals = this.getOmittedIntervals();
 
         const leastNoteCount = this.notes.length - this.omittedIntervals.length;
 
-        let candidates: ChordFrettingCandidate[] = [];
+        let candidates: ChordDetail[] = [];
         for (let i = 0; i <= this.tuning.stringTunings.length - leastNoteCount; ++i) {
             this.resolveChordFretting(candidates, i);
         }
@@ -60,7 +64,7 @@ class ChordFrettingResolver {
         return candidates;
     }
 
-    private arrangeFingering(candidates: ChordFrettingCandidate[]) {
+    private arrangeFingering(candidates: ChordDetail[]) {
         for (let i = candidates.length - 1; i >= 0; --i) {
             const candidate = candidates[i];
             const fingering = ChordFingering.arrangeFingering(candidate.frets);
@@ -100,7 +104,7 @@ class ChordFrettingResolver {
         }
     }
 
-    private sortCandidates(candidates: ChordFrettingCandidate[]) {
+    private sortCandidates(candidates: ChordDetail[]) {
         candidates.sort((a, b) => {
             if (a.omittedIntervals.length !== b.omittedIntervals.length) {
                 return a.omittedIntervals.length - b.omittedIntervals.length;
@@ -125,8 +129,8 @@ class ChordFrettingResolver {
         });
     }
 
-    private simplifyCandidates(candidates: ChordFrettingCandidate[]) {
-        const simplifiedCandidates: ChordFrettingCandidate[] = [];
+    private simplifyCandidates(candidates: ChordDetail[]) {
+        const simplifiedCandidates: ChordDetail[] = [];
         const skipMap: { [index: number]: boolean } = {};
         for (let i = 0; i < candidates.length - 1; ++i) {
             let skipped = false;
@@ -151,7 +155,7 @@ class ChordFrettingResolver {
         return simplifiedCandidates;
     }
 
-    private simplifySkip(c1: ChordFrettingCandidate, c2: ChordFrettingCandidate) {
+    private simplifySkip(c1: ChordDetail, c2: ChordDetail) {
         return all(range(0, this.tuning.stringTunings.length),
             i => c1.frets[i] === c2.frets[i]
                 || isNaN(c1.frets[i]));
@@ -229,13 +233,16 @@ class ChordFrettingResolver {
     }
 
 
-    private resolveChordFretting(candidates: ChordFrettingCandidate[], stringIndex: number) {
+    private resolveChordFretting(candidates: ChordDetail[], stringIndex: number) {
         const frets: number[] = [];
+        const currentNotes: NoteName[] = [];
         for (let i = 0; i < stringIndex; ++i) {
             frets.push(NaN);
+            currentNotes.push(undefined);
         }
         const rootFret = this.getNoteFretOnString(this.notes[0], stringIndex);
         frets.push(rootFret);
+        currentNotes.push(this.notes[0]);
 
         if (this.omittedIntervals.length === 0) {
             this.resolveChordFrettingRecursive(
@@ -243,6 +250,7 @@ class ChordFrettingResolver {
                 frets,
                 this.notes,
                 L(this.notes).skip(1).toArray(),
+                currentNotes,
                 [],
                 rootFret - MaxChordFretWidth + 1,
                 rootFret + MaxChordFretWidth - 1);
@@ -255,7 +263,7 @@ class ChordFrettingResolver {
                         omittedIntervals.push(this.omittedIntervals[i]);
                     }
                 }
-                const notes = L(this.notes)
+                const allNotes = L(this.notes)
                     .where(n => {
                         const interval = this.notes[0].getIntervalTo(n);
                         return all(omittedIntervals, i => !i.equals(interval));
@@ -263,8 +271,9 @@ class ChordFrettingResolver {
                 this.resolveChordFrettingRecursive(
                     candidates,
                     frets,
-                    notes,
-                    L(notes).skip(1).toArray(),
+                    allNotes,
+                    L(allNotes).skip(1).toArray(),
+                    currentNotes,
                     omittedIntervals,
                     rootFret - MaxChordFretWidth + 1,
                     rootFret + MaxChordFretWidth - 1);
@@ -275,11 +284,12 @@ class ChordFrettingResolver {
     }
 
     private resolveChordFrettingRecursive(
-        candidates: ChordFrettingCandidate[],
-        currentFrets: number[],
-        allNotes: NoteName[],
-        remainingNotes: NoteName[],
-        omittedIntervals: Interval[],
+        candidates: ChordDetail[],
+        currentFrets: ReadonlyArray<number>,
+        allNotes: ReadonlyArray<NoteName>,
+        remainingNotes: ReadonlyArray<NoteName>,
+        currentNotes: ReadonlyArray<NoteName>,
+        omittedIntervals: ReadonlyArray<Interval>,
         minFret: number,
         maxFret: number) {
         const stringIndex = currentFrets.length;
@@ -287,20 +297,24 @@ class ChordFrettingResolver {
             const note = allNotes[i];
 
             const newFrets: number[] = Object.assign([], currentFrets);
+            const newCurrentNotes: NoteName[] = Object.assign([], currentNotes);
 
             const fret = this.getNoteFretOnStringInRange(note, stringIndex, minFret, maxFret);
 
-            let newRemainingNotes = remainingNotes;
+            let newRemainingNotes: NoteName[] = Object.assign([], remainingNotes);
             let newMinFret = minFret;
             let newMaxFret = maxFret;
 
             if (fret === undefined) {
                 newFrets.push(NaN);
+                newCurrentNotes.push(undefined);
             } else {
 
                 newFrets.push(fret);
                 newMinFret = Math.max(minFret, fret - MaxChordFretWidth + 1);
                 newMaxFret = Math.min(maxFret, fret + MaxChordFretWidth - 1);
+
+                newCurrentNotes.push(note);
 
                 const indexInRemainingNotes = remainingNotes.indexOf(note);
                 if (indexInRemainingNotes >= 0) {
@@ -311,7 +325,7 @@ class ChordFrettingResolver {
 
             if (stringIndex === this.tuning.stringTunings.length - 1) {
                 if (newRemainingNotes.length === 0) {
-                    candidates.push(new ChordFrettingCandidate(newFrets, omittedIntervals));
+                    candidates.push(new ChordDetail(this.chord, newCurrentNotes, newFrets, omittedIntervals));
                 }
             } else {
                 this.resolveChordFrettingRecursive(
@@ -319,6 +333,7 @@ class ChordFrettingResolver {
                     newFrets,
                     allNotes,
                     newRemainingNotes,
+                    newCurrentNotes,
                     omittedIntervals,
                     newMinFret,
                     newMaxFret);

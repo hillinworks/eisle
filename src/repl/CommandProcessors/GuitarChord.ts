@@ -8,9 +8,10 @@ import { REPL } from "../repl";
 import { select, L, join, contains } from "../../music-core/Core/Utilities/LinqLite";
 import { ChordName } from "../../music-core/Core/MusicTheory/ChordName";
 import { StringBuilder } from "../../music-core/Core/Utilities/StringBuilder";
-import { ChordFretting } from "../../music-core/Core/MusicTheory/String/ChordFretting";
+import { ChordDetail } from "../../music-core/Core/MusicTheory/String/ChordDetail";
 import { Tuning } from "../../music-core/Core/MusicTheory/String/Tuning";
 import { GuitarTunings } from "../../music-core/Core/MusicTheory/String/Plucked/GuitarTunings";
+import { ChordDiagram } from "../../eisle-core/chord/ChordDiagram";
 
 export class GuitarChord implements ICommandProcessor {
 
@@ -46,8 +47,8 @@ export class GuitarChord implements ICommandProcessor {
             resultBuilder.appendLine(parseChordResult.messages);
         }
 
-        const fingerings = ChordFretting.getChordFingerings(chord, GuitarTunings.standard);
-        for (const fingering of fingerings) {
+        const frettings = ChordDetail.getChordDetail(chord, GuitarTunings.standard);
+        for (const fingering of frettings) {
 
             resultBuilder.append("<").append(fingering.difficulty).append("> ");
 
@@ -91,6 +92,9 @@ export class GuitarChord implements ICommandProcessor {
 
             resultBuilder.appendLine();
         }
+        const img = ChordDiagram.draw(frettings[1], undefined);
+
+        resultBuilder.appendLine("<img src=\"" + img + "\" />");
 
         return REPLResult.text(resultBuilder.toString());
     }

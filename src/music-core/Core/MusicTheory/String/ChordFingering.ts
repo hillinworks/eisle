@@ -117,10 +117,10 @@ class ArrangeContext {
 }
 
 class ChordFingeringArranger {
-    private readonly frets: number[];
+    private readonly frets: ReadonlyArray<number>;
     private readonly fretRange: { min: number, max: number };
 
-    constructor(frets: number[]) {
+    constructor(frets: ReadonlyArray<number>) {
         this.frets = frets;
         this.fretRange = L(frets).where(f => !isNaN(f) && f > 0).minMax();
     }
@@ -317,7 +317,7 @@ export class FingerRange {
 
 
 export namespace ChordFingering {
-    export function arrangeFingering(frets: number[]): FingerRange[] {
+    export function arrangeFingering(frets: ReadonlyArray<number>): FingerRange[] {
         return new ChordFingeringArranger(frets).arrange();
     }
 }

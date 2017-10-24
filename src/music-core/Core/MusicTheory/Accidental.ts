@@ -32,6 +32,23 @@ export namespace Accidental {
         }
     }
 
+    export function toString(accidental: Accidental): string {
+        switch (accidental) {
+            case Accidental.Natural:
+                return "";
+            case Accidental.Sharp:
+                return "♯";
+            case Accidental.Flat:
+                return "♭";
+            case Accidental.DoubleSharp:
+                return StringUtilities.fixedFromCharCode(0x1d12a);
+            case Accidental.DoubleFlat:
+                return StringUtilities.fixedFromCharCode(0x1d12b);
+            default:
+                throw new RangeError("accidental out of range");
+        }
+    }
+
 
     export function getSemitoneOffset(accidental: Accidental): number {
         switch (accidental) {
