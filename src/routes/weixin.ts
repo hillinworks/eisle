@@ -65,20 +65,10 @@ export class WeixinRoute extends BaseRoute {
           ToUserName: result.xml.FromUserName,
           FromUserName: result.xml.ToUserName,
           CreateTime: result.xml.CreateTime,
-          MsgType: replResult.type
         }
       };
 
-      switch (replResult.type) {
-        case "text":
-          responseObject.xml.Content = replResult.content;
-          break;
-        case "image":
-          responseObject.xml.Image = {
-            MediaId: replResult.content
-          };
-          break;
-      }
+      replResult.fillResponse(responseObject.xml);
 
       const response = new xml2js.Builder({ headless: true }).buildObject(responseObject);
       res.send(response);

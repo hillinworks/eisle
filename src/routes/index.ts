@@ -8,7 +8,8 @@ import { ChordDetail } from "../music-core/Core/MusicTheory/String/ChordDetail";
 import { GuitarTunings } from "../music-core/Core/MusicTheory/String/Plucked/GuitarTunings";
 import { L } from "../music-core/Core/Utilities/LinqLite";
 import { StringBuilder } from "../music-core/Core/Utilities/StringBuilder";
-import { ChordDiagram } from "../eisle-core/chord/ChordDiagram";
+import { ChordDiagramRenderer } from "../eisle-core/chord/ChordDiagramRenderer";
+import { REPLTextResult } from "../repl/REPLResult";
 
 
 export class IndexRoute extends BaseRoute {
@@ -32,18 +33,12 @@ export class IndexRoute extends BaseRoute {
   public index(req: Request, res: Response, next: NextFunction) {
     this.title = "Home | Echo Isles";
 
-    const img = ChordDiagram.draw(undefined, undefined);
-
-    const options: Object = {
-      "message": "<img src=\"" + img + "\" />"
-    };
-
-    this.render(req, res, "index", options);
+    this.render(req, res, "index");
   }
 
   public test(req: Request, res: Response, next: NextFunction) {
     const command = req.param("command");
-    const options = { "message": REPL.process(command).content.replace(/\n/g, "<br />") };
+    const options = { "message": (REPL.process(command) as REPLTextResult).text.replace(/\n/g, "<br />") };
     this.render(req, res, "index", options);
   }
 }

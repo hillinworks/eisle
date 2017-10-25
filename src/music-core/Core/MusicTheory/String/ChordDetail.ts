@@ -265,7 +265,7 @@ class ChordDetailResolver {
                 }
                 const allNotes = L(this.notes)
                     .where(n => {
-                        const interval = this.notes[0].getIntervalTo(n);
+                        const interval = this.chord.root.getIntervalTo(n);
                         return all(omittedIntervals, i => !i.equals(interval));
                     }).toArray();
                 this.resolveChordFrettingRecursive(

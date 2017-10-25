@@ -1,5 +1,5 @@
 import { Scanner } from "../music-core/Parsing/Scanner";
-import { REPLResult } from "./REPLResult";
+import { IREPLResult, REPLTextResult } from "./REPLResult";
 import { ICommandProcessor } from "./ICommandProcessor";
 import { GuitarChord } from "./CommandProcessors/GuitarChord";
 
@@ -13,7 +13,7 @@ export class REPL {
         "吉他和弦": GuitarChord.Instance,
     };
 
-    public static process(input: string): REPLResult {
+    public static process(input: string): IREPLResult {
         const scanner = new Scanner(input);
         const command = scanner.readPattern("[\\w-]+");
         if (!command) {
@@ -34,13 +34,11 @@ export class REPL {
         return processor.process(scanner);
     }
 
-    public static showHelp(): REPLResult {
-        return {
-            type: "text",
-            content: "试试看以下命令：\n"
-                   + "\tgc Fmaj7\n"
-                   + "\t吉他和弦 Dsus2 DropD\n"
-                   + "\n回复help或者“帮助”查看所有命令"
-        };
+    public static showHelp(): IREPLResult {
+        return new REPLTextResult(
+            "试试看以下命令：\n"
+            + "\tgc Fmaj7\n"
+            + "\t吉他和弦 Dsus2 DropD\n"
+            + "\n回复help或者“帮助”查看所有命令");
     }
 }

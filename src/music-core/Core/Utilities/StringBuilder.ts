@@ -25,6 +25,11 @@ export class StringBuilder {
         return this;
     }
 
+    clear(): StringBuilder {
+        this.data.length = 0;
+        return this;
+    }
+
     toString(): string {
         return this.data.join("");
     }
