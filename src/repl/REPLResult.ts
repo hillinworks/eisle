@@ -35,8 +35,8 @@ export class REPLArticlesResult implements IREPLResult {
     fillResponse(xml: any) {
         xml.MsgType = "news";
         xml.ArticleCount = this.articles.length;
-        xml.Articles = { items: [] };
-        const items = xml.Articles.items;
+        xml.Articles = { item: [] };
+        const items = xml.Articles.item;
         for (const article of this.articles) {
             const item = {
                 Title: article.title,
