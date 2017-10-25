@@ -7,6 +7,4 @@ export namespace CanvasFonts {
     music.addFace(fontRoot + "/Minion Pro/MinionPro-It.otf", "normal", "italic");
     music.addFace(fontRoot + "/Minion Pro/MinionPro-Bold.otf", "bold");
     music.addFace(fontRoot + "/Minion Pro/MinionPro-BoldIt.otf", "bold", "italic");
-
-    export const bravura: Font = new Font("Bravura", fontRoot + "/Bravura/Bravura.otf");
 }
