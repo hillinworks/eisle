@@ -235,7 +235,6 @@ export namespace ChordDiagramRenderer {
         const canvas = new Canvas(width, height);
         const context = canvas.getContext("2d");
         context.addFont(CanvasFonts.music);
-        context.addFont(CanvasFonts.bravura);
         context.fillStyle = CanvasColors.White;
         context.fillRect(0, 0, width, height);
         return canvas;
