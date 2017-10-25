@@ -71,6 +71,7 @@ export class WeixinRoute extends BaseRoute {
       replResult.fillResponse(responseObject.xml);
 
       const response = new xml2js.Builder({ headless: true }).buildObject(responseObject);
+      console.log(response);
       res.send(response);
     });
 
