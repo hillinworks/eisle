@@ -114,7 +114,6 @@ export class GuitarChord implements ICommandProcessor {
         fs.writeFileSync(savePath, canvas.toBuffer());
 
         return new REPLArticlesResult({ title: plainName, description: "", picUrl: "http://123.56.14.211/test/cache/" + fileName, url: "" });
-        // return new REPLTextResult("<img src=\"" + canvas.toDataURL() + "\" />");
     }
 
     private drawTitlePicture(canvas: Canvas, chord: Chord, details: ReadonlyArray<ChordDetail>) {

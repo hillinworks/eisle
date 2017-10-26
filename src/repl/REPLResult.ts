@@ -26,7 +26,7 @@ export interface IArticle {
 }
 
 export class REPLArticlesResult implements IREPLResult {
-    private readonly articles: IArticle[];
+    readonly articles: IArticle[];
 
     constructor(...articles: IArticle[]) {
         this.articles = articles;

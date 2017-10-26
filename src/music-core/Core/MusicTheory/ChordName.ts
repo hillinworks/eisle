@@ -114,9 +114,8 @@ export namespace ChordName {
         const eleventh = chord.type & ChordType.Mask11;
         const thirteenth = chord.type & ChordType.Mask13;
 
-
         const shortAdded = shortAddedTones[ninth | eleventh | thirteenth];
-        if (shortAdded) {
+        if (!isSus2 && !isSus4 && shortAdded) {
             addBuilder.append(shortAdded);
         } else {
             let extendable = nameRule.extendable;

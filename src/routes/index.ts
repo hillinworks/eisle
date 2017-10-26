@@ -9,7 +9,7 @@ import { GuitarTunings } from "../music-core/Core/MusicTheory/String/Plucked/Gui
 import { L } from "../music-core/Core/Utilities/LinqLite";
 import { StringBuilder } from "../music-core/Core/Utilities/StringBuilder";
 import { ChordDiagramRenderer } from "../eisle-core/chord/ChordDiagramRenderer";
-import { REPLTextResult } from "../repl/REPLResult";
+import { REPLTextResult, REPLArticlesResult } from "../repl/REPLResult";
 
 
 export class IndexRoute extends BaseRoute {
@@ -38,7 +38,9 @@ export class IndexRoute extends BaseRoute {
 
   public test(req: Request, res: Response, next: NextFunction) {
     const command = req.param("command");
-    const options = { "message": (REPL.process(command) as REPLTextResult).text.replace(/\n/g, "<br />") };
+    let url = (REPL.process(command) as REPLArticlesResult).articles[0].picUrl;
+    url = url.replace("http://123.56.14.211/test", "http://localhost:8080");
+    const options = { "message": "<img src=\"" + url + "\" />" };
     this.render(req, res, "index", options);
   }
 }
