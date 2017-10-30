@@ -257,12 +257,13 @@ export class ChordParser {
             return false;
         }
 
+        const _this = this;
         function warnOrFailOnConflict(expectedDegree: number, warningMessage: string, failMessage: string) {
             if (degree === expectedDegree) {
-                this.helper.warning(this.scanner.lastReadRange, warningMessage, alteredNote);
-                return this.helper.empty();
+                _this.helper.warning(_this.scanner.lastReadRange, warningMessage, alteredNote);
+                return _this.helper.empty();
             } else {
-                return this.helper.fail(this.scanner.lastReadRange, failMessage, alteredNote);
+                return _this.helper.fail(_this.scanner.lastReadRange, failMessage, alteredNote);
             }
         }
 
