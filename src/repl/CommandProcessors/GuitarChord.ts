@@ -125,10 +125,11 @@ export class GuitarChord implements ICommandProcessor {
         const savePath = path.join(Cache.getCacheFolder(), fileName);
         fs.writeFileSync(savePath, canvas.toBuffer());
 
+        
         return new REPLArticlesResult({
             title: plainName,
             description: "",
-            picUrl: `http://123.56.14.211/test/cache/${fileName}?${Math.trunc(Math.random() * 10000000)}`,
+            picUrl: `http://123.56.14.211/test/cache/${fileName}?${Date.now()})}`,
             url: ""
         });
     }
