@@ -151,8 +151,10 @@ class Renderer {
             this.context.fill();
 
             this.context.fillStyle = CanvasColors.Black;
+
+            // offset '1' by -1 because it's a bit offset in the font
             this.context.fillText(i === 0 ? "T" : i.toString(),
-                (toX + fromX) / 2 + centerTextOffsetX, y + centerTextOffsetY);
+                (toX + fromX) / 2 + (centerTextOffsetX + i === 1 ? -1 : 0) * this.scale, y + centerTextOffsetY * this.scale);
         }
     }
 

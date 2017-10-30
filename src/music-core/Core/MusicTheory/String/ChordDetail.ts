@@ -71,8 +71,12 @@ class ChordDetailResolver {
             this.resolveChordFretting(candidates, i);
         }
 
-        candidates = this.simplifyCandidates(candidates);
+        // remove duplicate, or similar chords with empty string omitted
+        candidates = this.simplifyCandidates(candidates, this.simplifySkip);
+        // arrange fingering for candidates and rate them
         this.arrangeFingering(candidates);
+        // remove similar chords that omitted some strings but has a higher rating
+        candidates = this.simplifyCandidates(candidates, this.similarSkip);
         this.sortCandidates(candidates);
         return candidates;
     }
@@ -115,9 +119,11 @@ class ChordDetailResolver {
         });
     }
 
-    private simplifyCandidates(candidates: ChordDetail[]) {
+    private simplifyCandidates(candidates: ChordDetail[], comparer: (c1: ChordDetail, c2: ChordDetail) => boolean) {
         const simplifiedCandidates: ChordDetail[] = [];
-        const skipMap: { [index: number]: boolean } = {};
+        const skipMap: {
+            [index: number]: boolean
+        } = {};
         for (let i = 0; i < candidates.length - 1; ++i) {
             let skipped = false;
             for (let j = 0; j < candidates.length - 1; ++j) {
@@ -127,7 +133,7 @@ class ChordDetailResolver {
                 if (skipMap[j]) {
                     continue;
                 }
-                if (this.simplifySkip(candidates[i], candidates[j])) {
+                if (comparer(candidates[i], candidates[j])) {
                     skipped = true;
                     skipMap[i] = true;
                     break;
@@ -142,9 +148,18 @@ class ChordDetailResolver {
     }
 
     private simplifySkip(c1: ChordDetail, c2: ChordDetail) {
-        return all(range(0, this.tuning.stringTunings.length),
-            i => c1.frets[i] === c2.frets[i]
-                || isNaN(c1.frets[i]));
+        return all(range(0, c1.frets.length),
+            i => (isNaN(c1.frets[i]) && isNaN(c2.frets[i]))
+                || c1.frets[i] === c2.frets[i]
+                || (isNaN(c1.frets[i]) && c2.frets[i] === 0));
+    }
+
+    private similarSkip(c1: ChordDetail, c2: ChordDetail) {
+        return c1.rating >= c2.rating &&
+            all(range(0, c1.frets.length),
+                i => (isNaN(c1.frets[i]) && isNaN(c2.frets[i]))
+                    || c1.frets[i] === c2.frets[i]
+                    || isNaN(c1.frets[i]));
     }
 
     private getNoteFretOnString(note: NoteName, stringIndex: number): number {

@@ -212,7 +212,7 @@ class ChordFingeringArranger {
             }
 
             // mark this note as it's already pressed by the thumb
-            context.setPressability(thumbFret, 0, FretPressablility.MustNotPress);
+            context.setPressability(thumbFret - this.fretRange.min, 0, FretPressablility.MustNotPress);
             context.fingers.push(new FingerRange(thumbFret, 0, 0));
 
         } else {
@@ -359,23 +359,27 @@ export namespace ChordFingering {
         return new ChordFingeringArranger(frets).arrange();
     }
 
+    const fingerSpanPenalty = [0, 0, 1.5, 2, 0.5];
+    const fingerPressingCost = [3, 1, 1, 1, 2.5];
+    const barreBaseCost = [0, 2, 3, 2, 4];
+    const barreAdditionalCost = [0, 0.1, 1, 1, 2];
+
     export function calculateFingeringRating(frets: ReadonlyArray<number>, fingering: ReadonlyArray<FingerRange>): number {
         const fretRange = L(frets).where(f => !isNaN(f) && f > 0).minMax();
         const fretSpan = fretRange.max - fretRange.min + 1;
 
         let rating = 0;
-        rating += fretSpan * 1;
         if (fretSpan > 3) {
             // additional penalty for wide-span
             rating += (fretSpan - 3) * 5;
         }
 
-        rating += fretRange.min * 0.4;
+        rating += fretRange.min * 0.55;
 
         // prefer fingering with less breaks (more continuity, e.g. prefer x02220 more than x02x20)
         let noteAppeared = false;
         let breaks = 0;
-        for (let i = 1; i < frets.length; ++i) {
+        for (let i = 0; i < frets.length; ++i) {
             const fret = frets[i];
             if (isNaN(fret)) {
                 if (noteAppeared) {
@@ -399,7 +403,7 @@ export namespace ChordFingering {
                     const fingerSpan = finger.fret - lastFingerFret;
                     // penalty for two fingers getting too divided
                     if (fingerSpan > 1) {
-                        rating += Math.pow(fingerSpan * [0, 0, 1.5, 2, 0.5][i], 2);
+                        rating += Math.pow(fingerSpan * fingerSpanPenalty[i], 2);
                     }
                 }
             }
@@ -411,12 +415,15 @@ export namespace ChordFingering {
             }
             if (finger.from === finger.to) {
                 // penalty for thumb/pinky fingers
-                rating += [2, 1, 1, 1, 2.5][i];
+                rating += fingerPressingCost[i];
             } else {
                 // barred chord
-                rating += (finger.to - finger.from + 1) * [0, 0.4, 3, 2, 4][i];
+                rating += barreBaseCost[i] + (finger.to - finger.from + 1) * barreAdditionalCost[i];
             }
         }
+
+        const effectiveNotes = count(frets, f => !isNaN(f));
+        rating += (frets.length - effectiveNotes) * 1.5;
 
         return rating;
     }
