@@ -46,10 +46,12 @@ class Renderer {
     private x: number;
     private y: number;
     private scale: number;
+    private gridVerticalScale: number;
 
     constructor(chordDetail: ChordDetail) {
         this.chordDetail = chordDetail;
         this.fretRange = this.decideFretRange();
+        this.gridVerticalScale = 1 - Math.max(this.fretRange.max - this.fretRange.min - 2, 0) * 0.1;
     }
 
     measure(scale: number): { width: number, height: number } {
@@ -69,14 +71,18 @@ class Renderer {
         return cellWidth * (this.chordDetail.frets.length - 1) * this.scale;
     }
 
+    private get cellHeight(): number {
+        return cellHeight * this.scale * this.gridVerticalScale;
+    }
+
     private get gridHeight(): number {
-        return cellHeight * (this.fretRange.max - this.fretRange.min + 1) * this.scale;
+        return this.cellHeight * (this.fretRange.max - this.fretRange.min + 1);
     }
 
     private decideFretRange(): { min: number, max: number } {
         const fretRange = L(this.chordDetail.frets).where(f => !isNaN(f) && f > 0).minMax();
-        if (fretRange.max <= 5) {
-            return { min: 1, max: Math.max(fretRange.max, 4) };
+        if (fretRange.max <= 4) {
+            return { min: 1, max: Math.max(fretRange.max, 3) };
         }
 
         return { min: fretRange.min, max: fretRange.min + Math.max(fretRange.max - fretRange.min, 3) };
@@ -103,7 +109,7 @@ class Renderer {
 
         for (let i = 1; i < this.fretRange.max - this.fretRange.min + 1; ++i) {
             this.context.beginPath();
-            const y = gridTopMargin * this.scale + i * cellHeight * this.scale;
+            const y = gridTopMargin * this.scale + i * this.cellHeight;
             this.context.lineTo(this.x + gridLeftMargin * this.scale, this.y + y);
             this.context.lineTo(this.x + gridLeftMargin * this.scale + this.gridWidth, this.y + y);
             this.context.stroke();
@@ -113,11 +119,11 @@ class Renderer {
     private drawFingering() {
 
         this.context.lineWidth = fingerCircleLineWidth;
-        this.context.font = DrawingHelper.scaleFont(fingerFont, this.scale);
+        this.context.font = DrawingHelper.scaleFont(fingerFont, this.scale * this.gridVerticalScale);
         this.context.textAlign = "center";
         this.context.textBaseline = "middle";
 
-        const radius = fingerCircleRadius * this.scale;
+        const radius = fingerCircleRadius * this.scale * this.gridVerticalScale;
 
         for (let i = 0; i < this.chordDetail.fingering.length; ++i) {
             const finger = this.chordDetail.fingering[i];
@@ -125,7 +131,7 @@ class Renderer {
                 continue;
             }
             const relativeFret = finger.fret - this.fretRange.min;
-            const y = this.y + (gridTopMargin + cellHeight * (relativeFret + 0.5)) * this.scale;
+            const y = this.y + gridTopMargin * this.scale + this.cellHeight * (relativeFret + 0.5);
             const fromX = this.x + (gridLeftMargin + finger.from * cellWidth) * this.scale;
             const toX = this.x + (gridLeftMargin + finger.to * cellWidth) * this.scale;
             if (finger.to === finger.from) {
@@ -161,7 +167,7 @@ class Renderer {
             + centerTextOffsetX * this.scale;
         const y = this.y
             + gridTopMargin * this.scale
-            + cellHeight * 0.5 * this.scale
+            + this.cellHeight * 0.5
             + centerTextOffsetY * this.scale;
 
         this.context.font = DrawingHelper.scaleFont(fretOffsetFont, this.scale);
