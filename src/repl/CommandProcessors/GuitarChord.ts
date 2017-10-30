@@ -74,7 +74,7 @@ export class GuitarChord implements ICommandProcessor {
 
             if (detail.omittedIntervals.length > 0) {
                 logBuilder.append(" (omitted: ")
-                    .append(L(detail.omittedIntervals).select(i => i.toString()).toArray().join(", "))
+                    .append(L(detail.omittedIntervals).select(i => i.interval.toString()).toArray().join(", "))
                     .append(")");
             }
 
@@ -136,7 +136,7 @@ export class GuitarChord implements ICommandProcessor {
     private drawTitlePicture(canvas: Canvas, chord: Chord, details: ReadonlyArray<ChordDetail>) {
         const chordName = ChordName.getOrdinalName(chord);
 
-        ChordNameRenderer.draw(chordName, canvas, 16, 32, 1.5);
+        ChordNameRenderer.draw(chordName, ChordName.getOmits(chord, details[0].omittedIntervals), canvas, 16, 32, 1.5);
 
         if (details.length === 0) {
             const context = canvas.getContext("2d");

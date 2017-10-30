@@ -1,8 +1,10 @@
 
 import { ChordType } from "./ChordType";
 import { Chord } from "./Chord";
-import { toArrayMap, elementAt } from "../Utilities/LinqLite";
+import { toArrayMap, elementAt, select, L } from "../Utilities/LinqLite";
 import { StringBuilder } from "../Utilities/StringBuilder";
+import { OmittedInterval } from "./String/ChordDetail";
+import { StringUtilities } from "../Utilities/StringUtilities";
 
 export interface IChordOrdinalName { baseName: string; superscript: string; subscript: string; bass?: string; }
 
@@ -229,5 +231,18 @@ export namespace ChordName {
             builder.append("/").append(name.bass);
         }
         return builder.toString();
+    }
+
+    export function getOmits(chord: Chord, omittedIntervals: ReadonlyArray<OmittedInterval>): string {
+        if (omittedIntervals.length === 0) {
+            return "";
+        }
+
+        const intervals = L(omittedIntervals)
+            .orderBy(i => i.interval.number)
+            .select(i => StringUtilities.toOrdinal(i.interval.number + 1))
+            .toArray()
+            .join(", ");
+        return `omit ${intervals}`;
     }
 }

@@ -130,7 +130,7 @@ class ChordDetailResolver {
                 rating += [2, 1, 1, 1, 3][i];
             } else {
                 // barred chord
-                rating += (finger.to - finger.from + 1) * [0, 0.4, 2, 1.5, 3][i];
+                rating += (finger.to - finger.from + 1) * [0, 0.4, 3, 1.5, 4][i];
             }
         }
 
@@ -246,7 +246,12 @@ class ChordDetailResolver {
         const isNinthMajor = (type & ChordType.Mask9) === ChordType.M9;
         const isEleventhPerfect = (type & ChordType.Mask11) === ChordType.P11;
 
-        if (type & ChordType.OttavaAlta13) {
+        const isExtended11th = (type & ChordType.Mask9) > ChordType.OttavaAlta9
+            && (type & ChordType.Mask11) > ChordType.OttavaAlta11;
+        const isExtended13th = isExtended11th
+            && (type & ChordType.Mask13) > ChordType.OttavaAlta13;
+
+        if (isExtended13th) {
 
             // remove P11 because it is a weak tendency tone and dissonance with the 3rd
             if (isEleventhPerfect) {
@@ -265,7 +270,7 @@ class ChordDetailResolver {
                     omittedIntervals.push(new OmittedInterval(Interval.m7, 1));
                 }
             }
-        } else if (type & ChordType.OttavaAlta11) {
+        } else if (isExtended11th) {
 
             if (isMajor && isEleventhPerfect) {
                 // remove M3 because of the dissonance with P11

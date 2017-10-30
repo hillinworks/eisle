@@ -58,4 +58,19 @@
         const charCode = char.charCodeAt(0);
         return charCode >= charCodeOf0 && charCode <= charCodeOf9;
     }
+
+    export function toOrdinal(i: number): string {
+        const singles = i % 10;
+        const tens = i % 100;
+        if (singles == 1 && tens != 11) {
+            return i + "st";
+        }
+        if (singles == 2 && tens != 12) {
+            return i + "nd";
+        }
+        if (singles == 3 && tens != 13) {
+            return i + "rd";
+        }
+        return i + "th";
+    }
 }

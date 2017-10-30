@@ -82,7 +82,7 @@ class Renderer {
     private decideFretRange(): { min: number, max: number } {
         const fretRange = L(this.chordDetail.frets).where(f => !isNaN(f) && f > 0).minMax();
         if (fretRange.max <= 4) {
-            return { min: 1, max: Math.max(fretRange.max, 3) };
+            return { min: 1, max: Math.max(fretRange.max, 4) };
         }
 
         return { min: fretRange.min, max: fretRange.min + Math.max(fretRange.max - fretRange.min, 3) };
