@@ -81,7 +81,8 @@ class ChordDetailResolver {
         // prefer fingering with less breaks (more continuity, e.g. prefer x02220 more than x02x20)
         let noteAppeared = false;
         let breaks = 0;
-        for (const fret of detail.frets) {
+        for (let i = 1; i < detail.frets.length; ++i) {
+            const fret = detail.frets[i];
             if (isNaN(fret)) {
                 if (noteAppeared) {
                     ++breaks;
