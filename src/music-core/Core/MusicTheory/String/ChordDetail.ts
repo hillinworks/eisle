@@ -8,19 +8,31 @@ import { Interval } from "../Interval";
 import { ChordFingering, FingerRange } from "./ChordFingering";
 import { ChordFingeringPreset } from "./ChordFingeringPreset";
 
+export class OmittedInterval {
+    readonly interval: Interval;
+    readonly rating: number;
+
+    constructor(interval: Interval, rating: number) {
+        this.interval = interval;
+        this.rating = rating;
+    }
+}
+
 export class ChordDetail {
     readonly chord: Chord;
     readonly notes: ReadonlyArray<NoteName>;
     readonly frets: ReadonlyArray<number>;
-    readonly omittedIntervals: ReadonlyArray<Interval>;
+    readonly omittedIntervals: ReadonlyArray<OmittedInterval>;
+    readonly omittedIntervalRating: number;
     fingering: FingerRange[];
     rating: number;
 
-    constructor(chord: Chord, notes: ReadonlyArray<NoteName>, frets: ReadonlyArray<number>, omittedInterval: ReadonlyArray<Interval>) {
+    constructor(chord: Chord, notes: ReadonlyArray<NoteName>, frets: ReadonlyArray<number>, omittedInterval: ReadonlyArray<OmittedInterval>) {
         this.chord = chord;
         this.notes = notes;
         this.frets = frets;
         this.omittedIntervals = omittedInterval;
+        this.omittedIntervalRating = sum(omittedInterval, i => i.rating);
     }
 }
 
@@ -41,7 +53,7 @@ class ChordDetailResolver {
     private readonly chord: Chord;
     private readonly tuning: Tuning;
     private notes: NoteName[];
-    private omittedIntervals: Interval[];
+    private omittedIntervals: OmittedInterval[];
 
     constructor(chord: Chord, tuning: Tuning) {
         this.chord = chord;
@@ -122,6 +134,8 @@ class ChordDetailResolver {
             }
         }
 
+        rating += detail.omittedIntervalRating;
+
         return rating;
     }
 
@@ -143,9 +157,6 @@ class ChordDetailResolver {
 
     private sortCandidates(candidates: ChordDetail[]) {
         candidates.sort((a, b) => {
-            if (a.omittedIntervals.length !== b.omittedIntervals.length) {
-                return a.omittedIntervals.length - b.omittedIntervals.length;
-            }
 
             if (a.rating !== b.rating) {
                 return a.rating - b.rating;
@@ -218,14 +229,14 @@ class ChordDetailResolver {
 
     // generate a list of omittable notes for a chord, especially for high extended chords
     // the notes are in a lease-significant to most-significant order
-    private getOmittedIntervals(): Interval[] {
+    private getOmittedIntervals(): OmittedInterval[] {
         const root = this.notes[0];
-        const omittedIntervals: Interval[] = [];
+        const omittedIntervals: OmittedInterval[] = [];
         const type = this.chord.type;
 
         if ((type & (ChordType.Mask7 | ChordType.Mask9 | ChordType.Mask11 | ChordType.Mask13)) !== 0) {
             if ((type & ChordType.Mask5) === ChordType.P5) {
-                omittedIntervals.push(Interval.P5);
+                omittedIntervals.push(new OmittedInterval(Interval.P5, 0));
             }
         }
 
@@ -237,32 +248,33 @@ class ChordDetailResolver {
 
         if (type & ChordType.OttavaAlta13) {
 
-            // remove P11 because it is a weak tendency tone
+            // remove P11 because it is a weak tendency tone and dissonance with the 3rd
             if (isEleventhPerfect) {
-                omittedIntervals.push(Interval.P11);
+                // however the dissonance is more tolerable if this is a minor chord
+                omittedIntervals.push(new OmittedInterval(Interval.P11, isMinor ? 0 : -2));
             }
 
             // remove M9 because it is a weak tendency tone
             if (isNinthMajor) {
-                omittedIntervals.push(Interval.M9);
+                omittedIntervals.push(new OmittedInterval(Interval.M9, 0));
             }
 
             if (isMinor) {
                 // in minor 13th, omit m7 because it only has a slight tendency (the d5 between M3 and m7 disappeared)
                 if (isSeventhMinor) {
-                    omittedIntervals.push(Interval.m7);
+                    omittedIntervals.push(new OmittedInterval(Interval.m7, 1));
                 }
             }
         } else if (type & ChordType.OttavaAlta11) {
 
             if (isMajor && isEleventhPerfect) {
                 // remove M3 because of the dissonance with P11
-                omittedIntervals.push(Interval.M3);
+                omittedIntervals.push(new OmittedInterval(Interval.M3, -2));
             }
 
             // remove M9 because it is a weak tendency tone
             if (isNinthMajor) {
-                omittedIntervals.push(Interval.M9);
+                omittedIntervals.push(new OmittedInterval(Interval.M9, 0));
             }
         }
 
@@ -294,7 +306,7 @@ class ChordDetailResolver {
         } else {
             // make full combination of omittable notes
             for (let mask = 0; mask < (1 << this.omittedIntervals.length); ++mask) {
-                const omittedIntervals: Interval[] = [];
+                const omittedIntervals: OmittedInterval[] = [];
                 for (let i = 0; i < this.omittedIntervals.length; ++i) {
                     if (mask & (1 << i)) {
                         omittedIntervals.push(this.omittedIntervals[i]);
@@ -303,7 +315,7 @@ class ChordDetailResolver {
                 const allNotes = L(this.notes)
                     .where(n => {
                         const interval = this.chord.root.getIntervalTo(n);
-                        return all(omittedIntervals, i => !i.equals(interval));
+                        return all(omittedIntervals, i => !i.interval.equals(interval));
                     }).toArray();
                 this.resolveChordFrettingRecursive(
                     candidates,
@@ -326,7 +338,7 @@ class ChordDetailResolver {
         allNotes: ReadonlyArray<NoteName>,
         remainingNotes: ReadonlyArray<NoteName>,
         currentNotes: ReadonlyArray<NoteName>,
-        omittedIntervals: ReadonlyArray<Interval>,
+        omittedIntervals: ReadonlyArray<OmittedInterval>,
         minFret: number,
         maxFret: number) {
         const stringIndex = currentFrets.length;
