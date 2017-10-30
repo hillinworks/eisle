@@ -84,6 +84,16 @@ export class GuitarChord implements ICommandProcessor {
         console.log(logBuilder.toString());
     }
 
+    private normalizeChordGraphFileName(ordinalName: string): string {
+        let name = ordinalName.replace(/\//g, "_")
+            .replace(/♭/g, "-flat-")
+            .replace(/[♯\#]/g, "-sharp-");
+        if (name.endsWith("-")) {
+            name = name.substr(0, name.length - 1);
+        }
+        return name + ".png";
+    }
+
     process(scanner: Scanner): IREPLResult {
         const readChordNameResult = LiteralParsers.readChordName(scanner);
         if (ParseHelper.isFailed(readChordNameResult)) {
@@ -111,7 +121,7 @@ export class GuitarChord implements ICommandProcessor {
         this.drawTitlePicture(canvas, chord, details);
 
         const plainName = ChordName.getOrdinalNamePlain(chord);
-        const fileName = plainName.replace(/\//g, "_") + ".png";
+        const fileName = this.normalizeChordGraphFileName(plainName);
         const savePath = path.join(Cache.getCacheFolder(), fileName);
         fs.writeFileSync(savePath, canvas.toBuffer());
 
