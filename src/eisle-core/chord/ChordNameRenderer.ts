@@ -38,7 +38,7 @@ class Renderer {
 
         let superscript = this.chordName.superscript;
         if (this.chordName.bass !== undefined) {
-            superscript += "/" + this.chordName.bass;
+            superscript += " on " + this.chordName.bass;
         }
 
         this.context.font = DrawingHelper.scaleFont(superscriptFont, scale);
