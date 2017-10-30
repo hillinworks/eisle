@@ -38,7 +38,7 @@ export class GuitarChord implements ICommandProcessor {
 
         for (const detail of details) {
 
-            logBuilder.append("<").append(detail.difficulty).append("> ");
+            logBuilder.append("<").append(detail.rating).append("> ");
 
             for (const fret of detail.frets) {
                 if (isNaN(fret)) {
@@ -80,6 +80,8 @@ export class GuitarChord implements ICommandProcessor {
 
             logBuilder.appendLine();
         }
+
+        console.log(logBuilder.toString());
     }
 
     process(scanner: Scanner): IREPLResult {

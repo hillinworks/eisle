@@ -1,4 +1,4 @@
-import { L, toArray, count, take, firstOrUndefined, sum, any } from "../../Utilities/LinqLite";
+import { L, toArray, count, take, firstOrUndefined, sum, any, contains } from "../../Utilities/LinqLite";
 enum FretPressablility {
     MustPress = 0b01,
     CanPress = 0b00,
@@ -116,6 +116,8 @@ class ArrangeContext {
     }
 }
 
+const fingerMaxBarreRange = [0, Infinity, 3, 3, 2];
+
 class ChordFingeringArranger {
     private readonly frets: ReadonlyArray<number>;
     private readonly fretRange: { min: number, max: number };
@@ -228,7 +230,10 @@ class ChordFingeringArranger {
 
         if (allowBarre) {
             let barreStart: number | undefined = undefined;
+            // stops at the last MustPress fret
             let barreEnd: number | undefined = undefined;
+            // stops at the last CanPress or MustPress fret
+            let extendedBarreEnd: number | undefined = undefined;
             for (; context.stringIndex < this.frets.length; ++context.stringIndex) {
                 switch (context.currentFretPressability) {
                     case FretPressablility.MustPress:
@@ -236,12 +241,19 @@ class ChordFingeringArranger {
                             barreStart = context.stringIndex;
                         } else {
                             barreEnd = context.stringIndex;
+                            extendedBarreEnd = barreEnd;
                         }
                         break;
                     case FretPressablility.MustNotPress: {
                         if (barreStart !== undefined && barreEnd === undefined) {
                             // blocked by a MustNotPress fret, cannot barre
                             return undefined;
+                        }
+                        break;
+                    }
+                    case FretPressablility.CanPress: {
+                        if (extendedBarreEnd !== undefined) {
+                            extendedBarreEnd = context.stringIndex;
                         }
                         break;
                     }
@@ -254,11 +266,14 @@ class ChordFingeringArranger {
             }
 
             const fingerIndex = context.arrangeResult.length;
-            if (fingerIndex !== 1) {
-                if (barreEnd - barreStart > 2) {
-                    // fingers other than index finger can at most barre 3 strings
-                    return undefined;
-                }
+            const barreRange = barreEnd - barreStart + 1;
+            const maxBarreRange = fingerMaxBarreRange[fingerIndex];
+
+            if (barreRange > maxBarreRange) {
+                return undefined;
+            } else {
+                // barre as many frets as possible
+                barreEnd = Math.min(barreStart + maxBarreRange - 1, extendedBarreEnd);
             }
 
             context.arrangeResult.push(new FingerRange(context.columnIndex + this.fretRange.min, barreStart, barreEnd));
