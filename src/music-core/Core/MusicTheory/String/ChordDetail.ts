@@ -187,10 +187,14 @@ class ChordDetailResolver {
         const omittedIntervals: OmittedInterval[] = [];
         const type = this.chord.type;
 
-        if ((type & (ChordType.Mask7 | ChordType.Mask9 | ChordType.Mask11 | ChordType.Mask13)) !== 0) {
-            if ((type & ChordType.Mask5) === ChordType.P5) {
-                omittedIntervals.push(new OmittedInterval(Interval.P5, 0));
-            }
+        const is7th = (type & ChordType.Mask7) > 0;
+
+        if (!is7th) {
+            return omittedIntervals;
+        }
+
+        if ((type & ChordType.Mask5) === ChordType.P5) {
+            omittedIntervals.push(new OmittedInterval(Interval.P5, 0));
         }
 
         const isMinor = (type & ChordType.Mask3) === ChordType.m3;
@@ -199,10 +203,9 @@ class ChordDetailResolver {
         const isNinthMajor = (type & ChordType.Mask9) === ChordType.M9;
         const isEleventhPerfect = (type & ChordType.Mask11) === ChordType.P11;
 
-        const isExtended11th = (type & ChordType.Mask9) > ChordType.OttavaAlta9
-            && (type & ChordType.Mask11) > ChordType.OttavaAlta11;
-        const isExtended13th = isExtended11th
-            && (type & ChordType.Mask13) > ChordType.OttavaAlta13;
+        const isExtended9th = (type & ChordType.Mask9) > ChordType.OttavaAlta9;
+        const isExtended11th = isExtended9th && (type & ChordType.Mask11) > ChordType.OttavaAlta11;
+        const isExtended13th = isExtended11th && (type & ChordType.Mask13) > ChordType.OttavaAlta13;
 
         if (isExtended13th) {
 
