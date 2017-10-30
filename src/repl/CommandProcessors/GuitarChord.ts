@@ -50,8 +50,8 @@ export class GuitarChord implements ICommandProcessor {
 
             logBuilder.append(" [");
             let isFirst = true;
-            for (let i = 0; i < detail.fingering.length; ++i) {
-                const fretting = detail.fingering[i];
+            for (let i = 0; i < detail.fingering.fingers.length; ++i) {
+                const fretting = detail.fingering.fingers[i];
                 if (isNaN(fretting.fret)) {
                     continue;
                 }
@@ -72,9 +72,9 @@ export class GuitarChord implements ICommandProcessor {
 
             logBuilder.append("]");
 
-            if (detail.omittedIntervals.length > 0) {
+            if (detail.omits.length > 0) {
                 logBuilder.append(" (omitted: ")
-                    .append(L(detail.omittedIntervals).select(i => i.interval.toString()).toArray().join(", "))
+                    .append(L(detail.omits).select(i => i.interval.toString()).toArray().join(", "))
                     .append(")");
             }
 
@@ -136,7 +136,7 @@ export class GuitarChord implements ICommandProcessor {
     private drawTitlePicture(canvas: Canvas, chord: Chord, details: ReadonlyArray<ChordDetail>) {
         const chordName = ChordName.getOrdinalName(chord);
 
-        ChordNameRenderer.draw(chordName, ChordName.getOmits(chord, details[0].omittedIntervals), canvas, 16, 32, 1.5);
+        ChordNameRenderer.draw(chordName, ChordName.getOmits(chord, details[0].omits), canvas, 16, 32, 1.5);
 
         if (details.length === 0) {
             const context = canvas.getContext("2d");

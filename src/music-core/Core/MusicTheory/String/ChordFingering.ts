@@ -1,4 +1,5 @@
-import { L, toArray, count, take, firstOrUndefined, sum, any, contains } from "../../Utilities/LinqLite";
+import { L, toArray, count, take, firstOrUndefined, sum, any, contains, withMax, withMin } from "../../Utilities/LinqLite";
+import { ChordDetail } from "./ChordDetail";
 enum FretPressablility {
     MustPress = 0b01,
     CanPress = 0b00,
@@ -46,7 +47,7 @@ class ChordPressability {
 
 class ArrangeContext {
     pressabilities: ChordPressability;
-    arrangeResult: FingerRange[];
+    fingers: FingerRange[];
     private _nonThumbLowestString: number;
     columnIndex: number;
     stringIndex: number;
@@ -108,7 +109,7 @@ class ArrangeContext {
     clone(): ArrangeContext {
         const context = new ArrangeContext();
         context.pressabilities = this.pressabilities.clone();
-        context.arrangeResult = Object.assign([], this.arrangeResult);
+        context.fingers = Object.assign([], this.fingers);
         context.nonThumbLowestString = this.nonThumbLowestString;
         context.columnIndex = this.columnIndex;
         context.stringIndex = this.stringIndex;
@@ -131,8 +132,8 @@ class ChordFingeringArranger {
         const columns: ColumnPressability[] = [];
         for (let currentFret = this.fretRange.min; currentFret <= this.fretRange.max; ++currentFret) {
             const pressabilities: FretPressablility[] = [];
-            for (let i = 0; i < this.frets.length; ++i) {
-                const fret = this.frets[i];
+            for (let stringIndex = 0; stringIndex < this.frets.length; ++stringIndex) {
+                const fret = this.frets[stringIndex];
                 if (isNaN(fret) || fret > currentFret) {
                     pressabilities.push(FretPressablility.CanPress);
                 } else if (fret === currentFret) {
@@ -147,20 +148,24 @@ class ChordFingeringArranger {
         return new ChordPressability(columns);
     }
 
-    arrange(): FingerRange[] {
+    arrange(): ChordFingering {
 
         const context = new ArrangeContext();
         context.pressabilities = this.analysePressabilities();
-        context.arrangeResult = [];
+        context.fingers = [];
 
-        return this.tryArrange(false, context.clone())
-            || this.tryArrange(true, context.clone());
+        const result: ChordFingering[] = [];
+
+        this.tryArrange(false, context.clone(), result);
+        this.tryArrange(true, context.clone(), result);
+
+        return L(result).withMin(r => r.rating).firstOrUndefined();
     }
 
     private fillIdlesIfEndOfContext(context: ArrangeContext): boolean {
         if (context.isEndOfContext) {
-            for (let i = context.arrangeResult.length; i < 5; ++i) {
-                context.arrangeResult.push(FingerRange.idle);
+            for (let i = context.fingers.length; i < 5; ++i) {
+                context.fingers.push(FingerRange.idle);
             }
 
             return true;
@@ -169,7 +174,7 @@ class ChordFingeringArranger {
         return false;
     }
 
-    private tryArrange(useThumb: boolean, context: ArrangeContext): FingerRange[] | undefined {
+    private tryArrange(useThumb: boolean, context: ArrangeContext, result: ChordFingering[]): void {
 
         if (useThumb) {
             // with a thumb fingering, it's only possible to reach the higher 4 strings with other fingers
@@ -188,45 +193,54 @@ class ChordFingeringArranger {
                 // check notes which cannot be reached by neither the thumb nor other fingers
                 for (let stringIndex = 1; stringIndex < context.nonThumbLowestString; ++stringIndex) {
                     if (context.getPressability(i, stringIndex) === FretPressablility.MustPress) {
-                        return undefined;
+                        return;
                     }
 
                     context.setPressability(i, stringIndex, FretPressablility.MustNotPress);
                 }
             }
 
-            if (thumbFrets.length > 1) {
-                // there are more than 1 note which must be pressed with thumb
-                return undefined;
+            if (thumbFrets.length !== 1) {
+                // there are more than 1 note which must be pressed with thumb, or no frets available for a thumb
+                return;
             }
 
             const thumbFret = thumbFrets[0];
             const thumbMaxColumnIndex = 2;   // I can't reach the 4th fret with my thumb
             if (thumbFret > thumbMaxColumnIndex) {
-                return undefined;
+                return;
             }
 
             // mark this note as it's already pressed by the thumb
             context.setPressability(thumbFret, 0, FretPressablility.MustNotPress);
-            context.arrangeResult.push(new FingerRange(thumbFret, 0, 0));
+            context.fingers.push(new FingerRange(thumbFret, 0, 0));
 
         } else {
             context.nonThumbLowestString = 0;
-            context.arrangeResult.push(FingerRange.idle);
+            context.fingers.push(FingerRange.idle);
         }
 
         context.skipEmptyFrets();
         if (this.fillIdlesIfEndOfContext(context)) {
-            return context.arrangeResult;
+            result.push(new ChordFingering(context.fingers, ChordFingering.calculateFingeringRating(this.frets, context.fingers)));
+            return;
         }
 
-        return this.tryArrangeFingering(false, context.clone())
-            || this.tryArrangeFingering(true, context.clone());
+        this.tryArrangeFingering(false, context.clone(), result);
+        this.tryArrangeFingering(true, context.clone(), result);
 
+        return;
     }
 
-    private tryArrangeFingering(allowBarre: boolean, context: ArrangeContext): FingerRange[] | undefined {
+    private tryArrangeFingering(allowBarre: boolean, context: ArrangeContext, result: ChordFingering[]): void {
         const columnIndex = context.columnIndex;
+
+        if (context.fingers.length < 4) {
+            const contextWithIdle = context.clone();
+            contextWithIdle.fingers.push(FingerRange.idle);
+            this.tryArrangeFingering(false, contextWithIdle.clone(), result);
+            this.tryArrangeFingering(true, contextWithIdle.clone(), result);
+        }
 
         if (allowBarre) {
             let barreStart: number | undefined = undefined;
@@ -235,6 +249,7 @@ class ChordFingeringArranger {
             // stops at the last CanPress or MustPress fret
             let extendedBarreEnd: number | undefined = undefined;
             for (; context.stringIndex < this.frets.length; ++context.stringIndex) {
+                let breakLoop = false;
                 switch (context.currentFretPressability) {
                     case FretPressablility.MustPress:
                         if (barreStart === undefined) {
@@ -247,8 +262,9 @@ class ChordFingeringArranger {
                     case FretPressablility.MustNotPress: {
                         if (barreStart !== undefined && barreEnd === undefined) {
                             // blocked by a MustNotPress fret, cannot barre
-                            return undefined;
+                            return;
                         }
+                        breakLoop = true;
                         break;
                     }
                     case FretPressablility.CanPress: {
@@ -258,29 +274,32 @@ class ChordFingeringArranger {
                         break;
                     }
                 }
+                if (breakLoop) {
+                    break;
+                }
             }
 
             if (barreEnd === undefined) {
                 // no barre found
-                return undefined;
+                return;
             }
 
-            const fingerIndex = context.arrangeResult.length;
+            const fingerIndex = context.fingers.length;
             const barreRange = barreEnd - barreStart + 1;
             const maxBarreRange = fingerMaxBarreRange[fingerIndex];
 
             if (barreRange > maxBarreRange) {
-                return undefined;
+                return;
             } else {
                 // barre as many frets as possible
                 barreEnd = Math.min(barreStart + maxBarreRange - 1, extendedBarreEnd);
             }
 
-            context.arrangeResult.push(new FingerRange(context.columnIndex + this.fretRange.min, barreStart, barreEnd));
+            context.fingers.push(new FingerRange(context.columnIndex + this.fretRange.min, barreStart, barreEnd));
         } else {
             for (; context.stringIndex < this.frets.length; ++context.stringIndex) {
                 if (context.currentFretPressability === FretPressablility.MustPress) {
-                    context.arrangeResult.push(new FingerRange(context.columnIndex + this.fretRange.min, context.stringIndex));
+                    context.fingers.push(new FingerRange(context.columnIndex + this.fretRange.min, context.stringIndex));
                     ++context.stringIndex;
                     break;
                 }
@@ -289,29 +308,24 @@ class ChordFingeringArranger {
 
         context.skipEmptyFrets();
         if (this.fillIdlesIfEndOfContext(context)) {
-            return context.arrangeResult;
+            result.push(new ChordFingering(context.fingers, ChordFingering.calculateFingeringRating(this.frets, context.fingers)));
+            return;
         }
 
         // if we are still in the same column, we should not start a barre attempt
-        const shouldTryBarre = columnIndex !== context.columnIndex;
+        const canBarre = columnIndex !== context.columnIndex;
 
-        if (context.arrangeResult.length === 5) {
+        if (context.fingers.length === 5) {
             if (context.isEndOfContext) {
-                return context.arrangeResult;
-            } else {
-                // there are still notes not assigned to fingers
-                return undefined;
+                result.push(new ChordFingering(context.fingers, ChordFingering.calculateFingeringRating(this.frets, context.fingers)));
             }
+            return;
         }
 
-        const result = this.tryArrangeFingering(false, context.clone());
-        if (result !== undefined) {
-            return result;
-        } else if (shouldTryBarre) {
-            return this.tryArrangeFingering(true, context.clone());
+        this.tryArrangeFingering(false, context.clone(), result);
+        if (canBarre) {
+            this.tryArrangeFingering(true, context.clone(), result);
         }
-
-        return undefined;
     }
 }
 
@@ -330,9 +344,80 @@ export class FingerRange {
     }
 }
 
+export class ChordFingering {
+    readonly fingers: ReadonlyArray<FingerRange>;
+    readonly rating: number;
+    constructor(fingers: ReadonlyArray<FingerRange>, rating: number) {
+        this.fingers = fingers;
+        this.rating = rating;
+    }
+}
+
 
 export namespace ChordFingering {
-    export function arrangeFingering(frets: ReadonlyArray<number>): FingerRange[] {
+    export function arrangeFingering(frets: ReadonlyArray<number>): ChordFingering {
         return new ChordFingeringArranger(frets).arrange();
+    }
+
+    export function calculateFingeringRating(frets: ReadonlyArray<number>, fingering: ReadonlyArray<FingerRange>): number {
+        const fretRange = L(frets).where(f => !isNaN(f) && f > 0).minMax();
+        const fretSpan = fretRange.max - fretRange.min + 1;
+
+        let rating = 0;
+        rating += fretSpan * 1;
+        if (fretSpan > 3) {
+            // additional penalty for wide-span
+            rating += (fretSpan - 3) * 5;
+        }
+
+        rating += fretRange.min * 0.4;
+
+        // prefer fingering with less breaks (more continuity, e.g. prefer x02220 more than x02x20)
+        let noteAppeared = false;
+        let breaks = 0;
+        for (let i = 1; i < frets.length; ++i) {
+            const fret = frets[i];
+            if (isNaN(fret)) {
+                if (noteAppeared) {
+                    ++breaks;
+                }
+            } else {
+                noteAppeared = true;
+            }
+        }
+        rating += breaks * 5;
+
+        let lastFingerFret = 0;
+        for (let i = 0; i < fingering.length; ++i) {
+
+            const finger = fingering[i];
+
+            const isIdle = isNaN(finger.fret);
+
+            if (i > 1 && !isIdle) {
+                if (!isNaN(lastFingerFret)) {
+                    const fingerSpan = finger.fret - lastFingerFret;
+                    // penalty for two fingers getting too divided
+                    if (fingerSpan > 1) {
+                        rating += Math.pow(fingerSpan * [0, 0, 1.5, 2, 0.5][i], 2);
+                    }
+                }
+            }
+
+            lastFingerFret = finger.fret;
+
+            if (isIdle) {
+                continue;
+            }
+            if (finger.from === finger.to) {
+                // penalty for thumb/pinky fingers
+                rating += [2, 1, 1, 1, 2.5][i];
+            } else {
+                // barred chord
+                rating += (finger.to - finger.from + 1) * [0, 0.4, 3, 2, 4][i];
+            }
+        }
+
+        return rating;
     }
 }

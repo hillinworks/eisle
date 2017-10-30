@@ -125,8 +125,8 @@ class Renderer {
 
         const radius = fingerCircleRadius * this.scale * this.gridVerticalScale;
 
-        for (let i = 0; i < this.chordDetail.fingering.length; ++i) {
-            const finger = this.chordDetail.fingering[i];
+        for (let i = 0; i < this.chordDetail.fingering.fingers.length; ++i) {
+            const finger = this.chordDetail.fingering.fingers[i];
             if (isNaN(finger.fret)) {
                 continue;
             }

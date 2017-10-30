@@ -1,4 +1,4 @@
-import { FingerRange } from "./ChordFingering";
+import { FingerRange, ChordFingering } from "./ChordFingering";
 import { L, range, contains } from "../../Utilities/LinqLite";
 export namespace ChordFingeringPreset {
 
@@ -19,7 +19,7 @@ export namespace ChordFingeringPreset {
         [0o013131]: [idle, barre(1, 1, 5), idle, press(3, 2), press(3, 4)],
     };
 
-    export function getPreset(frets: ReadonlyArray<number>): FingerRange[] {
+    export function getPreset(frets: ReadonlyArray<number>): ChordFingering {
         const minFret = L(frets).where(f => !isNaN(f) && f > 0).min();
         const pattern = L(frets).select(f => (isNaN(f) || f === 0) ? 0 : f - minFret + 1).toArray();
         let hash = 0;
@@ -42,7 +42,7 @@ export namespace ChordFingeringPreset {
             preset[i] = new FingerRange(range.fret + minFret - 1, range.from, range.to);
         }
 
-        return preset;
+        return new ChordFingering(preset, ChordFingering.calculateFingeringRating(frets, preset));
     }
 
 }

@@ -22,17 +22,17 @@ export class ChordDetail {
     readonly chord: Chord;
     readonly notes: ReadonlyArray<NoteName>;
     readonly frets: ReadonlyArray<number>;
-    readonly omittedIntervals: ReadonlyArray<OmittedInterval>;
-    readonly omittedIntervalRating: number;
-    fingering: FingerRange[];
+    readonly omits: ReadonlyArray<OmittedInterval>;
+    readonly omitsRating: number;
+    fingering: ChordFingering;
     rating: number;
 
     constructor(chord: Chord, notes: ReadonlyArray<NoteName>, frets: ReadonlyArray<number>, omittedInterval: ReadonlyArray<OmittedInterval>) {
         this.chord = chord;
         this.notes = notes;
         this.frets = frets;
-        this.omittedIntervals = omittedInterval;
-        this.omittedIntervalRating = sum(omittedInterval, i => i.rating);
+        this.omits = omittedInterval;
+        this.omitsRating = sum(omittedInterval, i => i.rating);
     }
 }
 
@@ -77,68 +77,6 @@ class ChordDetailResolver {
         return candidates;
     }
 
-    private calculateFingeringRating(detail: ChordDetail): number {
-        const fretRange = L(detail.frets).where(f => !isNaN(f) && f > 0).minMax();
-        const fretSpan = fretRange.max - fretRange.min + 1;
-
-        let rating = 0;
-        rating += fretSpan * 1;
-        if (fretSpan > 3) {
-            // additional penalty for wide-span
-            rating += (fretSpan - 3) * 5;
-        }
-
-        rating += fretRange.min * 0.4;
-
-        // prefer fingering with less breaks (more continuity, e.g. prefer x02220 more than x02x20)
-        let noteAppeared = false;
-        let breaks = 0;
-        for (let i = 1; i < detail.frets.length; ++i) {
-            const fret = detail.frets[i];
-            if (isNaN(fret)) {
-                if (noteAppeared) {
-                    ++breaks;
-                }
-            } else {
-                noteAppeared = true;
-            }
-        }
-        rating += breaks * 5;
-
-        let lastFingerFret = 0;
-        for (let i = 0; i < detail.fingering.length; ++i) {
-
-            const finger = detail.fingering[i];
-
-            if (i > 1) {
-                if (!isNaN(lastFingerFret)) {
-                    const fingerSpan = finger.fret - lastFingerFret;
-                    // penalty for two fingers getting too divided
-                    if (fingerSpan > 1) {
-                        rating += Math.pow(fingerSpan * 2, 2);
-                    }
-                }
-            }
-
-            lastFingerFret = finger.fret;
-
-            if (isNaN(finger.from)) {
-                continue;
-            }
-            if (finger.from === finger.to) {
-                // penalty for thumb/pinky fingers
-                rating += [2, 1, 1, 1, 3][i];
-            } else {
-                // barred chord
-                rating += (finger.to - finger.from + 1) * [0, 0.4, 3, 1.5, 4][i];
-            }
-        }
-
-        rating += detail.omittedIntervalRating;
-
-        return rating;
-    }
-
     private arrangeFingering(candidates: ChordDetail[]) {
         for (let i = candidates.length - 1; i >= 0; --i) {
             const candidate = candidates[i];
@@ -151,7 +89,7 @@ class ChordDetailResolver {
             }
 
             candidate.fingering = fingering;
-            candidate.rating = this.calculateFingeringRating(candidate);
+            candidate.rating = fingering.rating + candidate.omitsRating;
         }
     }
 

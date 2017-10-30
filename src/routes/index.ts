@@ -37,7 +37,7 @@ export class IndexRoute extends BaseRoute {
   }
 
   public test(req: Request, res: Response, next: NextFunction) {
-    const command = req.param("command");
+    const command = req.params["command"];
     let url = (REPL.process(command) as REPLArticlesResult).articles[0].picUrl;
     url = url.replace("http://123.56.14.211/test", "http://localhost:8080");
     const options = { "message": "<img src=\"" + url + "\" />" };
