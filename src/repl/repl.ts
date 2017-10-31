@@ -21,7 +21,7 @@ export class REPL {
             return REPL.showHelp();
         }
 
-        const processor = REPL.commandProcessors[command];
+        const processor = REPL.commandProcessors[command.toLowerCase()];
         if (!processor) {
             console.log(`Unknown command '${input}'`);
             return REPL.showHelp();
