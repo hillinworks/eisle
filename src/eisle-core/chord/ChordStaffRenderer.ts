@@ -5,6 +5,7 @@ import { NoteName } from "../../music-core/Core/MusicTheory/NoteName";
 import { DrawingHelper } from "../drawing/DrawingHelper";
 import { StringUtilities } from "../../music-core/Core/Utilities/StringUtilities";
 import { Accidental } from "../../music-core/Core/MusicTheory/Accidental";
+import { any } from "../../music-core/Core/Utilities/LinqLite";
 
 const topMargin = 40;
 const lineSpacing = 8;
@@ -15,7 +16,7 @@ const width = 80;
 const clefPosition = 16;
 
 const notePosition = 56;
-const ledgerWidth = 24;
+const ledgerWidthBase = 24;
 
 const noteFont = `${32}px 'Music'`;
 const evenNoteOffsetX = 12;
@@ -42,8 +43,17 @@ class Renderer {
         this.notes = chord.getNotes();
     }
 
+    private getIsEvenNote(i: number): boolean {
+        if (i === 0 && this.chord.bass !== undefined) {
+            return this.chord.bass.getDegreesTo(this.chord.root) % 2 === 1;
+        } else {
+            return this.chord.root.getDegreesTo(this.notes[i]) % 2 === 1;
+        }
+    }
+
     private drawLines() {
 
+        const hasEventNote = any(this.notes, (n, i) => this.getIsEvenNote(i));
         let degrees = 0;
         for (let i = 0; i < this.notes.length - 1; ++i) {
             degrees += this.notes[i].getDegreesTo(this.notes[i + 1]);
@@ -83,8 +93,9 @@ class Renderer {
             _this.context.stroke();
         }
 
+        const ledgerWidth = ledgerWidthBase + (hasEventNote ? evenNoteOffsetX : 0);
         function drawLedger() {
-            const x = _this.x + (notePosition - ledgerWidth / 2) * _this.scale;
+            const x = _this.x + (notePosition - ledgerWidthBase / 2) * _this.scale;
             drawLine(x, ledgerWidth);
         }
 
@@ -137,8 +148,8 @@ class Renderer {
 
         for (let i = 0; i < this.notes.length; ++i) {
             const note = this.notes[i];
-            const degree = this.notes[0].getDegreesTo(note);
-            const xOffset = degree % 2 * evenNoteOffsetX * this.scale;
+            const degree = this.chord.root.getDegreesTo(note);
+            const xOffset = this.getIsEvenNote(i) ? evenNoteOffsetX * this.scale : 0;
             this.context.fillText(StringUtilities.fixedFromCharCode(0xe0a2), x + xOffset, y);
 
             if (note.accidental !== Accidental.Natural) {
