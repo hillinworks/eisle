@@ -20,19 +20,19 @@ const fingerCircleLineWidth = 2;
 const centerTextOffsetX = 0;
 const centerTextOffsetY = 1;
 
-const fingerFont = `${15}px 'Music'`;
+const fingerFont = `${15}px 'Text'`;
 
 const fretsRowHeight = 12;
 const fretsRowMargin = 4;
-const fretsRowFont = `bold ${12}px 'Music'`;
+const fretsRowFont = `bold ${12}px 'Text'`;
 
 const fretOffsetMargin = 12;
 const fretOffsetWidth = 24;
-const fretOffsetFont = `italic ${15}px 'Music'`;
+const fretOffsetFont = `italic ${15}px 'Text'`;
 
 const noteRowHeight = 12;
 const noteRowMargin = 1;
-const noteRowFont = `${12}px 'Music'`;
+const noteRowFont = `${12}px 'Text'`;
 
 const gridLeftMargin = margin;
 const gridTopMargin = margin + fretsRowHeight + fretsRowMargin;
@@ -242,6 +242,7 @@ export namespace ChordDiagramRenderer {
     export function createCanvas(width: number, height: number): Canvas {
         const canvas = new Canvas(width, height);
         const context = canvas.getContext("2d");
+        context.addFont(CanvasFonts.text);
         context.addFont(CanvasFonts.music);
         context.fillStyle = CanvasColors.White;
         context.fillRect(0, 0, width, height);

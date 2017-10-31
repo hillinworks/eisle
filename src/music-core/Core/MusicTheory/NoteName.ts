@@ -34,28 +34,19 @@ export class NoteName {
         return NoteName.fromSemitones(semitones, degrees);
     }
 
+    // Calculate degrees between two note names. The latter will always be treated as the higher one.
+    getDegreesTo(other: NoteName): number {
+        return (BaseNoteName.getAbsoluteDegrees(other.baseName) + 7 - BaseNoteName.getAbsoluteDegrees(this.baseName)) % 7;
+    }
+
     // Calculate intervals between two note names. The latter will always be treated as the higher one.
     getIntervalTo(other: NoteName): Interval {
-        const degrees = (BaseNoteName.getAbsoluteDegrees(other.baseName) + 7 - BaseNoteName.getAbsoluteDegrees(this.baseName)) % 7;
         const semitones = (other.semitones + 12 - this.semitones) % 12;
-        return Interval.fromSemitones(semitones, degrees);
+        return Interval.fromSemitones(semitones, this.getDegreesTo(other));
     }
 
     toString(): string {
-        const baseName = BaseNoteName[this.baseName];
-        switch (this.accidental) {
-            case Accidental.Sharp:
-                return `${baseName}♯`;
-            case Accidental.Flat:
-                return `${baseName}♭`;
-            case Accidental.DoubleSharp:
-                return `${baseName}${StringUtilities.fixedFromCharCode(0x1d12a)}`;
-            case Accidental.DoubleFlat:
-                return `${baseName}${StringUtilities.fixedFromCharCode(0x1d12b)}`;
-            case Accidental.Natural:
-            default:
-                return baseName;
-        }
+        return `${BaseNoteName[this.baseName]}${Accidental.toString(this.accidental)}`;
     }
 }
 

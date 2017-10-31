@@ -18,6 +18,7 @@ import * as fs from "fs";
 import { IREPLResult, REPLTextResult, REPLArticlesResult } from "../REPLResult";
 import { Cache } from "../../eisle-core/cache/Cache";
 import * as path from "path";
+import { ChordStaffRenderer } from "../../eisle-core/chord/ChordStaffRenderer";
 
 export class GuitarChord implements ICommandProcessor {
 
@@ -137,6 +138,8 @@ export class GuitarChord implements ICommandProcessor {
         const chordName = ChordName.getOrdinalName(chord);
 
         ChordNameRenderer.draw(chordName, ChordName.getOmits(chord, details[0].omits), canvas, 16, 32, 1.5);
+
+        ChordStaffRenderer.draw(chord, canvas, 16, 48, 1.5);
 
         if (details.length === 0) {
             const context = canvas.getContext("2d");

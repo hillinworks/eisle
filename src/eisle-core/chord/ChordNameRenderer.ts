@@ -5,12 +5,12 @@ import { CanvasColors } from "../../eisle-core/drawing/CanvasColors";
 import { OmittedInterval } from "../../music-core/Core/MusicTheory/String/ChordDetail";
 import { select } from "../../music-core/Core/Utilities/LinqLite";
 
-const baseNameFont = `${25}px 'Music'`;
+const baseNameFont = `${25}px 'Text'`;
 const superscriptOffset = -1;
-const superscriptFont = `${12}px 'Music'`;
-const subscriptFont = `${12}px 'Music'`;
+const superscriptFont = `${12}px 'Text'`;
+const subscriptFont = `${12}px 'Text'`;
 const subscriptOffset = 12;
-const omitsFont = `italic ${10}px 'Music'`;
+const omitsFont = `italic ${10}px 'Text'`;
 const omitsOffsetX = 2;
 const omitsOffsetY = 4;
 
