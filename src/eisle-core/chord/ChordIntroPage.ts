@@ -1,3 +1,4 @@
+import { Server } from "../../server";
 import { Chord } from "../../music-core/Core/MusicTheory/Chord";
 import { LogMessage } from "../../music-core/Core/Logging/LogMessage";
 import { ChordParser } from "../../music-core/Parsing/ChordParser";
@@ -96,7 +97,7 @@ class ChordIntroCreator {
                 fs.writeFileSync(savePath, canvas.toBuffer());
             }
 
-            urls.push("/" + Cache.getUrlPath(savePath));
+            urls.push(Server.host + "/" + Cache.getUrlPath(savePath));
         }
 
         return urls;
@@ -106,8 +107,8 @@ class ChordIntroCreator {
         this.model = new ChordIntroModel();
         this.model.plainName = ChordName.getOrdinalNamePlain(this.chord);
         this.model.input = this.input === this.model.plainName ? undefined : this.input;
-        this.model.nameImageUrl = "/" + this.getNameImagePath();
-        this.model.staffImageUrl = "/" + this.getStaffImagePath();
+        this.model.nameImageUrl = Server.host + "/" + this.getNameImagePath();
+        this.model.staffImageUrl = Server.host + "/" + this.getStaffImagePath();
         this.model.noteNames = L(this.chord.getNotes()).select(n => n.toString()).toArray().join("，");
         this.model.diagrams = this.getDiagramUrls();
 
