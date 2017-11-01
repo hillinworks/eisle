@@ -26,7 +26,7 @@ export class ChordIntroModel {
     nameImageUrl: string;
     staffImageUrl: string;
     noteNames: string;
-    diagrams: string[]
+    diagrams: string[];
 }
 
 export class ChordSyntaxError {

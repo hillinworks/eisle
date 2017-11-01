@@ -18,7 +18,7 @@ export namespace Cache {
         return folder;
     }
 
-    export function getUrlPath(cachePath:string) : string {
+    export function getUrlPath(cachePath: string): string {
         return cachePath.substring("dist/public/".length).replace(/\\/g, "/");
     }
 }
