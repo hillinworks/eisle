@@ -137,7 +137,7 @@ export class GuitarChord implements ICommandProcessor {
     private drawTitlePicture(canvas: Canvas, chord: Chord, details: ReadonlyArray<ChordDetail>) {
         const chordName = ChordName.getOrdinalName(chord);
 
-        ChordNameRenderer.draw(chordName, ChordName.getOmits(chord, details[0] ? details[0].omits : []), canvas, 16, 32, 1.5);
+        ChordNameRenderer.draw(chordName, ChordName.getOmits(chord, details[0] ? details[0].omits : []), canvas, 16, 24, 1.5);
 
         ChordStaffRenderer.draw(chord, canvas, 16, 48, 1.5);
 

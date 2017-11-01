@@ -9,7 +9,7 @@ import { any } from "../../music-core/Core/Utilities/LinqLite";
 import { ChordType } from "../../music-core/Core/MusicTheory/ChordType";
 import { Interval } from "../../music-core/Core/MusicTheory/Interval";
 
-const topMargin = 40;
+const topMargin = 32;
 const lineSpacing = 8;
 const lineWidth = 0.75;
 

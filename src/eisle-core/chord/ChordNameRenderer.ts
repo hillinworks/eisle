@@ -10,9 +10,9 @@ const superscriptOffset = -1;
 const superscriptFont = `${12}px 'Text'`;
 const subscriptFont = `${12}px 'Text'`;
 const subscriptOffset = 12;
-const omitsFont = `italic ${10}px 'Text'`;
+const omitsFont = `italic ${9}px 'Text'`;
 const omitsOffsetX = 2;
-const omitsOffsetY = 4;
+const omitsOffsetY = 3;
 
 class Renderer {
 
