@@ -1,13 +1,13 @@
-import { ChordDetail } from "../../music-core/Core/MusicTheory/String/ChordDetail";
+import { ChordDetail } from "../../../music-core/Core/MusicTheory/String/ChordDetail";
 import * as Canvas from "canvas-prebuilt";
-import { minMax, L, contains } from "../../music-core/Core/Utilities/LinqLite";
-import { CanvasColors } from "../drawing/CanvasColors";
-import { CanvasFonts } from "../drawing/fonts/CanvasFonts";
-import { Unicode } from "../../music-core/Core/Utilities/Unicode";
-import { Accidental } from "../../music-core/Core/MusicTheory/Accidental";
-import { BaseNoteName } from "../../music-core/Core/MusicTheory/BaseNoteName";
-import { StringBuilder } from "../../music-core/Core/Utilities/StringBuilder";
-import { DrawingHelper } from "../../eisle-core/drawing/DrawingHelper";
+import { minMax, L, contains } from "../../../music-core/Core/Utilities/LinqLite";
+import { CanvasColors } from "../../drawing/CanvasColors";
+import { CanvasFonts } from "../../drawing/fonts/CanvasFonts";
+import { Unicode } from "../../../music-core/Core/Utilities/Unicode";
+import { Accidental } from "../../../music-core/Core/MusicTheory/Accidental";
+import { BaseNoteName } from "../../../music-core/Core/MusicTheory/BaseNoteName";
+import { StringBuilder } from "../../../music-core/Core/Utilities/StringBuilder";
+import { DrawingHelper } from "../../../eisle-core/drawing/DrawingHelper";
 
 const margin = 12;
 const cellWidth = 22;
@@ -91,7 +91,7 @@ class Renderer {
     private drawGrid() {
 
         this.context.lineWidth = borderLineWidth * this.scale;
-        this.context.strokeStyle = CanvasColors.Black;
+        this.context.strokeStyle = CanvasColors.black;
         this.context.strokeRect(
             this.x + gridLeftMargin * this.scale,
             this.y + gridTopMargin * this.scale,
@@ -147,10 +147,10 @@ class Renderer {
                 this.context.arc(fromX, y, radius, Math.PI / 2, -Math.PI / 2);
             }
             this.context.stroke();
-            this.context.fillStyle = CanvasColors.White;
+            this.context.fillStyle = CanvasColors.white;
             this.context.fill();
 
-            this.context.fillStyle = CanvasColors.Black;
+            this.context.fillStyle = CanvasColors.black;
 
             // offset '1' by -1 because it's a bit offset in the font
             this.context.fillText(i === 0 ? "T" : i.toString(),
@@ -175,7 +175,7 @@ class Renderer {
         this.context.font = DrawingHelper.scaleFont(fretOffsetFont, this.scale);
         this.context.textAlign = "left";
         this.context.textBaseline = "middle";
-        this.context.fillStyle = CanvasColors.Black;
+        this.context.fillStyle = CanvasColors.black;
         this.context.fillText(`${this.fretRange.min} fr`, x, y);
     }
 
@@ -183,7 +183,7 @@ class Renderer {
         this.context.font = DrawingHelper.scaleFont(fretsRowFont, this.scale);
         this.context.textAlign = "center";
         this.context.textBaseline = "middle";
-        this.context.fillStyle = CanvasColors.Black;
+        this.context.fillStyle = CanvasColors.black;
 
         const y = this.y + margin * this.scale + fretsRowHeight * this.scale / 2 + centerTextOffsetY * this.scale;
 
@@ -199,7 +199,7 @@ class Renderer {
 
         this.context.textAlign = "center";
         this.context.textBaseline = "alphabetic";
-        this.context.fillStyle = CanvasColors.Black;
+        this.context.fillStyle = CanvasColors.black;
         this.context.font = DrawingHelper.scaleFont(noteRowFont, this.scale);
 
         const y = this.y
@@ -238,18 +238,7 @@ class Renderer {
 }
 
 export namespace ChordDiagramRenderer {
-
-    export function createCanvas(width: number, height: number): Canvas {
-        const canvas = new Canvas(width, height);
-        const context = canvas.getContext("2d");
-        context.addFont(CanvasFonts.text);
-        context.addFont(CanvasFonts.music);
-        context.fillStyle = CanvasColors.White;
-        context.fillRect(0, 0, width, height);
-        return canvas;
-    }
-
-    export function draw(chordFretting: ChordDetail, canvas: Canvas, x: number, y: number, scale: number) {
-        new Renderer(chordFretting).render(canvas, x, y, scale);
+    export function draw(detail: ChordDetail, canvas: Canvas, x: number, y: number, scale: number) {
+        new Renderer(detail).render(canvas, x, y, scale);
     }
 }

@@ -1,9 +1,9 @@
-import { IChordOrdinalName } from "../../music-core/Core/MusicTheory/ChordName";
+import { IChordOrdinalName } from "../../../music-core/Core/MusicTheory/ChordName";
 import * as Canvas from "canvas-prebuilt";
-import { DrawingHelper } from "../../eisle-core/drawing/DrawingHelper";
-import { CanvasColors } from "../../eisle-core/drawing/CanvasColors";
-import { OmittedInterval } from "../../music-core/Core/MusicTheory/String/ChordDetail";
-import { select } from "../../music-core/Core/Utilities/LinqLite";
+import { DrawingHelper } from "../../../eisle-core/drawing/DrawingHelper";
+import { CanvasColors } from "../../../eisle-core/drawing/CanvasColors";
+import { OmittedInterval } from "../../../music-core/Core/MusicTheory/String/ChordDetail";
+import { select } from "../../../music-core/Core/Utilities/LinqLite";
 
 const baseNameFont = `${25}px 'Text'`;
 const superscriptOffset = -1;
@@ -31,7 +31,7 @@ class Renderer {
         this.context.textAlign = "left";
         this.context.textBaseline = "top";
         this.context.font = DrawingHelper.scaleFont(baseNameFont, scale);
-        this.context.fillStyle = CanvasColors.Black;
+        this.context.fillStyle = CanvasColors.black;
         this.context.fillText(this.chordName.baseName, x, y);
 
         const baseNameMeasurement = this.context.measureText(this.chordName.baseName);

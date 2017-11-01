@@ -1,3 +1,4 @@
+import { Server } from "../../server";
 import { ICommandProcessor } from "../ICommandProcessor";
 import { Scanner } from "../../music-core/Parsing/Scanner";
 import { ChordParser } from "../../music-core/Parsing/ChordParser";
@@ -8,17 +9,10 @@ import { select, L, join, contains } from "../../music-core/Core/Utilities/LinqL
 import { ChordName } from "../../music-core/Core/MusicTheory/ChordName";
 import { StringBuilder } from "../../music-core/Core/Utilities/StringBuilder";
 import { ChordDetail } from "../../music-core/Core/MusicTheory/String/ChordDetail";
-import { Tuning } from "../../music-core/Core/MusicTheory/String/Tuning";
-import { GuitarTunings } from "../../music-core/Core/MusicTheory/String/Plucked/GuitarTunings";
-import { ChordDiagramRenderer } from "../../eisle-core/chord/ChordDiagramRenderer";
 import { Chord } from "../../music-core/Core/MusicTheory/Chord";
 import * as Canvas from "canvas-prebuilt";
-import { ChordNameRenderer } from "../../eisle-core/chord/ChordNameRenderer";
-import * as fs from "fs";
 import { IREPLResult, REPLTextResult, REPLArticlesResult } from "../REPLResult";
-import { Cache } from "../../eisle-core/cache/Cache";
-import * as path from "path";
-import { ChordStaffRenderer } from "../../eisle-core/chord/ChordStaffRenderer";
+import { ChordTitleImage } from "../../eisle-core/chord/ChordTitleImage";
 
 export class GuitarChord implements ICommandProcessor {
 
@@ -85,16 +79,6 @@ export class GuitarChord implements ICommandProcessor {
         console.log(logBuilder.toString());
     }
 
-    private normalizeChordGraphFileName(ordinalName: string): string {
-        let name = ordinalName.replace(/\//g, "_")
-            .replace(/♭/g, "-flat-")
-            .replace(/[♯\#]/g, "-sharp-");
-        if (name.endsWith("-")) {
-            name = name.substr(0, name.length - 1);
-        }
-        return name + ".png";
-    }
-
     process(scanner: Scanner): IREPLResult {
         const readChordNameResult = LiteralParsers.readChordName(scanner);
         if (ParseHelper.isFailed(readChordNameResult)) {
@@ -114,42 +98,16 @@ export class GuitarChord implements ICommandProcessor {
         }
 
         const chord = parseChordResult.value;
-        const details = ChordDetail.getChordDetail(chord, GuitarTunings.standard);
-
-        this.logResult(parseChordResult, details);
-
-        const canvas = ChordDiagramRenderer.createCanvas(360, 200);
-        this.drawTitlePicture(canvas, chord, details);
-
-        const plainName = ChordName.getOrdinalNamePlain(chord);
-        const fileName = this.normalizeChordGraphFileName(plainName);
-        const savePath = path.join(Cache.getCacheFolder(), fileName);
-        fs.writeFileSync(savePath, canvas.toBuffer());
+        const titleImagePath = ChordTitleImage.getTitleImagePath(chord);
 
         return new REPLArticlesResult({
-            title: plainName,
-            description: "",
-            picUrl: `http://123.56.14.211/test/cache/${fileName}?${Date.now()})}`,
-            url: ""
+            title: ChordName.getOrdinalNamePlain(chord),
+            description: "点击查看详情",
+            picUrl: `${Server.host}/${titleImagePath}?${Date.now()})}`,
+            url: `${Server.host}/chord/${scanner.source}?${Date.now()})}`,
         });
     }
 
-    private drawTitlePicture(canvas: Canvas, chord: Chord, details: ReadonlyArray<ChordDetail>) {
-        const chordName = ChordName.getOrdinalName(chord);
-
-        ChordNameRenderer.draw(chordName, ChordName.getOmits(chord, details[0] ? details[0].omits : []), canvas, 16, 24, 1.5);
-
-        ChordStaffRenderer.draw(chord, canvas, 16, 48, 1.5);
-
-        if (details.length === 0) {
-            const context = canvas.getContext("2d");
-            const unknownChordImage = new Canvas.Image();
-            unknownChordImage.src = fs.readFileSync("./public/images/unknown-chord.png");
-            context.drawImage(unknownChordImage, 160, 0);
-        } else {
-            ChordDiagramRenderer.draw(details[0], canvas, 160, 0, 1.2);
-        }
-    }
 
     private showChordSyntax(): IREPLResult {
         return new REPLTextResult("chord syntax here");

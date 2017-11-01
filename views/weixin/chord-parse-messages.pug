@@ -1,0 +1,12 @@
+div(class="ui list")
+    each message in messages
+        div(class="item")
+            case message.level
+                when 0
+                when 1
+                    i(class="smile icon")
+                when 2
+                    i(class="meh icon")
+                when 3
+                    i(class="frown icon")
+            div(class="content")=message.message

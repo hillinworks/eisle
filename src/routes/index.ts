@@ -1,15 +1,8 @@
+import { Server } from "../server";
 import { NextFunction, Request, Response, Router } from "express";
-import { BaseRoute } from "./route";
 import { REPL } from "../repl/repl";
-import { NoteName } from "../music-core/Core/MusicTheory/NoteName";
-import { ChordType } from "../music-core/Core/MusicTheory/ChordType";
-import { Chord } from "../music-core/Core/MusicTheory/Chord";
-import { ChordDetail } from "../music-core/Core/MusicTheory/String/ChordDetail";
-import { GuitarTunings } from "../music-core/Core/MusicTheory/String/Plucked/GuitarTunings";
-import { L } from "../music-core/Core/Utilities/LinqLite";
-import { StringBuilder } from "../music-core/Core/Utilities/StringBuilder";
-import { ChordDiagramRenderer } from "../eisle-core/chord/ChordDiagramRenderer";
-import { REPLTextResult, REPLArticlesResult } from "../repl/REPLResult";
+import { REPLArticlesResult } from "../repl/REPLResult";
+import { BaseRoute } from "./route";
 
 
 export class IndexRoute extends BaseRoute {
@@ -26,10 +19,6 @@ export class IndexRoute extends BaseRoute {
     });
   }
 
-  constructor() {
-    super();
-  }
-
   public index(req: Request, res: Response, next: NextFunction) {
     this.title = "Home | Echo Isles";
 
@@ -39,8 +28,8 @@ export class IndexRoute extends BaseRoute {
   public test(req: Request, res: Response, next: NextFunction) {
     const command = req.params["command"];
     let url = (REPL.process(command) as REPLArticlesResult).articles[0].picUrl;
-    url = url.replace("http://123.56.14.211/test", "http://localhost:8080");
-    const options = { "message": "<img src=\"" + url + "\" />" };
-    this.render(req, res, "index", options);
+    url = url.replace(Server.host, "http://localhost:8080");
+    const options = { "image":  url };
+    this.render(req, res, "weixin/test", options);
   }
 }

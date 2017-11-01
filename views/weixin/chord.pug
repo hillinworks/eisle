@@ -1,0 +1,24 @@
+html
+  head
+    include ../include/head.pug
+    link(href="/styles/eisle/chord-intro.css" rel="stylesheet" type="text/css")
+    title= title
+  body
+    div(class="article")
+      div(class="ui header")
+        img.image(class="nameImg" src=nameImageUrl)
+        if input
+          div(class="sub header") 解析自
+            span(style="font-family: monospace") #{input}
+        div(class="ui raised segment")
+          div(class="ui two column grid")
+            div(class="column")
+              img.image(src=staffImageUrl)
+            div(class="column")
+              p 组成音：#{noteNames}
+      div(class="main ui intro container")
+        h2(class="ui dividing header") 吉他指法
+        div(class="ui grid")
+          each diagram in diagrams
+            div(class="column" style="width:auto")
+              img.image(src=diagram)

@@ -1,0 +1,31 @@
+.article {
+    -webkit-box-flex: 1;
+    -webkit-flex: 1 1 auto;
+        -ms-flex: 1 1 auto;
+            flex: 1 1 auto;
+    min-width: 0px;
+}
+
+.header {
+    margin: 0em;
+    background-color: #FFFFFF;
+    border-bottom: 1px solid #DDDDDD;
+    box-shadow: none;
+    width:auto !important;
+}
+
+.header .nameImg {
+    width:auto !important;
+}
+
+.main.container {
+    padding: 2em 0em 7em;
+    width: auto !important;
+    margin-left: 1em !important;
+    margin-right: 1em !important;
+    max-width: none !important;
+}
+
+body {
+    padding: 1em;
+}

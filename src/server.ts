@@ -1,6 +1,8 @@
+import * as express from "Express";
+import { Request } from "Express";
+import { ChordRoute } from "./routes/chord";
 import * as bodyParser from "body-parser";
 import * as cookieParser from "cookie-parser";
-import * as express from "express";
 import * as logger from "morgan";
 import * as path from "path";
 import errorHandler = require("errorhandler");
@@ -79,7 +81,12 @@ export class Server {
 
     IndexRoute.create(router);
     WeixinRoute.create(router);
+    ChordRoute.create(router);
 
     this.app.use(router);
   }
+}
+
+export namespace Server {
+    export const host = "http://123.56.14.211/test";
 }

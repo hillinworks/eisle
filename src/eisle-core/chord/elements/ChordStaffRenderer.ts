@@ -1,15 +1,15 @@
-import { Chord } from "../../music-core/Core/MusicTheory/Chord";
+import { Chord } from "../../../music-core/Core/MusicTheory/Chord";
 import * as Canvas from "canvas-prebuilt";
-import { CanvasColors } from "../drawing/CanvasColors";
-import { NoteName } from "../../music-core/Core/MusicTheory/NoteName";
-import { DrawingHelper } from "../drawing/DrawingHelper";
-import { StringUtilities } from "../../music-core/Core/Utilities/StringUtilities";
-import { Accidental } from "../../music-core/Core/MusicTheory/Accidental";
-import { any } from "../../music-core/Core/Utilities/LinqLite";
-import { ChordType } from "../../music-core/Core/MusicTheory/ChordType";
-import { Interval } from "../../music-core/Core/MusicTheory/Interval";
+import { CanvasColors } from "../../drawing/CanvasColors";
+import { NoteName } from "../../../music-core/Core/MusicTheory/NoteName";
+import { DrawingHelper } from "../../drawing/DrawingHelper";
+import { StringUtilities } from "../../../music-core/Core/Utilities/StringUtilities";
+import { Accidental } from "../../../music-core/Core/MusicTheory/Accidental";
+import { any } from "../../../music-core/Core/Utilities/LinqLite";
+import { ChordType } from "../../../music-core/Core/MusicTheory/ChordType";
+import { Interval } from "../../../music-core/Core/MusicTheory/Interval";
 
-const topMargin = 32;
+const topMargin = 16;
 const lineSpacing = 8;
 const lineWidth = 0.75;
 
@@ -82,7 +82,7 @@ class Renderer {
 
         this.bassNoteY = y + (topLedgerCount + (8 - this.bassSlot) / 2) * lineSpacing * this.scale;
 
-        this.context.strokeStyle = CanvasColors.Black;
+        this.context.strokeStyle = CanvasColors.black;
         this.context.lineWidth = lineWidth * this.scale;
 
         const _this = this;
@@ -176,6 +176,7 @@ class Renderer {
     render(canvas: Canvas, x: number, y: number, scale: number) {
         this.canvas = canvas;
         this.context = canvas.getContext("2d");
+        this.context.fillStyle = CanvasColors.black;
         this.x = x;
         this.y = y;
         this.scale = scale;
