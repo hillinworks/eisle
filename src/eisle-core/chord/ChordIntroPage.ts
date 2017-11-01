@@ -84,8 +84,8 @@ class ChordIntroCreator {
         const details = ChordDetail.getChordDetail(this.chord, GuitarTunings.standard);
         const urls: string[] = [];
         for (const detail of L(details).take(10)) {
-            const key = ChordUtilities.normalizeNoteFileName(this.chord.root.toString())
-                + L(detail.frets).select(f => isNaN(f) ? "x" : f.toString()).toArray().join("");
+            const key = ChordUtilities.normalizeNoteFileName(this.chord.root.toString()) + "-"
+                + L(detail.frets).select(f => isNaN(f) ? "x" : f.toString()).toArray().join("-");
 
             const fileName = key + ".png";
             const savePath = path.join(Cache.getCacheFolder(`chord/diagrams/${chordDiagramCacheVersion}`), fileName);
