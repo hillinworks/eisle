@@ -6,6 +6,8 @@ import { DrawingHelper } from "../drawing/DrawingHelper";
 import { StringUtilities } from "../../music-core/Core/Utilities/StringUtilities";
 import { Accidental } from "../../music-core/Core/MusicTheory/Accidental";
 import { any } from "../../music-core/Core/Utilities/LinqLite";
+import { ChordType } from "../../music-core/Core/MusicTheory/ChordType";
+import { Interval } from "../../music-core/Core/MusicTheory/Interval";
 
 const topMargin = 40;
 const lineSpacing = 8;
@@ -28,6 +30,7 @@ class Renderer {
 
     private readonly chord: Chord;
     private readonly notes: NoteName[];
+    private readonly intervals: Interval[];
     private canvas: Canvas;
     private context: Canvas.Context2d;
     private x: number;
@@ -41,6 +44,7 @@ class Renderer {
     constructor(chord: Chord) {
         this.chord = chord;
         this.notes = chord.getNotes();
+        this.intervals = ChordType.getIntervals(chord.type);
     }
 
     private getIsEvenNote(i: number): boolean {
@@ -54,10 +58,8 @@ class Renderer {
     private drawLines() {
 
         const hasEventNote = any(this.notes, (n, i) => this.getIsEvenNote(i));
-        let degrees = 0;
-        for (let i = 0; i < this.notes.length - 1; ++i) {
-            degrees += this.notes[i].getDegreesTo(this.notes[i + 1]);
-        }
+        const degrees = (this.chord.bass === undefined ? 0 : this.chord.bass.getDegreesTo(this.chord.root))
+            + this.intervals[this.intervals.length - 1].number;
 
         let bottomSlot = this.notes[0].baseName - 2;  // -2 for 1st lower ledger line (central C)
         let topSlot = bottomSlot + degrees;
@@ -104,7 +106,7 @@ class Renderer {
         }
 
         for (let i = 0; i < 5; ++i) {
-            if (i === 3) {
+            if (i === 3) {  // 4th line, G
                 this.clefY = y;
             }
             drawLine(this.x, width);
@@ -129,8 +131,6 @@ class Renderer {
         this.context.font = DrawingHelper.scaleFont(noteFont, this.scale);
 
         const x = this.x + notePosition * this.scale;
-        let y = this.bassNoteY;
-
         const accidentalColumns: number[] = [];
 
         const _this = this;
@@ -146,20 +146,30 @@ class Renderer {
             return accidentalColumns.length - 1;
         }
 
-        for (let i = 0; i < this.notes.length; ++i) {
-            const note = this.notes[i];
-            const degree = this.chord.root.getDegreesTo(note);
-            const xOffset = this.getIsEvenNote(i) ? evenNoteOffsetX * this.scale : 0;
-            this.context.fillText(StringUtilities.fixedFromCharCode(0xe0a2), x + xOffset, y);
+        let lastNote: NoteName = undefined;
+        function drawNote(note: NoteName, degrees: number) {
+
+            const xOffset = ((degrees % 7) % 2 === 1) ? evenNoteOffsetX * _this.scale : 0;
+            const y = _this.bassNoteY - degrees / 2 * lineSpacing * _this.scale;
+
+            _this.context.fillText(StringUtilities.fixedFromCharCode(0xe0a2), x + xOffset, y);
 
             if (note.accidental !== Accidental.Natural) {
-                const accidentalOffset = (accidentalOffsetXBase + (getAccidentalColumnIndex(y) + 1) * accidentalOffsetX) * this.scale;
-                this.context.fillText(Accidental.toString(note.accidental), x + accidentalOffset, y);
+                const accidentalOffset = (accidentalOffsetXBase + (getAccidentalColumnIndex(y) + 1) * accidentalOffsetX) * _this.scale;
+                _this.context.fillText(Accidental.toString(note.accidental), x + accidentalOffset, y);
             }
 
-            if (i < this.notes.length - 1) {
-                y -= note.getDegreesTo(this.notes[i + 1]) / 2 * lineSpacing * this.scale;
-            }
+            lastNote = note;
+        }
+
+        if (this.chord.bass !== undefined) {
+            drawNote(this.chord.bass, this.chord.bass.getDegreesTo(this.chord.root));
+        }
+
+        drawNote(this.chord.root, 0);
+
+        for (const interval of this.intervals) {
+            drawNote(this.chord.root.offset(interval), interval.number);
         }
     }
 
