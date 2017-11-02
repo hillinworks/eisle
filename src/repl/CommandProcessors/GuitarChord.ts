@@ -103,8 +103,8 @@ export class GuitarChord implements ICommandProcessor {
         return new REPLArticlesResult({
             title: ChordName.getOrdinalNamePlain(chord),
             description: "点击查看详情",
-            picUrl: `${Server.host}/${titleImagePath}?${Date.now()})}`,
-            url: `${Server.host}/chord/${chordName}?${Date.now()})}`,
+            picUrl: `${titleImagePath}?${Date.now()})}`,
+            url: `${Server.host}/chord/${chordName}?${Date.now()}`,
         });
     }
 
