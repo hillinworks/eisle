@@ -110,12 +110,7 @@ export class GuitarChord implements ICommandProcessor {
 
 
     private showChordSyntax(): IREPLResult {
-        return new REPLArticlesResult({
-            title: ChordName.getOrdinalNamePlain(chord),
-            description: "点击查看详情",
-            picUrl: `${titleImagePath}?${Date.now()})}`,
-            url: `${Server.current.app.locals.eisle.host}/chord/${encodeURIComponent(chordName)}?${Date.now()}`,
-        });
+        return new REPLTextResult("command syntax here");
     }
 
     private showCommandSyntax(): IREPLResult {
