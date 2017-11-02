@@ -1,7 +1,7 @@
 import * as fs from "fs";
 import * as path from "path";
 import { ensureDirSync } from "fs-extra";
-import { Server } from "src/server";
+import { Server } from "../../server";
 
 export namespace Cache {
     const cacheFolder = "./dist/public/cache";

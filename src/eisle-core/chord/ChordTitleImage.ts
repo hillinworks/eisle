@@ -45,7 +45,7 @@ export namespace ChordTitleImage {
             fs.writeFileSync(savePath, canvas.toBuffer());
         }
 
-        return Cache.getUrlPath(savePath);
+        return Cache.getUrlPath(savePath, true);
     }
 
 }
