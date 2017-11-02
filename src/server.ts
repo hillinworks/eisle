@@ -5,6 +5,7 @@ import * as bodyParser from "body-parser";
 import * as cookieParser from "cookie-parser";
 import * as logger from "morgan";
 import * as path from "path";
+import * as fs from "fs";
 import errorHandler = require("errorhandler");
 import methodOverride = require("method-override");
 import { IndexRoute } from "./routes/index";
@@ -15,7 +16,8 @@ export class Server {
   public app: express.Application;
 
   public static bootstrap(): Server {
-    return new Server();
+    Server.current = new Server();
+    return Server.current;
   }
 
   constructor() {
@@ -30,6 +32,16 @@ export class Server {
   }
 
   public config() {
+
+    console.log(__dirname);
+
+    if (fs.existsSync(path.join(__dirname, "config/eisleconf.json"))) {
+      this.app.locals.eisle = JSON.parse(fs.readFileSync(path.join(__dirname, "config/eisleconf.json"), "utf8"));
+    }
+
+    if (fs.existsSync(path.join(__dirname, "config/eisleconf.override.json"))) {
+      Object.assign(this.app.locals.eisle, JSON.parse(fs.readFileSync(path.join(__dirname, "config/eisleconf.override.json"), "utf8")));
+    }
 
     this.app.use(express.static(path.join(__dirname, "public")));
 
@@ -88,5 +100,5 @@ export class Server {
 }
 
 export namespace Server {
-    export const host = "http://123.56.14.211/test";
+  export let current: Server;
 }

@@ -27,8 +27,7 @@ export class IndexRoute extends BaseRoute {
 
   public test(req: Request, res: Response, next: NextFunction) {
     const command = req.params["command"];
-    let url = (REPL.process(command) as REPLArticlesResult).articles[0].picUrl;
-    url = url.replace(Server.host, "http://localhost:8080");
+    const url = (REPL.process(command) as REPLArticlesResult).articles[0].picUrl;
     const options = { "image":  url };
     this.render(req, res, "weixin/test", options);
   }

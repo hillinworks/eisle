@@ -22,7 +22,7 @@ export namespace Cache {
     export function getUrlPath(cachePath: string, absolute = false): string {
         const relative = cachePath.substring("dist/public/".length).replace(/\\/g, "/");
         if (absolute) {
-            return `${Server.host}/${relative}`;
+            return `${Server.current.app.locals.eisle.host}/${relative}`;
         } else {
             return relative;
         }

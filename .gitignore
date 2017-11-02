@@ -60,3 +60,4 @@ typings/
 /.tscache
 /dist/
 /package-lock.json
+/config/eisleconf.override.json
