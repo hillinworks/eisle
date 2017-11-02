@@ -56,11 +56,11 @@ class ChordIntroCreator {
     }
 
     getNameImagePath(): string {
-        const fileName = ChordUtilities.normalizeChordFileName(this.model.plainName) + ".png";
+        const fileName = ChordUtilities.normalizeChordFileName(this.model.plainName) + ".svg";
         const savePath = path.join(Cache.getCacheFolder(`chord/name/${chordNameCacheVersion}`), fileName);
 
         if (!fs.existsSync(savePath)) {
-            const canvas = ChordCanvas.createCanvas(256, 64);
+            const canvas = ChordCanvas.createCanvas(256, 64, "svg");
             ChordNameRenderer.draw(ChordName.getOrdinalName(this.chord), undefined, canvas, 0, 12, 2);
             fs.writeFileSync(savePath, canvas.toBuffer());
         }
@@ -69,11 +69,11 @@ class ChordIntroCreator {
     }
 
     getStaffImagePath(): string {
-        const fileName = ChordUtilities.normalizeChordFileName(this.model.plainName) + ".png";
+        const fileName = ChordUtilities.normalizeChordFileName(this.model.plainName) + ".svg";
         const savePath = path.join(Cache.getCacheFolder(`chord/staff/${chordStaffCacheVersion}`), fileName);
 
         if (!fs.existsSync(savePath)) {
-            const canvas = ChordCanvas.createCanvas(256, 128);
+            const canvas = ChordCanvas.createCanvas(256, 128, "svg");
             ChordStaffRenderer.draw(this.chord, canvas, 0, 12, 1.5);
             fs.writeFileSync(savePath, canvas.toBuffer());
         }
@@ -88,11 +88,11 @@ class ChordIntroCreator {
             const key = ChordUtilities.normalizeNoteFileName(this.chord.root.toString()) + "-"
                 + L(detail.frets).select(f => isNaN(f) ? "x" : f.toString()).toArray().join("-");
 
-            const fileName = key + ".png";
+            const fileName = key + ".svg";
             const savePath = path.join(Cache.getCacheFolder(`chord/diagrams/${chordDiagramCacheVersion}`), fileName);
 
             if (!fs.existsSync(savePath)) {
-                const canvas = ChordCanvas.createCanvas(256, 256);
+                const canvas = ChordCanvas.createCanvas(256, 256, "svg");
                 ChordDiagramRenderer.draw(detail, canvas, 0, 0, 1.5);
                 fs.writeFileSync(savePath, canvas.toBuffer());
             }
