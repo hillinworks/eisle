@@ -14,7 +14,14 @@ export class ChordRoute extends BaseRoute {
             new ChordRoute().chord(req, res, next);
         };
 
-        router.get("/chord/:input", handler);
+        router.get("/chord/syntax", (req: Request, res: Response, next: NextFunction) => {
+            new ChordRoute().chordSyntax(req, res, next);
+        });
+
+        router.get("/chord/:input", (req: Request, res: Response, next: NextFunction) => {
+            new ChordRoute().chord(req, res, next);
+        });
+
     }
 
     public chord(req: Request, res: Response, next: NextFunction) {
@@ -34,5 +41,10 @@ export class ChordRoute extends BaseRoute {
             this.title = chordIntro.plainName;
             this.render(req, res, "weixin/chord", chordIntro);
         }
+    }
+
+    public chordSyntax(req: Request, res: Response, next: NextFunction) {
+        this.title = "和弦语法";
+        this.render(req, res, "weixin/chord-syntax");
     }
 }

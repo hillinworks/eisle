@@ -1,0 +1,302 @@
+html
+    head
+        include ../include/head.pug
+        link(href=eisle.host+"/styles/eisle/chord-intro.css" rel="stylesheet" type="text/css")
+        title= title + " - Echo Isles"
+    body
+        h1 和弦语法
+        p Echo Isles 支持很多常见的和弦书写方式，因此多数情况下你都可以使用自己熟悉的规则来书写和弦。例如，以下和弦名都可以使用：
+        ul
+            li C
+            li Dsus4/F#
+            li Gbmø7add13
+        h2 基本结构
+        h3 音名
+        p Echo Isle使用
+            code A
+            | 、
+            code B
+            | 、
+            code C
+            | 、
+            code D
+            | 、
+            code E
+            | 、
+            code F
+            | 和
+            code G
+            | 表示音名。音名不区分大小写。
+        p 变音记号写在字母之后。变音记号包括升号
+            code ♯
+            | 和降号
+            code ♭
+            |。为了输入方便，可以使用
+            code #
+            | 和
+            code b
+            | 分别代替升降号。
+        h3 根音
+        p 和弦名必须以一个音名开始。这个音名称为和弦的
+            b 根音
+            | 。
+        div.ui.icon.message
+            i.info.icon
+            div.content
+                div.header 大三和弦
+                p 如果和弦名只由根音构成，这个和弦将被解析为一个大三和弦。
+        h3 三和弦
+        p 在根音后使用以下标记来描述三和弦：
+            table.ui.celled.padded.unstackable.table
+                thead
+                    tr
+                        th.single.line 标记
+                        th 类型
+                        th 示例
+                tbody
+                    tr
+                        td 
+                            p
+                                code M
+                            p
+                                code maj
+                            p
+                                code Δ
+                        td 大三和弦
+                        td 
+                            p
+                                code BbM
+                            p
+                                code Emaj
+                            p
+                                code G#Δ
+                    tr
+                        td 
+                            p
+                                code m
+                            p
+                                code min
+                        td 小三和弦
+                        td 
+                            p
+                                code Gm
+                            p
+                                code Amin
+                    tr
+                        td
+                            p
+                                code +                       
+                            p
+                                code aug
+                        td 增三和弦
+                        td 
+                            p
+                                code Aaug
+                            p
+                                code F+
+                    tr
+                        td 
+                            p
+                                code -
+                            p
+                                code dim
+                            p
+                                code °
+                        td 减三和弦
+                        td 
+                            p
+                                code C#dim
+                            p
+                                code E-
+                            p
+                                code Gb°
+        h3 强力和弦
+        p “强力和弦”严格来说并不是一种和弦，但Echo Isle也对其予以支持。在根音后加上
+            code 5
+            | 来表示这是一个强力和弦。例如
+            code F5
+            | 。
+        h3 七和弦
+        p 在根音后使用以下标记来描述七和弦：
+            table.ui.celled.padded.unstackable.table
+                thead
+                    tr
+                        th.single.line 标记
+                        th 类型
+                        th 示例
+                tbody
+                    tr
+                        td
+                            p 
+                                code 7
+                            p 
+                                code dom7
+                        td 属七和弦
+                        td 
+                            p 
+                                code G7
+                            p 
+                                code Adom7
+                    tr
+                        td 
+                            p 
+                                code M7
+                            p 
+                                code maj7
+                            p 
+                                code Δ7
+                        td 大七和弦
+                        td 
+                            p 
+                                code BbM7
+                            p 
+                                code Emaj7
+                            p 
+                                code G#Δ7
+                    tr
+                        td 
+                            p 
+                                code m7
+                            p 
+                                code min7
+                        td 小七和弦
+                        td 
+                            p 
+                                code Gm7
+                            p 
+                                code Amin7
+                    tr
+                        td
+                            p 
+                                code +7
+                            p 
+                                code aug7
+                        td 增七和弦
+                        td 
+                            p 
+                                code Aaug7
+                            p 
+                                code F+7
+                    tr
+                        td 
+                            p 
+                                code -7
+                            p 
+                                code dim7
+                            p 
+                                code °7
+                        td 减七和弦
+                        td 
+                            p 
+                                code C#dim7
+                            p 
+                                code E-7
+                            p 
+                                code Gb°7
+                    tr
+                        td
+                            p 
+                                code mM7
+                            p 
+                                code mmaj7
+                            p 
+                                code mΔ7
+                        td 小大七和弦
+                        td 
+                            p 
+                                code BbmM7
+                            p 
+                                code Emmaj7
+                            p 
+                                code G#mΔ7
+                    tr
+                        td
+                            p 
+                                code ø7
+                        td 半减七和弦
+                        td 
+                            p 
+                                code Gø7
+        div.ui.icon.message
+            i.info.icon
+            div.content
+                div.header 不常用的七和弦
+                p 还有一些不常用的七和弦，可以使用变五度音的方式在上述七和弦中衍生。
+        h3 延伸和弦
+        p 除减七和弦之外的所有七和弦都可以延伸为九、十一或十三和弦，只需要将和弦名中的
+            code 7
+            | 替换为
+            code 9
+            | 、
+            code 11
+            | 或者
+            code 13
+            | 。例如：
+            code D9
+            | 、
+            code G#13
+            | 。
+        div.ui.icon.message
+            i.info.icon
+            div.content
+                div.header 省略不重要的组成音
+                p Echo Isle会在安排指法时酌情省略不重要的延伸和弦组成音，以简化指法。
+        h3 挂留和弦
+        p 在和弦名后加上
+            code sus
+            | 、
+            code sus2
+            | 或者
+            code sus4
+            | 可以修改和弦的三度音，构建挂留和弦。
+        div.ui.icon.message
+            i.info.icon
+            div.content
+                div.header 注意事项
+                p 挂留和弦会改变和弦的三度音为大二度或者纯四度，因此不能在小三、增三、减三以及类似的七和弦、延伸和弦上使用挂留音。
+        h3 添加音
+        p 可以在和弦名后用
+            code add
+            | 来添加外音。
+        table.ui.celled.padded.unstackable.table
+            thead
+                tr
+                    th.single.line 标记
+                    th 作用
+                    th 示例
+            tbody
+                tr
+                    td
+                        p 
+                            code add2
+                        p
+                            code add9
+                    td 
+                        p 二度音
+                        p 九度音
+                    td 
+                        p 
+                            code Cadd2
+                        p 
+                            code Fadd9
+                tr
+                    td
+                        p 
+                            code add4
+                        p
+                            code add11
+                    td 
+                        p 二度音
+                        p 九度音
+                    td 
+                        p 
+                            code Cadd4
+                        p 
+                            code Fadd11
+            p 简化添加音
+                
+
+        
+
+
+

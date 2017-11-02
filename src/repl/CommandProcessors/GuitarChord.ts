@@ -82,7 +82,7 @@ export class GuitarChord implements ICommandProcessor {
     process(scanner: Scanner): IREPLResult {
         const readChordNameResult = LiteralParsers.readChordName(scanner);
         if (ParseHelper.isFailed(readChordNameResult)) {
-            return this.showChordSyntax();
+            return this.showCommandSyntax();
         }
 
         if (ParseHelper.isEmpty(readChordNameResult)) {
@@ -110,7 +110,12 @@ export class GuitarChord implements ICommandProcessor {
 
 
     private showChordSyntax(): IREPLResult {
-        return new REPLTextResult("chord syntax here");
+        return new REPLArticlesResult({
+            title: ChordName.getOrdinalNamePlain(chord),
+            description: "点击查看详情",
+            picUrl: `${titleImagePath}?${Date.now()})}`,
+            url: `${Server.current.app.locals.eisle.host}/chord/${encodeURIComponent(chordName)}?${Date.now()}`,
+        });
     }
 
     private showCommandSyntax(): IREPLResult {

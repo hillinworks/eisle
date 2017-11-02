@@ -39,7 +39,7 @@ export class ChordSyntaxError {
     readonly input: string;
     readonly messages: LogMessage[];
 
-    constructor(input:string, messages: LogMessage[]) {
+    constructor(input: string, messages: LogMessage[]) {
         this.input = input;
         this.messages = messages;
     }
