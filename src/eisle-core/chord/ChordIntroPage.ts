@@ -19,22 +19,28 @@ import { L } from "../../music-core/Core/Utilities/LinqLite";
 import { GuitarTunings } from "../../music-core/Core/MusicTheory/String/Plucked/GuitarTunings";
 import { ChordDiagramRenderer } from "./elements/ChordDiagramRenderer";
 
+export interface IChordDiagramCollection {
+    url: string;
+    omits: string;
+}
+
 export class ChordIntroModel {
-    hasError: false;
+    readonly hasError: false;
     messages: LogMessage[];
     input: string;
     plainName: string;
     nameImageUrl: string;
     staffImageUrl: string;
-    noteNames: string;
-    diagrams: string[];
+    diagrams: IChordDiagramCollection[];
 }
 
 export class ChordSyntaxError {
-    hasError: true;
+    readonly hasError: true;
+    readonly input: string;
     readonly messages: LogMessage[];
 
-    constructor(messages: LogMessage[]) {
+    constructor(input:string, messages: LogMessage[]) {
+        this.input = input;
         this.messages = messages;
     }
 }
@@ -73,18 +79,18 @@ class ChordIntroCreator {
         const savePath = path.join(Cache.getCacheFolder(`chord/staff/${chordStaffCacheVersion}`), fileName);
 
         if (!fs.existsSync(savePath)) {
-            const canvas = ChordCanvas.createCanvas(256, 128, "svg");
-            ChordStaffRenderer.draw(this.chord, canvas, 0, 12, 1.5);
+            const canvas = ChordCanvas.createCanvas(96, 96, "svg");
+            ChordStaffRenderer.draw(this.chord, canvas, 12, 12, 1);
             fs.writeFileSync(savePath, canvas.toBuffer());
         }
 
         return Cache.getUrlPath(savePath, true);
     }
 
-    getDiagramUrls(): string[] {
+    getDiagramUrls(): IChordDiagramCollection[] {
         const details = ChordDetail.getChordDetail(this.chord, GuitarTunings.standard);
-        const urls: string[] = [];
-        for (const detail of L(details).take(10)) {
+        const result: IChordDiagramCollection[] = [];
+        for (const detail of L(details).take(6)) {
             const key = ChordUtilities.normalizeNoteFileName(this.chord.root.toString()) + "-"
                 + L(detail.frets).select(f => isNaN(f) ? "x" : f.toString()).toArray().join("-");
 
@@ -92,15 +98,18 @@ class ChordIntroCreator {
             const savePath = path.join(Cache.getCacheFolder(`chord/diagrams/${chordDiagramCacheVersion}`), fileName);
 
             if (!fs.existsSync(savePath)) {
-                const canvas = ChordCanvas.createCanvas(256, 256, "svg");
-                ChordDiagramRenderer.draw(detail, canvas, 0, 0, 1.5);
+                const canvas = ChordCanvas.createCanvas(168, 168, "svg");
+                ChordDiagramRenderer.draw(detail, canvas, 0, 0, 1);
                 fs.writeFileSync(savePath, canvas.toBuffer());
             }
 
-            urls.push(Cache.getUrlPath(savePath, true));
+            result.push({
+                url: Cache.getUrlPath(savePath, true),
+                omits: ChordName.getOmits(this.chord, detail.omits)
+            });
         }
 
-        return urls;
+        return result;
     }
 
     create(): ChordIntroModel {
@@ -109,7 +118,6 @@ class ChordIntroCreator {
         this.model.input = this.input === this.model.plainName ? undefined : this.input;
         this.model.nameImageUrl = this.getNameImagePath();
         this.model.staffImageUrl = this.getStaffImagePath();
-        this.model.noteNames = L(this.chord.getNotes()).select(n => n.toString()).toArray().join("，");
         this.model.diagrams = this.getDiagramUrls();
 
         return this.model;
@@ -122,7 +130,7 @@ export namespace ChordIntroPage {
         const scanner = new Scanner(input);
         const readChordNameResult = LiteralParsers.readChordName(scanner);
         if (!ParseHelper.isSuccessful(readChordNameResult)) {
-            return new ChordSyntaxError(readChordNameResult.messages);
+            return new ChordSyntaxError(input, readChordNameResult.messages);
         }
 
         const parser = new ChordParser();
@@ -130,11 +138,14 @@ export namespace ChordIntroPage {
         const parseChordResult = parser.parse(chordName);
 
         if (ParseHelper.isFailed(parseChordResult)) {
-            return new ChordSyntaxError(parseChordResult.messages);
+            return new ChordSyntaxError(input, parseChordResult.messages);
         }
 
         const chord = parseChordResult.value;
 
-        return new ChordIntroCreator(input, chord).create();
+        const model = new ChordIntroCreator(input, chord).create();
+        model.messages = parseChordResult.messages.length > 0 ? parseChordResult.messages : undefined;
+
+        return model;
     }
 }

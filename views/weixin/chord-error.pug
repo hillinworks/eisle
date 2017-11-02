@@ -1,6 +1,10 @@
 html
     head
         include ../include/head.pug
-        title= title
+        link(href=eisle.host+"/styles/eisle/chord-intro.css" rel="stylesheet" type="text/css")
+        title= title + " - Echo Isles"
     body
-        include chord-parse-messages.pug
+        div.ui.warning.message
+            div 无法解析
+                span(style="font-family: monospace") #{input}
+            include chord-parse-messages.pug

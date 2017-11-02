@@ -1,25 +1,27 @@
 html
   head
-    meta(name="viewport", content="width=device-width, initial-scale=1.0")
     include ../include/head.pug
     link(href=eisle.host+"/styles/eisle/chord-intro.css" rel="stylesheet" type="text/css")
-    title= title
+    title= title + " - Echo Isles"
   body
-    div(class="article")
-      div(class="ui header")
-        img.image(class="name-img" src=nameImageUrl)
+    div.article
+      div.ui.header
+        div.ui.two.column.grid
+          div.column
+            img.name.image(src=nameImageUrl)
+          div.right.aligned.column
+            img.image(src=staffImageUrl)
         if input
-          div(class="sub header") 解析自
-            span(style="font-family: monospace") #{input}
-        div(class="ui raised segment")
-          div(class="ui two column grid")
-            div(class="column")
-              img.image(src=staffImageUrl)
-            div(class="column")
-              p 组成音：#{noteNames}
-      div(class="main ui intro container")
-        h2(class="ui dividing header") 吉他指法
-        div(class="ui stackable grid")
+          div(class=(messages ? "ui warning message" : "ui message")) 
+            div 解析自
+              span(style="font-family: monospace") #{input}
+            if(messages)
+              include chord-parse-messages.pug
+      div.main.ui.intro.container
+        h2.ui.dividing.header 指法
+        div.ui.stackable.grid
           each diagram in diagrams
-            div(class="column" style="width:auto")
-              img.image(src=diagram)
+            div.column.chord.diagram
+              img.ui.centered.image(src=diagram.url)
+              if diagram.omits
+                div.omits= "（" + diagram.omits + "）"

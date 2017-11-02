@@ -450,6 +450,10 @@ export class ChordParser {
             "\\#11", "♯11", "\\+11", "b11", "♭11", "\\-11", "11",
             "\\#13", "♯13", "\\+13", "b13", "♭13", "\\-13", "13");
 
+        if (addedTone === undefined) {
+            return this.helper.fail(this.scanner.lastReadRange, ChordParseMessages.Error_UnknownAddedTone);
+        }
+
         const ordinizedAddedTone = addedTone.replace(/[b\-]/, "♭").replace(/[\#\+]/, "♯");
 
         const _this = this;

@@ -1,6 +1,6 @@
-div(class="ui list")
+div.ui.list
     each message in messages
-        div(class="item")
+        div.item
             case message.level
                 when 0
                 when 1
@@ -9,4 +9,4 @@ div(class="ui list")
                     i(class="meh icon")
                 when 3
                     i(class="frown icon")
-            div(class="content")=message.message
+            div.content=message.message

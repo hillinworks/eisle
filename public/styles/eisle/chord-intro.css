@@ -6,7 +6,7 @@
     min-width: 0px;
 }
 
-.header {
+.article .header {
     margin: 0em;
     background-color: #FFFFFF;
     border-bottom: 1px solid #DDDDDD;
@@ -14,7 +14,7 @@
     width:auto !important;
 }
 
-.header .name-img {
+.article .header .name.image {
     width: auto !important;
 }
 
@@ -28,4 +28,14 @@
 
 body {
     padding: 1em;
+}
+
+.chord.diagram {
+    width:auto !important;
+}
+
+.chord.diagram .omits {
+    margin-left: -2em;
+    text-align: center;
+    width:100%;
 }

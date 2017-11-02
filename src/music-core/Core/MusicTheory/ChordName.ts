@@ -240,9 +240,9 @@ export namespace ChordName {
 
         const intervals = L(omittedIntervals)
             .orderBy(i => i.interval.number)
-            .select(i => StringUtilities.toOrdinal(i.interval.number + 1))
+            .select(i => `${i.interval.number + 1}音`)
             .toArray()
-            .join(", ");
-        return `omit ${intervals}`;
+            .join("、");
+        return `省略 ${intervals}`;
     }
 }
