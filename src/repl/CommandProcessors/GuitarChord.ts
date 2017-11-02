@@ -104,7 +104,7 @@ export class GuitarChord implements ICommandProcessor {
             title: ChordName.getOrdinalNamePlain(chord),
             description: "点击查看详情",
             picUrl: `${titleImagePath}?${Date.now()})}`,
-            url: `${Server.host}/chord/${chordName}?${Date.now()}`,
+            url: `${Server.host}/chord/${encodeURIComponent(chordName)}?${Date.now()}`,
         });
     }
 
