@@ -19,7 +19,7 @@ export namespace ChordTitleImage {
     function drawTitlePicture(canvas: Canvas, chord: Chord, details: ReadonlyArray<ChordDetail>) {
         const chordName = ChordName.getOrdinalName(chord);
 
-        ChordNameRenderer.draw(chordName, ChordName.getOmits(chord, details[0] ? details[0].omits : []), canvas, 16, 24, 1.5);
+        ChordNameRenderer.draw(chordName, ChordName.getOmitsEnglish(chord, details[0] ? details[0].omits : []), canvas, 16, 24, 1.5);
 
         ChordStaffRenderer.draw(chord, canvas, 16, 64, 1.5);
 

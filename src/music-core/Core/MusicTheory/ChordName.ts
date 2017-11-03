@@ -235,6 +235,19 @@ export namespace ChordName {
         return builder.toString();
     }
 
+    export function getOmitsEnglish(chord: Chord, omittedIntervals: ReadonlyArray<OmittedInterval>): string {
+        if (omittedIntervals.length === 0) {
+            return "";
+        }
+
+        const intervals = L(omittedIntervals)
+            .orderBy(i => i.interval.number)
+            .select(i => StringUtilities.toOrdinal(i.interval.number + 1))
+            .toArray()
+            .join(", ");
+        return `omit ${intervals}`;
+    }
+
     export function getOmits(chord: Chord, omittedIntervals: ReadonlyArray<OmittedInterval>): string {
         if (omittedIntervals.length === 0) {
             return "";
