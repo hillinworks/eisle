@@ -572,6 +572,7 @@ export class ChordParser {
     }
 
     private readExtendedAltered(): ParseResultMaybeEmpty<void> {
+        // todo: detect conflict
         if ((this.chordType & ChordType.SeventhChord) !== ChordType.SeventhChord) {
             // this is not even a seventh chord (which is then not possible to be an extended chord, either)
             return this.helper.empty();

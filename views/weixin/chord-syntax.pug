@@ -7,12 +7,15 @@ html
         h1 和弦语法
         p Echo Isles 支持很多常见的和弦书写方式，因此多数情况下你都可以使用自己熟悉的规则来书写和弦。例如，以下和弦名都可以使用：
         ul
-            li C
-            li Dsus4/F#
-            li Gbmø7add13
+            li 
+                code C
+            li 
+                code Dsus4/F♯
+            li 
+                code G♭mø7add13
         h2 基本结构
         h3 音名
-        p Echo Isle使用
+        p Echo Isles 使用
             code A
             | 、
             code B
@@ -35,7 +38,7 @@ html
             code #
             | 和
             code b
-            | 分别代替升降号。
+            | （小写字母b）分别代替升降号。
         h3 根音
         p 和弦名必须以一个音名开始。这个音名称为和弦的
             b 根音
@@ -45,6 +48,7 @@ html
             div.content
                 div.header 大三和弦
                 p 如果和弦名只由根音构成，这个和弦将被解析为一个大三和弦。
+        h2 和弦
         h3 三和弦
         p 在根音后使用以下标记来描述三和弦：
             table.ui.celled.padded.unstackable.table
@@ -65,11 +69,11 @@ html
                         td 大三和弦
                         td 
                             p
-                                code BbM
+                                code B♭M
                             p
                                 code Emaj
                             p
-                                code G#Δ
+                                code G♯Δ
                     tr
                         td 
                             p
@@ -105,13 +109,13 @@ html
                         td 减三和弦
                         td 
                             p
-                                code C#dim
+                                code C♯dim
                             p
                                 code E-
                             p
-                                code Gb°
+                                code G♭°
         h3 强力和弦
-        p “强力和弦”严格来说并不是一种和弦，但Echo Isle也对其予以支持。在根音后加上
+        p “强力和弦”严格来说并不是一种和弦，但 Echo Isles 也对其予以支持。在根音后加上
             code 5
             | 来表示这是一个强力和弦。例如
             code F5
@@ -148,11 +152,11 @@ html
                         td 大七和弦
                         td 
                             p 
-                                code BbM7
+                                code B♭M7
                             p 
                                 code Emaj7
                             p 
-                                code G#Δ7
+                                code G♯Δ7
                     tr
                         td 
                             p 
@@ -188,11 +192,11 @@ html
                         td 减七和弦
                         td 
                             p 
-                                code C#dim7
+                                code C♯dim7
                             p 
                                 code E-7
                             p 
-                                code Gb°7
+                                code G♭°7
                     tr
                         td
                             p 
@@ -204,24 +208,30 @@ html
                         td 小大七和弦
                         td 
                             p 
-                                code BbmM7
+                                code B♭mM7
                             p 
                                 code Emmaj7
                             p 
-                                code G#mΔ7
+                                code G♯mΔ7
                     tr
                         td
                             p 
                                 code ø7
+                            p 
+                                code 7-5
                         td 半减七和弦
                         td 
                             p 
                                 code Gø7
+                            p 
+                                code A7-5
         div.ui.icon.message
             i.info.icon
             div.content
                 div.header 不常用的七和弦
-                p 还有一些不常用的七和弦，可以使用变五度音的方式在上述七和弦中衍生。
+                p 还有一些不常用的七和弦，可以使用
+                    a(href="#altered-tone") 变五度音
+                    | 的方式在上述七和弦中衍生。
         h3 延伸和弦
         p 除减七和弦之外的所有七和弦都可以延伸为九、十一或十三和弦，只需要将和弦名中的
             code 7
@@ -234,13 +244,46 @@ html
             | 。例如：
             code D9
             | 、
-            code G#13
+            code G♯13
             | 。
         div.ui.icon.message
             i.info.icon
             div.content
                 div.header 省略不重要的组成音
-                p Echo Isle会在安排指法时酌情省略不重要的延伸和弦组成音，以简化指法。
+                p Echo Isles 会在安排指法时酌情省略不重要的延伸和弦组成音，以简化指法。
+        h3#altered-tone 变音
+        p 在和弦名后可以使用变音记号来改变和弦的组成音。例如：
+            code C7-5
+            | 将和弦的大五度音替换为小五度。
+        p 改变的音级必须是和弦中已经存在的音；如果改变后的音与和弦中的其他音发生冲突（等音），变音记号将被忽略。
+        p 使用
+            code +
+            | 、
+            code #
+            | 或
+            code ♯
+            | 表示升音、用
+            code -
+            | 、
+            code b
+            | 或
+            code ♭
+            | 表示降音。
+        h4 最高级音为变音的延伸和弦
+        p 当延伸和弦的最高级音为变音时，可以在前一级延伸和弦/七和弦的基础上添加变音来表达。例如，带有增九度音的
+            code C9
+            | 和弦可以表示为
+            code C7♯9
+            | 、带有小十三度音的
+            code E13
+            | 和弦可以表示为
+            code E11♭13
+            | 。当然，这些变音也可以使用
+            a(href="#added-tone") 添加音
+            | 来表达，例如
+            code C7add♯9
+            | 以及
+            code E11add♭13。
         h3 挂留和弦
         p 在和弦名后加上
             code sus
@@ -248,16 +291,20 @@ html
             code sus2
             | 或者
             code sus4
-            | 可以修改和弦的三度音，构建挂留和弦。
+            | 可以修改和弦的三度音，构建挂留和弦。例如：
+            code Dsus4
+            | 、
+            code E7sus2
+            | 。
         div.ui.icon.message
             i.info.icon
             div.content
                 div.header 注意事项
                 p 挂留和弦会改变和弦的三度音为大二度或者纯四度，因此不能在小三、增三、减三以及类似的七和弦、延伸和弦上使用挂留音。
-        h3 添加音
+        h3#added-tone 添加音
         p 可以在和弦名后用
             code add
-            | 来添加外音。
+            | 来添加和弦外音。
         table.ui.celled.padded.unstackable.table
             thead
                 tr
@@ -272,8 +319,8 @@ html
                         p
                             code add9
                     td 
-                        p 二度音
-                        p 九度音
+                        p 添加大二度音
+                        p 添加大九度音
                     td 
                         p 
                             code Cadd2
@@ -286,17 +333,118 @@ html
                         p
                             code add11
                     td 
-                        p 二度音
-                        p 九度音
+                        p 添加纯四度音
+                        p 添加纯十一度音
                     td 
                         p 
-                            code Cadd4
+                            code Dadd4
                         p 
-                            code Fadd11
-            p 简化添加音
-                
-
-        
-
-
-
+                            code Gadd11
+                tr
+                    td
+                        p 
+                            code add6
+                        p
+                            code add13
+                    td 
+                        p 添加大六度音
+                        p 添加大十三度音
+                    td 
+                        p 
+                            code Eadd6
+                        p 
+                            code Aadd13
+        h4 添加变音
+        p 可以在添加音前使用变音符号来添加变音。使用
+            code +
+            | 、
+            code #
+            | 或
+            code ♯
+            | 来添加升音、用
+            code -
+            | 、
+            code b
+            | 或
+            code ♭
+            | 来添加降音。例如：
+            code G♯add+9
+            | 、
+            code Cadd♭13
+            | 。
+        div.ui.icon.warning.message
+            i.warning.icon
+            div.content
+                div.header 冲突的添加音
+                p 尽管你可以自由地添加变音，但这些变音可能会与和弦的其他音产生冲突（例如在小三和弦上添加♯9音）。如果发生此类冲突，添加音将会被忽略。
+        h4 简化添加音
+        p 可以在三和弦后加上音级数字来使用添加音的简化表达方式：
+        table.ui.celled.padded.unstackable.table
+            thead
+                tr
+                    th.single.line 标记
+                    th 等价于
+                    th 作用
+                    th 示例
+            tbody
+                tr
+                    td 
+                        code 2
+                    td 
+                        code add2
+                    td 添加大二度音
+                    td 
+                        code D2
+                tr
+                    td 
+                        code 4
+                    td 
+                        code add4
+                    td 添加纯四度音
+                    td 
+                        code C4
+                tr
+                    td 
+                        code 6
+                    td 
+                        code add6
+                    td 添加大六度音
+                    td 
+                        code Em6
+                tr
+                    td 
+                        p
+                            code 69
+                        p
+                            code 6/9
+                    td 
+                        code add6add9
+                    td 添加大六度和大九度音
+                    td 
+                        p
+                            code G69
+                        p
+                            code F♯6/9
+        div.ui.icon.message
+            i.info.icon
+            div.content
+                div.header 转位和弦
+                p 在古典音乐中，经常使用六和弦来表示另一和弦的第一转位（如用
+                    code C6
+                    | 表示
+                    code Am
+                    | 的第一转位）。在 Echo Isles 里不采用这种记法，而是用于表达简化的添加音和弦（在这种记法下，可以将
+                    code C6
+                    | 看作是
+                    code Am7
+                    | 的第一转位）。
+        h3 复合和弦
+        p 在和弦名尾部添加和弦的低音名，并使用斜线
+            code /
+            | 与和弦名主体隔开，即可表示复合和弦。复合和弦使用指定的音作为最低音。复合和弦也用于表示转位和弦。
+        p 例如：
+            code D/F♯
+            | 、
+            code Esus4/B
+            | 。
+p

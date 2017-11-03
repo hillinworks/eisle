@@ -82,11 +82,11 @@ export class GuitarChord implements ICommandProcessor {
     process(scanner: Scanner): IREPLResult {
         const readChordNameResult = LiteralParsers.readChordName(scanner);
         if (ParseHelper.isFailed(readChordNameResult)) {
-            return this.showCommandSyntax();
+            return this.showChordSyntax();
         }
 
         if (ParseHelper.isEmpty(readChordNameResult)) {
-            return this.showCommandSyntax();
+            return this.showChordSyntax();
         }
 
         const parser = new ChordParser();
@@ -94,7 +94,13 @@ export class GuitarChord implements ICommandProcessor {
         const parseChordResult = parser.parse(chordName);
 
         if (ParseHelper.isFailed(parseChordResult)) {
-            return new REPLTextResult(`Failed to parse chord '${chordName}': \n ${parseChordResult.messages}`);
+            const result = this.showChordSyntax();
+            result.articles.push({
+                title: "问题出在哪里？",
+                picUrl: `${Server.current.app.locals.eisle.host}/images/unknown-chord.png`,
+                url: `${Server.current.app.locals.eisle.host}/chord/${encodeURIComponent(chordName)}?${Date.now()}`,
+            });
+            return result;
         }
 
         const chord = parseChordResult.value;
@@ -108,13 +114,14 @@ export class GuitarChord implements ICommandProcessor {
         });
     }
 
-
-    private showChordSyntax(): IREPLResult {
-        return new REPLTextResult("command syntax here");
+    private showChordSyntax(): REPLArticlesResult {
+        return new REPLArticlesResult({
+            title: "Echo Isles 和弦语法",
+            description: "这个和弦我不认识！看看 Echo Isles 能识别怎样的和弦吧~",
+            picUrl: `${Server.current.app.locals.eisle.host}/images/chord-syntax.png`,
+            url: `${Server.current.app.locals.eisle.host}/chord/syntax`,
+        });
     }
 
-    private showCommandSyntax(): IREPLResult {
-        return new REPLTextResult("command syntax here");
-    }
 
 }
