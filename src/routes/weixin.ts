@@ -78,8 +78,8 @@ export class WeixinRoute extends BaseRoute {
           break;
         case "event":
           if (result.xml.Event && result.xml.Event[0] === "subscribe") {
-            result.xml.MsgType = "text";
-            result.xml.Content = "Hi！\n虽然说不上来以后会变成什么样子，但我现在可以帮你查询和弦。\n随便回复一个什么和弦名试试看，比如……C！";
+            responseObject.xml.MsgType = "text";
+            responseObject.xml.Content = "Hi！\n虽然说不上来以后会变成什么样子，但我现在可以帮你查询和弦。\n随便回复一个什么和弦名试试看，比如……C！";
           } else {
             res.send("success");
             return;
