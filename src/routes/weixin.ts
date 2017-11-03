@@ -52,14 +52,6 @@ export class WeixinRoute extends BaseRoute {
         return;
       }
 
-      const message = result.xml.Content[0];
-      const replResult = REPL.process(message);
-
-      if (!replResult) {
-        res.send("success");
-        return;
-      }
-
       const responseObject: any = {
         xml: {
           ToUserName: result.xml.FromUserName,
@@ -68,7 +60,31 @@ export class WeixinRoute extends BaseRoute {
         }
       };
 
-      replResult.fillResponse(responseObject.xml);
+      switch (result.xml.MsgType[0]) {
+        case "text":
+          const message = result.xml.Content[0];
+          const replResult = REPL.process(message);
+
+          if (!replResult) {
+            res.send("success");
+            return;
+          }
+
+          replResult.fillResponse(responseObject.xml);
+          break;
+        case "event":
+          if (result.xml.event === "subscribe") {
+            result.xml.MsgType = "text";
+            result.xml.Content = "Hi！\n虽然说不上来以后会变成什么样子，但 Echo Isles 现在可以用来查询和弦。\n回复随便一个什么和弦名试试看，比如……C！";
+          } else {
+            res.send("success");
+            return;
+          }
+          break;
+        default:
+          res.send("success");
+          return;
+      }
 
       const response = new xml2js.Builder({ headless: true }).buildObject(responseObject);
       console.log(response);
