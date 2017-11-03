@@ -60,6 +60,9 @@ export class WeixinRoute extends BaseRoute {
         }
       };
 
+      console.log(JSON.stringify(result));
+
+      console.log("msgtype:" + result.xml.MsgType[0]);
       switch (result.xml.MsgType[0]) {
         case "text":
           const message = result.xml.Content[0];
