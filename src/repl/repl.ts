@@ -17,14 +17,16 @@ export class REPL {
         const scanner = new Scanner(input);
         const command = scanner.readPattern("[\\w-]+");
         if (!command) {
-            console.log(`Unknown command '${input}'`);
-            return REPL.showHelp();
+            return GuitarChord.Instance.process(new Scanner(input));
+            // console.log(`Unknown command '${input}'`);
+            // return REPL.showHelp();
         }
 
         const processor = REPL.commandProcessors[command.toLowerCase()];
         if (!processor) {
-            console.log(`Unknown command '${input}'`);
-            return REPL.showHelp();
+            return GuitarChord.Instance.process(new Scanner(input));
+            // console.log(`Unknown command '${input}'`);
+            // return REPL.showHelp();
         }
 
         console.log(`Using processor ${processor.name} to process '${input}'`);
