@@ -47,7 +47,9 @@ export class WeixinRoute extends BaseRoute {
 
     req.accepts("text/xml");
     xml2js.parseString(req.body, (err, result) => {
-      if (err || !result) {
+      if (err || !result || !result.xml.MsgType) {
+        console.log("failed to parse message:");
+        console.log(req.body);
         res.send("success");
         return;
       }
@@ -62,7 +64,6 @@ export class WeixinRoute extends BaseRoute {
 
       console.log(JSON.stringify(result));
 
-      console.log("msgtype:" + result.xml.MsgType[0]);
       switch (result.xml.MsgType[0]) {
         case "text":
           const message = result.xml.Content[0];
@@ -76,8 +77,7 @@ export class WeixinRoute extends BaseRoute {
           replResult.fillResponse(responseObject.xml);
           break;
         case "event":
-          console.log("event:" + result.xml.Event[0]);
-          if (result.xml.event[0] === "subscribe") {
+          if (result.xml.Event && result.xml.Event[0] === "subscribe") {
             result.xml.MsgType = "text";
             result.xml.Content = "Hi！\n虽然说不上来以后会变成什么样子，但我现在可以帮你查询和弦。\n随便回复一个什么和弦名试试看，比如……C！";
           } else {
