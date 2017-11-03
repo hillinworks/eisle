@@ -40,17 +40,17 @@ html
             code b
             | （小写字母b）分别代替升降号。
         h3 根音
-        p 和弦名必须以一个音名开始。这个音名称为和弦的
+        p 和弦名必须以一个音名开始。和弦以此
             b 根音
-            | 。
+            | 为基础构建。
         div.ui.icon.message
             i.info.icon
             div.content
                 div.header 大三和弦
-                p 如果和弦名只由根音构成，这个和弦将被解析为一个大三和弦。
+                p 如果和弦名只由根音的音名构成，这个和弦将被解析为一个大三和弦。
         h2 和弦
         h3 三和弦
-        p 在根音后使用以下标记来描述三和弦：
+        p 在根音名后使用以下标记来描述三和弦：
             table.ui.celled.padded.unstackable.table
                 thead
                     tr
@@ -61,6 +61,8 @@ html
                     tr
                         td 
                             p
+                                code (省略)
+                            p
                                 code M
                             p
                                 code maj
@@ -68,6 +70,8 @@ html
                                 code Δ
                         td 大三和弦
                         td 
+                            p
+                                C
                             p
                                 code B♭M
                             p
@@ -115,13 +119,13 @@ html
                             p
                                 code G♭°
         h3 强力和弦
-        p “强力和弦”严格来说并不是一种和弦，但 Echo Isles 也对其予以支持。在根音后加上
+        p “强力和弦”严格来说并不是一种和弦，但 Echo Isles 也对其予以支持。在根音名后加上
             code 5
             | 来表示这是一个强力和弦。例如
             code F5
             | 。
         h3 七和弦
-        p 在根音后使用以下标记来描述七和弦：
+        p 在根音名后使用以下标记来描述七和弦：
             table.ui.celled.padded.unstackable.table
                 thead
                     tr
@@ -244,7 +248,7 @@ html
             | 。例如：
             code D9
             | 、
-            code G♯13
+            code G♯maj13
             | 。
         div.ui.icon.message
             i.info.icon
@@ -304,7 +308,7 @@ html
         h3#added-tone 添加音
         p 可以在和弦名后用
             code add
-            | 来添加和弦外音。
+            | 来添加和弦外音。一个和弦可以带有多个添加音。
         table.ui.celled.padded.unstackable.table
             thead
                 tr
@@ -378,7 +382,7 @@ html
                 div.header 冲突的添加音
                 p 尽管你可以自由地添加变音，但这些变音可能会与和弦的其他音产生冲突（例如在小三和弦上添加♯9音）。如果发生此类冲突，添加音将会被忽略。
         h4 简化添加音
-        p 可以在三和弦后加上音级数字来使用添加音的简化表达方式：
+        p 可以在三和弦名后加上音级数字来使用添加音的简化表达方式：
         table.ui.celled.padded.unstackable.table
             thead
                 tr
