@@ -14,7 +14,7 @@ import { ChordUtilities } from "../../eisle-core/chord/ChordUtilities";
 
 export namespace ChordTitleImage {
 
-    export const titleImageVersion = 0;
+    export const titleImageVersion = 1;
 
     function drawTitlePicture(canvas: Canvas, chord: Chord, details: ReadonlyArray<ChordDetail>) {
         const chordName = ChordName.getOrdinalName(chord);
