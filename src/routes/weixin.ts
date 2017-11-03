@@ -73,7 +73,7 @@ export class WeixinRoute extends BaseRoute {
           replResult.fillResponse(responseObject.xml);
           break;
         case "event":
-          if (result.xml.event === "subscribe") {
+          if (result.xml.event[0] === "subscribe") {
             result.xml.MsgType = "text";
             result.xml.Content = "Hi！\n虽然说不上来以后会变成什么样子，但 Echo Isles 现在可以用来查询和弦。\n回复随便一个什么和弦名试试看，比如……C！";
           } else {
