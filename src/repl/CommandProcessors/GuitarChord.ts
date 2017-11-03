@@ -116,8 +116,8 @@ export class GuitarChord implements ICommandProcessor {
 
     private showChordSyntax(): REPLArticlesResult {
         return new REPLArticlesResult({
-            title: "Echo Isles 和弦语法",
-            description: "这个和弦我不认识！看看 Echo Isles 能识别怎样的和弦吧~",
+            title: "这个和弦我不认识！看看 Echo Isles 能识别怎样的和弦吧~",
+            description: "Echo Isles 和弦语法",
             picUrl: `${Server.current.app.locals.eisle.host}/images/unknown-chord-title.png`,
             url: `${Server.current.app.locals.eisle.host}/chord/syntax`,
         });
