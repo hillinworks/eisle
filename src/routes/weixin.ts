@@ -45,11 +45,9 @@ export class WeixinRoute extends BaseRoute {
       res.send("success");
     }
 
-    console.log(req.body);
-
     req.accepts("text/xml");
     xml2js.parseString(req.body, (err, result) => {
-      if (err || !result || result.xml.MsgType[0] !== "text") {
+      if (err || !result) {
         res.send("success");
         return;
       }
