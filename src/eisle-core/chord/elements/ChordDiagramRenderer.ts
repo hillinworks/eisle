@@ -34,6 +34,9 @@ const noteRowHeight = 12;
 const noteRowMargin = 1;
 const noteRowFont = `${12}px 'Text'`;
 
+const zeroFretSpacing = 4;
+const zeroFretLineWidth = 2;
+
 const gridLeftMargin = margin;
 const gridTopMargin = margin + fretsRowHeight + fretsRowMargin;
 
@@ -48,6 +51,8 @@ class Renderer {
     private scale: number;
     private gridVerticalScale: number;
 
+    private gridTop: number;
+
     constructor(chordDetail: ChordDetail) {
         this.chordDetail = chordDetail;
         this.fretRange = this.decideFretRange();
@@ -60,6 +65,7 @@ class Renderer {
             + (this.fretRange.min !== 1 ? fretOffsetMargin + fretOffsetWidth : 0) * this.scale;
 
         const height = gridTopMargin * this.scale
+            + (this.fretRange.min === 1 ? zeroFretSpacing : 0) * this.scale
             + this.gridHeight
             + noteRowMargin * this.scale + noteRowHeight * this.scale
             + margin * this.scale;
@@ -90,11 +96,25 @@ class Renderer {
 
     private drawGrid() {
 
+        const gridLeft = this.x + gridLeftMargin * this.scale;
+        this.gridTop = this.y + gridTopMargin * this.scale;
+
+        if (this.fretRange.min === 1) {
+            this.context.lineWidth = zeroFretLineWidth * this.scale;
+            this.context.strokeStyle = CanvasColors.black;
+            this.context.beginPath();
+            this.context.lineTo(gridLeft - borderLineWidth * this.scale / 2, this.gridTop);
+            this.context.lineTo(gridLeft + this.gridWidth + borderLineWidth * this.scale / 2, this.gridTop);
+            this.context.stroke();
+
+            this.gridTop += zeroFretSpacing * this.scale;
+        }
+
         this.context.lineWidth = borderLineWidth * this.scale;
         this.context.strokeStyle = CanvasColors.black;
         this.context.strokeRect(
-            this.x + gridLeftMargin * this.scale,
-            this.y + gridTopMargin * this.scale,
+            gridLeft,
+            this.gridTop,
             this.gridWidth,
             this.gridHeight);
 
@@ -102,16 +122,16 @@ class Renderer {
         for (let i = 1; i < this.chordDetail.frets.length - 1; ++i) {
             this.context.beginPath();
             const x = gridLeftMargin * this.scale + i * cellWidth * this.scale;
-            this.context.lineTo(this.x + x, this.y + gridTopMargin * this.scale);
-            this.context.lineTo(this.x + x, this.y + gridTopMargin * this.scale + this.gridHeight);
+            this.context.lineTo(this.x + x, this.gridTop);
+            this.context.lineTo(this.x + x, this.gridTop + this.gridHeight);
             this.context.stroke();
         }
 
         for (let i = 1; i < this.fretRange.max - this.fretRange.min + 1; ++i) {
             this.context.beginPath();
-            const y = gridTopMargin * this.scale + i * this.cellHeight;
-            this.context.lineTo(this.x + gridLeftMargin * this.scale, this.y + y);
-            this.context.lineTo(this.x + gridLeftMargin * this.scale + this.gridWidth, this.y + y);
+            const y = this.gridTop + i * this.cellHeight;
+            this.context.lineTo(gridLeft, this.y + y);
+            this.context.lineTo(gridLeft + this.gridWidth, this.y + y);
             this.context.stroke();
         }
     }
@@ -131,7 +151,7 @@ class Renderer {
                 continue;
             }
             const relativeFret = finger.fret - this.fretRange.min;
-            const y = this.y + gridTopMargin * this.scale + this.cellHeight * (relativeFret + 0.5);
+            const y = this.gridTop + this.cellHeight * (relativeFret + 0.5);
             const fromX = this.x + (gridLeftMargin + finger.from * cellWidth) * this.scale;
             const toX = this.x + (gridLeftMargin + finger.to * cellWidth) * this.scale;
             if (finger.to === finger.from) {
@@ -167,8 +187,7 @@ class Renderer {
             + this.gridWidth
             + fretOffsetMargin * this.scale
             + centerTextOffsetX * this.scale;
-        const y = this.y
-            + gridTopMargin * this.scale
+        const y = this.gridTop
             + this.cellHeight * 0.5
             + centerTextOffsetY * this.scale;
 
@@ -202,8 +221,7 @@ class Renderer {
         this.context.fillStyle = CanvasColors.black;
         this.context.font = DrawingHelper.scaleFont(noteRowFont, this.scale);
 
-        const y = this.y
-            + gridTopMargin * this.scale
+        const y = this.gridTop
             + this.gridHeight
             + noteRowMargin * this.scale
             + noteRowHeight * this.scale
