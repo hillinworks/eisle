@@ -99,9 +99,9 @@ html
                         td 增三和弦
                         td 
                             p
-                                code Aaug
-                            p
                                 code F+
+                            p
+                                code Aaug
                     tr
                         td 
                             p
@@ -113,9 +113,9 @@ html
                         td 减三和弦
                         td 
                             p
-                                code C♯dim
-                            p
                                 code E-
+                            p
+                                code C♯dim
                             p
                                 code G♭°
         h3 强力和弦
@@ -182,9 +182,9 @@ html
                         td 增七和弦
                         td 
                             p 
-                                code Aaug7
-                            p 
                                 code F+7
+                            p 
+                                code Aaug7
                     tr
                         td 
                             p 
@@ -196,9 +196,9 @@ html
                         td 减七和弦
                         td 
                             p 
-                                code C♯dim7
-                            p 
                                 code E-7
+                            p 
+                                code C♯dim7
                             p 
                                 code G♭°7
                     tr
@@ -434,13 +434,16 @@ html
             div.content
                 div.header 转位和弦
                 p 在古典音乐中，经常使用六和弦来表示另一和弦的第一转位（如用
-                    code C6
+                    code C
+                        sup 6
                     | 表示
+                    code C
+                    | 的第一转位）。在 Echo Isles 里不采用这种记法，而是用于表达简化的添加音和弦（为了清楚地区分，记作
+                    code C
+                        sub 6
+                    | ，可以看作是
                     code Am
-                    | 的第一转位）。在 Echo Isles 里不采用这种记法，而是用于表达简化的添加音和弦（在这种记法下，可以将
-                    code C6
-                    | 看作是
-                    code Am7
+                        sup 7
                     | 的第一转位）。
         h3 复合和弦
         p 在和弦名尾部添加和弦的低音名，并使用斜线
@@ -450,5 +453,26 @@ html
             code D/F♯
             | 、
             code Esus4/B
+            | 。
+        h1 显示常例
+        p Echo Isles 在显示的和弦名分为三个部分：主体、上标和下标。
+        p 主体用于显示和弦的根音名和三和弦属性。例如
+            code C
+            | 、
+            code Adim
+            | 。
+        p 上标用于显示和弦的七和弦或扩展和弦的属性，以及转位/复合和弦的根音。例如
+            code D
+                sup 9 on F♯
+            | 、
+            code Bm
+                sup maj7
+            | 。
+        p 下标用于显示和弦的添加音和变化音。例如
+            code A
+                sub sus4
+            | 、
+            code C
+                sub 6/9
             | 。
 p

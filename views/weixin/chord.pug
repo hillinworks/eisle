@@ -1,9 +1,7 @@
 html
   head
     include ../include/head.pug
-    script(src=eisle.host+"/styles/semantic/components/accordion.js")
-    script $(document).ready(function () { $('.ui.accordion').accordion(); });
-    link(href=eisle.host+"/styles/semantic/components/accordion.css" rel="stylesheet" type="text/css")
+    include ../include/accordion.pug
     link(href=eisle.host+"/styles/eisle/chord-intro.css" rel="stylesheet" type="text/css")
     title= title + " - Echo Isles"
   body
