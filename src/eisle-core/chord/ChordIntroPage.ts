@@ -18,6 +18,7 @@ import { ChordStaffRenderer } from "./elements/ChordStaffRenderer";
 import { L } from "../../music-core/Core/Utilities/LinqLite";
 import { GuitarTunings } from "../../music-core/Core/MusicTheory/String/Plucked/GuitarTunings";
 import { ChordDiagramRenderer } from "./elements/ChordDiagramRenderer";
+import { ChordScaleRenderer } from "../../eisle-core/chord/elements/ChordScaleRenderer";
 
 export interface IChordDiagramCollection {
     url: string;
@@ -31,6 +32,7 @@ export class ChordIntroModel {
     plainName: string;
     nameImageUrl: string;
     staffImageUrl: string;
+    scaleImageUrl: string;
     diagrams: IChordDiagramCollection[];
 }
 
@@ -47,6 +49,7 @@ export class ChordSyntaxError {
 
 const chordNameCacheVersion = 0;
 const chordStaffCacheVersion = 0;
+const chordScaleCacheVersion = 0;
 const chordDiagramCacheVersion = 0;
 
 class ChordIntroCreator {
@@ -87,6 +90,19 @@ class ChordIntroCreator {
         return Cache.getUrlPath(savePath, true);
     }
 
+    getScaleImageUrl(): string {
+        const fileName = `${ChordUtilities.normalizeChordFileName(this.model.plainName)}-${ChordUtilities.normalizeTuningFileName(GuitarTunings.standard)}.svg`;
+        const savePath = path.join(Cache.getCacheFolder(`chord/scale/${chordScaleCacheVersion}`), fileName);
+
+        if (!fs.existsSync(savePath)) {
+            const canvas = ChordCanvas.createCanvas(160, 580, "svg");
+            ChordScaleRenderer.draw(this.chord, GuitarTunings.standard, canvas, 12, 12, 1);
+            fs.writeFileSync(savePath, canvas.toBuffer());
+        }
+
+        return Cache.getUrlPath(savePath, true);
+    }
+
     getDiagramUrls(): IChordDiagramCollection[] {
         const details = ChordDetail.getChordDetail(this.chord, GuitarTunings.standard);
         const result: IChordDiagramCollection[] = [];
@@ -115,9 +131,10 @@ class ChordIntroCreator {
     create(): ChordIntroModel {
         this.model = new ChordIntroModel();
         this.model.plainName = ChordName.getOrdinalNamePlain(this.chord);
-        this.model.input = this.input === this.model.plainName ? undefined : this.input;
+        this.model.input = this.input.toUpperCase() === this.model.plainName.toUpperCase() ? undefined : this.input;
         this.model.nameImageUrl = this.getNameImagePath();
         this.model.staffImageUrl = this.getStaffImagePath();
+        this.model.scaleImageUrl = this.getScaleImageUrl();
         this.model.diagrams = this.getDiagramUrls();
 
         return this.model;

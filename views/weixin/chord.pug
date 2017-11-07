@@ -1,6 +1,9 @@
 html
   head
     include ../include/head.pug
+    script(src=eisle.host+"/styles/semantic/components/accordion.js")
+    script $(document).ready(function () { $('.ui.accordion').accordion(); });
+    link(href=eisle.host+"/styles/semantic/components/accordion.css" rel="stylesheet" type="text/css")
     link(href=eisle.host+"/styles/eisle/chord-intro.css" rel="stylesheet" type="text/css")
     title= title + " - Echo Isles"
   body
@@ -18,10 +21,20 @@ html
             if(messages)
               include chord-parse-messages.pug
       div.main.ui.intro.container
-        h2.ui.dividing.header 指法
-        div.ui.stackable.grid
-          each diagram in diagrams
-            div.column.chord.diagram
-              img.ui.centered.image(src=diagram.url)
-              if diagram.omits
-                div.omits= "（" + diagram.omits + "）"
+        div.ui.styled.fluid.accordion
+          div.active.title
+            i.dropdown.icon
+            | 指法
+          div.active.content
+            div.ui.stackable.grid
+              each diagram in diagrams
+                div.column.chord.diagram
+                  img.ui.centered.image(src=diagram.url)
+                  if diagram.omits
+                    div.omits= "（" + diagram.omits + "）"
+          div.title
+            i.dropdown.icon
+            | 音阶
+          div.content.chord.diagram
+            img.ui.centered.image(src=scaleImageUrl)
+          

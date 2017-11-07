@@ -1,5 +1,5 @@
 ﻿import { Pitch } from "../Pitch";
-import { all } from "../../Utilities/LinqLite";
+import { all, L } from "../../Utilities/LinqLite";
 
 export class Tuning {
     readonly name?: string;

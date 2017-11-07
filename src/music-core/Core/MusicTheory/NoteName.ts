@@ -41,8 +41,11 @@ export class NoteName {
 
     // Calculate intervals between two note names. The latter will always be treated as the higher one.
     getIntervalTo(other: NoteName): Interval {
-        const semitones = (other.semitones + 12 - this.semitones) % 12;
-        return Interval.fromSemitones(semitones, this.getDegreesTo(other));
+        return Interval.fromSemitones(this.getSemitonesTo(other), this.getDegreesTo(other));
+    }
+
+    getSemitonesTo(other: NoteName): number {
+        return (other.semitones + 12 - this.semitones) % 12;
     }
 
     toString(): string {

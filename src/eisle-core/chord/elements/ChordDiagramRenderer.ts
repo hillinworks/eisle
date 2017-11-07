@@ -12,7 +12,6 @@ import { DrawingHelper } from "../../../eisle-core/drawing/DrawingHelper";
 const margin = 12;
 const cellWidth = 22;
 const cellHeight = 28;
-const fretZeroLineWidth = 4;
 const borderLineWidth = 2;
 const gridLineWidth = 1;
 const fingerCircleRadius = 9;
@@ -34,8 +33,8 @@ const noteRowHeight = 12;
 const noteRowMargin = 1;
 const noteRowFont = `${12}px 'Text'`;
 
-const zeroFretSpacing = 4;
-const zeroFretLineWidth = 2;
+const nutSpacing = 4;
+const nutLineWidth = 2;
 
 const gridLeftMargin = margin;
 const gridTopMargin = margin + fretsRowHeight + fretsRowMargin;
@@ -65,7 +64,7 @@ class Renderer {
             + (this.fretRange.min !== 1 ? fretOffsetMargin + fretOffsetWidth : 0) * this.scale;
 
         const height = gridTopMargin * this.scale
-            + (this.fretRange.min === 1 ? zeroFretSpacing : 0) * this.scale
+            + (this.fretRange.min === 1 ? nutSpacing : 0) * this.scale
             + this.gridHeight
             + noteRowMargin * this.scale + noteRowHeight * this.scale
             + margin * this.scale;
@@ -100,14 +99,14 @@ class Renderer {
         this.gridTop = this.y + gridTopMargin * this.scale;
 
         if (this.fretRange.min === 1) {
-            this.context.lineWidth = zeroFretLineWidth * this.scale;
+            this.context.lineWidth = nutLineWidth * this.scale;
             this.context.strokeStyle = CanvasColors.black;
             this.context.beginPath();
             this.context.lineTo(gridLeft - borderLineWidth * this.scale / 2, this.gridTop);
             this.context.lineTo(gridLeft + this.gridWidth + borderLineWidth * this.scale / 2, this.gridTop);
             this.context.stroke();
 
-            this.gridTop += zeroFretSpacing * this.scale;
+            this.gridTop += nutSpacing * this.scale;
         }
 
         this.context.lineWidth = borderLineWidth * this.scale;
@@ -158,7 +157,6 @@ class Renderer {
                 this.context.beginPath();
                 this.context.arc(fromX, y, radius, 0, Math.PI * 2);
             } else {
-                this.context.beginPath();
                 this.context.beginPath();
                 this.context.lineTo(fromX, y - radius);
                 this.context.lineTo(toX - radius, y - radius);

@@ -1,3 +1,5 @@
+import { L } from "../../music-core/Core/Utilities/LinqLite";
+import { Tuning } from "../../music-core/Core/MusicTheory/String/Tuning";
 import { StringUtilities } from "../../music-core/Core/Utilities/StringUtilities";
 
 export namespace ChordUtilities {
@@ -16,5 +18,13 @@ export namespace ChordUtilities {
             .replace(new RegExp(StringUtilities.fixedFromCharCode(0x1d12a), "g"), "-double-sharp")
             .replace(/♭/g, "-flat")
             .replace(/♯/g, "-sharp");
+    }
+
+    export function normalizeTuningFileName(tuning: Tuning): string {
+        if (tuning.name !== undefined) {
+            return tuning.name.toLowerCase().replace(/[^\w\d]/g, "-");
+        }
+
+        return normalizeNoteFileName(L(tuning.stringTunings).select(t => t.toString()).toArray().join("-"));
     }
 }
