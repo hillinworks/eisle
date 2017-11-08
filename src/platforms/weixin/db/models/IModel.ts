@@ -3,12 +3,12 @@ import { Model } from "mongoose";
 import { IUserModel } from "./IUserModel";
 
 export interface IModel {
-    user: Model<IUserModel>;
-    userSettings: Model<IUserSettingsModel>;
+    User: Model<IUserModel>;
+    UserSettings: Model<IUserSettingsModel>;
 }
 
 export namespace IModel {
     export function createEmpty(): IModel {
-        return { user: undefined, userSettings: undefined };
+        return { User: undefined, UserSettings: undefined };
     }
 }
