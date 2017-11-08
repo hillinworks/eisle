@@ -96,6 +96,10 @@ export namespace ChordName {
             testType &= ~ChordType.Mask13;
         }
 
+        const isPlainTriad = chord.type === ChordType.BT_MajorTriad
+            || chord.type === ChordType.BT_MinorTriad
+            || chord.type === ChordType.BT_AugmentedTriad
+            || chord.type === ChordType.BT_DiminishedTriad;
         const hasThird = (testType & ChordType.Mask3) !== 0;
         const isSus2 = !hasThird && (testType & ChordType.Mask2) === ChordType.M2;
         const isSus4 = !hasThird && (testType & ChordType.Mask4) === ChordType.P4;
@@ -119,7 +123,7 @@ export namespace ChordName {
         const thirteenth = chord.type & ChordType.Mask13;
 
         const shortAdded = shortAddedTones[ninth | eleventh | thirteenth];
-        if (!isSus2 && !isSus4 && shortAdded) {
+        if (isPlainTriad && shortAdded) {
             addBuilder.append(shortAdded);
         } else {
             let extendable = nameRule.extendable;
