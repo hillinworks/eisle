@@ -113,7 +113,7 @@ export namespace ChordName {
 
         nameRule = Object.assign({}, nameRule);
 
-        let extension = nameRule.extendable ? "7" : undefined;
+        let extensionText = nameRule.extendable ? "7" : undefined;
 
         const alterBuilder = new StringBuilder();
         const addBuilder = new StringBuilder();
@@ -126,54 +126,65 @@ export namespace ChordName {
         if (isPlainTriad && shortAdded) {
             addBuilder.append(shortAdded);
         } else {
-            let extendable = nameRule.extendable;
+            // the highest possible extension degree (e.g. 13 in c7addb9add11addb13)
+            let psuedoExtension = 0;
+            // the actual extension degree(e.g. 11 in c7addb9add11addb13)
+            let extension = 0;
+            if (nameRule.extendable) {
+                psuedoExtension = 7;
+                extension = 7;
+                if (ninth > ChordType.OttavaAlta9) {
+                    psuedoExtension = 9;
+                    if (ninth === ChordType.M9) {
+                        extension = 9;
+                    }
+                    if (eleventh > ChordType.OttavaAlta11) {
+                        psuedoExtension = 11;
+                        if (eleventh === ChordType.P11) {
+                            extension = 11;
+                        }
+                        if (thirteenth > ChordType.OttavaAlta13) {
+                            psuedoExtension = 13;
+                            if (thirteenth === ChordType.M13) {
+                                extension = 13;
+                            }
+                        }
+                    }
+                }
 
-            function increaseExtensionOrAdd(note: string) {
-                if (extendable) {
-                    extension = note;
-                } else {
+                extensionText = extension.toString();
+            }
+
+            function appendAdded(note: string, degree?: number) {
+                if (degree === undefined || extension < degree) {
                     addBuilder.append("add").append(note);
                 }
             }
 
-            function appendAlteredOrAdded(note: string) {
-                if (extendable) {
-                    extendable = false;
+            function appendAlteredOrAdded(note: string, degree: number) {
+                if (degree !== undefined && (extension > degree || psuedoExtension === degree)) {
                     alterBuilder.append(note);
                 } else {
                     addBuilder.append("add").append(note);
                 }
             }
 
-            function appendAdded(note: string) {
-                extendable = false;
-                addBuilder.append("add").append(note);
+            switch (ninth) {
+                case ChordType.M2:
+                    appendAdded("2"); break;
+                case ChordType.A2:
+                    appendAdded("♯2"); break;
+                case ChordType.m2:
+                    appendAdded("♭2"); break;
             }
 
-            if (isSus2) {
-                extendable = false;
-            } else {
-                switch (ninth) {
-                    case ChordType.M2:
-                        appendAdded("2"); break;
-                    case ChordType.A2:
-                        appendAdded("♯2"); break;
-                    case ChordType.m2:
-                        appendAdded("♭2"); break;
-                }
-            }
-
-            if (isSus4) {
-                extendable = false;
-            } else {
-                switch (eleventh) {
-                    case ChordType.P4:
-                        appendAdded("4"); break;
-                    case ChordType.A4:
-                        appendAdded("♯4"); break;
-                    case ChordType.d4:
-                        appendAdded("♭4"); break;
-                }
+            switch (eleventh) {
+                case ChordType.P4:
+                    appendAdded("4"); break;
+                case ChordType.A4:
+                    appendAdded("♯4"); break;
+                case ChordType.d4:
+                    appendAdded("♭4"); break;
             }
 
             switch (thirteenth) {
@@ -187,39 +198,36 @@ export namespace ChordName {
 
             switch (ninth) {
                 case ChordType.M9:
-                    increaseExtensionOrAdd("9"); break;
+                    appendAdded("9", 9); break;
                 case ChordType.A9:
-                    appendAlteredOrAdded("♯9"); break;
+                    appendAlteredOrAdded("♯9", 9); break;
                 case ChordType.m9:
-                    appendAlteredOrAdded("♭9"); break;
-                case 0:
-                    extendable = false; break;
+                    appendAlteredOrAdded("♭9", 9); break;
+
             }
 
             switch (eleventh) {
                 case ChordType.P11:
-                    increaseExtensionOrAdd("11"); break;
+                    appendAdded("11", 11); break;
                 case ChordType.A11:
-                    appendAlteredOrAdded("♯11"); break;
+                    appendAlteredOrAdded("♯11", 11); break;
                 case ChordType.d11:
-                    appendAlteredOrAdded("♭11"); break;
-                case 0:
-                    extendable = false; break;
+                    appendAlteredOrAdded("♭11", 11); break;
             }
 
             switch (thirteenth) {
                 case ChordType.M13:
-                    increaseExtensionOrAdd("13"); break;
+                    appendAdded("13", 13); break;
                 case ChordType.A13:
-                    appendAlteredOrAdded("♯13"); break;
+                    appendAlteredOrAdded("♯13", 13); break;
                 case ChordType.m13:
-                    appendAlteredOrAdded("♭13"); break;
+                    appendAlteredOrAdded("♭13", 13); break;
             }
         }
 
         const result = {
             baseName: chord.root.toString() + nameRule.baseName,
-            superscript: extension ? nameRule.superscript.replace(/\*/g, extension.toString()) : nameRule.superscript,
+            superscript: extensionText ? nameRule.superscript.replace(/\*/g, extensionText.toString()) : nameRule.superscript,
             subscript: nameRule.subscript + alterBuilder.toString() + addBuilder.toString(),
             bass: chord.bass ? chord.bass.toString() : undefined
         };
