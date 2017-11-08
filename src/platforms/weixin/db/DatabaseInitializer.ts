@@ -11,6 +11,7 @@ export function DatabaseInitializer(req: Request, res: Response, next: NextFunct
 
     const server = Server.current;
     const connection: mongoose.Connection = mongoose.createConnection(server.app.locals.eisle.mongodb.connectionString);
+    connection.on("error", console.error.bind(console, "connection error:"));
 
     server.model.User = connection.model<IUserModel>("User", userSchema);
     server.model.UserSettings = connection.model<IUserSettingsModel>("UserSettings", userSettingsSchema);

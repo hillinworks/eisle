@@ -19,8 +19,16 @@ export class EventHandler extends MessageHandler {
         };
 
         try {
-            const model = await new Server.current.model.User(user).save();
-            console.log(`weixin user created and subscribed: '${request.xml.FromUserName}'`);
+            const users = await Server.current.model.User.find({ weixinId: request.xml.FromUserName }).exec();
+            if (users.length === 0) {
+                console.log(`new weixin user subscribing: '${request.xml.FromUserName}'`);
+                await new Server.current.model.User(user).save();
+                console.log(`weixin user created and subscribed: '${request.xml.FromUserName}'`);
+            } else {
+                console.log(`returned weixin user subscribing: '${request.xml.FromUserName}'`);
+                await users[0].update(user).exec();
+                console.log(`weixin user subscribed: '${request.xml.FromUserName}'`);
+            }
         }
         catch (err) {
             console.error(`failed to create weixin user '${request.xml.FromUserName}'`);
