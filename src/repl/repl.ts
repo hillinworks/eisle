@@ -1,3 +1,4 @@
+import { IUserSettings } from "../platforms/weixin/db/interfaces/IUserSettings";
 import { Scanner } from "../music-core/Parsing/Scanner";
 import { IREPLResult, REPLTextResult } from "./REPLResult";
 import { ICommandProcessor } from "./ICommandProcessor";
@@ -13,18 +14,18 @@ export class REPL {
         "吉他和弦": GuitarChord.Instance,
     };
 
-    public static process(input: string): IREPLResult {
+    public static process(input: string, userSettings: IUserSettings): Promise<IREPLResult> {
         const scanner = new Scanner(input);
         const command = scanner.readPattern("[\\w-]+");
         if (!command) {
-            return GuitarChord.Instance.process(new Scanner(input));
+            return GuitarChord.Instance.process(new Scanner(input), userSettings);
             // console.log(`Unknown command '${input}'`);
             // return REPL.showHelp();
         }
 
         const processor = REPL.commandProcessors[command.toLowerCase()];
         if (!processor) {
-            return GuitarChord.Instance.process(new Scanner(input));
+            return GuitarChord.Instance.process(new Scanner(input), userSettings);
             // console.log(`Unknown command '${input}'`);
             // return REPL.showHelp();
         }
@@ -33,7 +34,7 @@ export class REPL {
 
         scanner.skipWhitespaces();
 
-        return processor.process(scanner);
+        return processor.process(scanner, userSettings);
     }
 
     public static showHelp(): IREPLResult {

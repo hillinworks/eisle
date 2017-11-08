@@ -1,11 +1,16 @@
+import { IUserModel } from "../db/models/IUserModel";
+import { Server } from "../../../server";
 import { REPL } from "../../../repl/repl";
 import { IMessageHandler } from "./MessageHandler";
 
 export class TextMessageHandler implements IMessageHandler {
     static readonly instance = new TextMessageHandler();
-    public handle(request: any, response: any): Promise<void> {
+    public async handle(request: any, response: any): Promise<void> {
         const message = request.xml.Content[0];
-        const replResult = REPL.process(message);
+
+        const user = await IUserModel.getOrSubscribe(request.xml.FromUserName);
+
+        const replResult = await REPL.process(message, await user.getSettings());
 
         if (!replResult) {
             throw "REPL process failed";

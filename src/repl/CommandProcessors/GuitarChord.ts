@@ -1,3 +1,4 @@
+import { IUserSettings } from "../../platforms/weixin/db/interfaces/IUserSettings";
 import { Server } from "../../server";
 import { ICommandProcessor } from "../ICommandProcessor";
 import { Scanner } from "../../music-core/Parsing/Scanner";
@@ -13,10 +14,10 @@ import { Chord } from "../../music-core/Core/MusicTheory/Chord";
 import * as Canvas from "canvas-prebuilt";
 import { IREPLResult, REPLTextResult, REPLArticlesResult } from "../REPLResult";
 import { ChordTitleImage } from "../../eisle-core/chord/ChordTitleImage";
+import { Tunings } from "../../eisle-core/chord/Tunings";
+import { GuitarTunings } from "../../music-core/Core/MusicTheory/String/Plucked/GuitarTunings";
 
 export class GuitarChord implements ICommandProcessor {
-
-
     public static readonly Instance = new GuitarChord();
 
     readonly name = "Guitar Chord";
@@ -79,7 +80,7 @@ export class GuitarChord implements ICommandProcessor {
         console.log(logBuilder.toString());
     }
 
-    process(scanner: Scanner): IREPLResult {
+    async process(scanner: Scanner, userSettings: IUserSettings): Promise<IREPLResult> {
         const readChordNameResult = LiteralParsers.readChordName(scanner);
         if (ParseHelper.isFailed(readChordNameResult)) {
             return this.showChordSyntax();
@@ -98,19 +99,24 @@ export class GuitarChord implements ICommandProcessor {
             result.articles.push({
                 title: "问题出在哪里？",
                 picUrl: `${Server.current.app.locals.eisle.host}/images/unknown-chord.png`,
-                url: `${Server.current.app.locals.eisle.host}/chord/${encodeURIComponent(chordName)}?${Date.now()}`,
+                url: `${Server.current.app.locals.eisle.host}/chord/${encodeURIComponent(chordName)}?epoch=${Date.now()}`,
             });
             return result;
         }
 
         const chord = parseChordResult.value;
-        const titleImagePath = ChordTitleImage.getTitleImagePath(chord);
+        let tuning = userSettings.tuning ? Tunings.getTuning(userSettings.tuning) : Tunings.defaultTuning;
+        if (!tuning) {
+            console.warn(`unknown user tuning '${userSettings.tuning}', fall back to default tuning`);
+            tuning = Tunings.defaultTuning;
+        }
+        const titleImagePath = ChordTitleImage.getTitleImagePath(chord, tuning);
 
         return new REPLArticlesResult({
             title: ChordName.getOrdinalNamePlain(chord),
             description: "点击查看详情",
             picUrl: `${titleImagePath}?${Date.now()})}`,
-            url: `${Server.current.app.locals.eisle.host}/chord/${encodeURIComponent(chordName)}?${Date.now()}`,
+            url: `${Server.current.app.locals.eisle.host}/chord/${encodeURIComponent(chordName)}?tuning=${encodeURIComponent(tuning.key)}&epoch=${Date.now()}`,
         });
     }
 

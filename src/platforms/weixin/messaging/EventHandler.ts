@@ -11,9 +11,7 @@ export class EventHandler implements IMessageHandler {
         response.xml.Content = "Hi！\n虽然说不上来以后会变成什么样子，但我现在可以帮你查询和弦。\n随便回复一个什么和弦名试试看，比如……C！";
 
         try {
-            const user = await IUserModel.subscribe(request.xml.FromUserName);
-            const settings = await user.getSettings();
-            console.log(`user setting: ${settings.instrument}, ${settings.tuning}`);
+            await IUserModel.subscribe(request.xml.FromUserName);
         }
         catch (err) {
             console.error(`failed to create weixin user '${request.xml.FromUserName}'`);

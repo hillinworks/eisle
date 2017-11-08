@@ -3,7 +3,22 @@ import { Tuning } from "./Tuning";
 import { NoteName } from "../NoteName";
 import { Pitch } from "../Pitch";
 import { ChordType } from "../ChordType";
-import { first, repeat, except, L, contains, all, skip, range, count, min, sum, select } from "../../Utilities/LinqLite";
+import {
+    all,
+    contains,
+    count,
+    except,
+    first,
+    L,
+    min,
+    range,
+    repeat,
+    select,
+    skip,
+    sum,
+    toArray,
+    toArrayMap,
+} from "../../Utilities/LinqLite";
 import { Interval } from "../Interval";
 import { ChordFingering, FingerRange } from "./ChordFingering";
 import { ChordFingeringPreset } from "./ChordFingeringPreset";
@@ -52,12 +67,38 @@ class ChordDetailResolver {
 
     private readonly chord: Chord;
     private readonly tuning: Tuning;
+    private readonly stringRemapping: number[];
     private notes: NoteName[];
     private omittedIntervals: OmittedInterval[];
 
     constructor(chord: Chord, tuning: Tuning) {
         this.chord = chord;
         this.tuning = tuning;
+        this.stringRemapping = this.remapStrings();
+    }
+
+    private remapStrings(): number[] {
+        let lowestStringIndex = 0;
+        let lowestPitchSemitones = this.tuning.stringTunings[0].semitones;
+
+        const remapping = toArray(range(0, this.tuning.stringTunings.length));
+
+        for (let i = 1; i < this.tuning.stringTunings.length; ++i) {
+            const semitones = this.tuning.stringTunings[i].semitones;
+            if (semitones < lowestPitchSemitones) {
+                lowestPitchSemitones = semitones;
+                lowestStringIndex = i;
+            }
+        }
+
+        remapping[lowestStringIndex] = 0;
+        remapping[0] = lowestStringIndex;
+
+        return remapping;
+    }
+
+    private remapBackArray<T>(array: T[]): T[] {
+        return L(this.stringRemapping).select(i => array[i]).toArray();
     }
 
     resolve(): ChordDetail[] {
@@ -163,7 +204,7 @@ class ChordDetailResolver {
     }
 
     private getNoteFretOnString(note: NoteName, stringIndex: number): number {
-        return (note.semitones + 12 - this.tuning.stringTunings[stringIndex].noteName.semitones) % 12;
+        return (note.semitones + 12 - this.tuning.stringTunings[this.stringRemapping[stringIndex]].noteName.semitones) % 12;
     }
 
     private getNoteFretOnStringInRange(note: NoteName, stringIndex: number, fromFret: number, toFret: number): number | undefined {
@@ -335,7 +376,7 @@ class ChordDetailResolver {
 
             if (stringIndex === this.tuning.stringTunings.length - 1) {
                 if (newRemainingNotes.length === 0) {
-                    candidates.push(new ChordDetail(this.chord, newCurrentNotes, newFrets, omittedIntervals));
+                    candidates.push(new ChordDetail(this.chord, this.remapBackArray(newCurrentNotes), this.remapBackArray(newFrets), omittedIntervals));
                 }
             } else {
                 this.resolveChordFrettingRecursive(

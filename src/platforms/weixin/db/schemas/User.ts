@@ -13,18 +13,7 @@ export const userSchema = new Schema({
     settings: { type: Schema.Types.ObjectId, ref: IUserSettingsModel.name }
 });
 
-userSchema.method("getSettings", async function (this: IUserModel): Promise<IUserSettingsModel> {
-    if (!this.populated("settings")) {
-        await this.populate("settings").execPopulate();
-    }
-
-    if (!this.settings) {
-        this.settings = await IUserSettingsModel.create();
-        this.save();
-    }
-
-    return this.settings as IUserSettingsModel;
-});
+userSchema.method("getSettings", IUserModel.getSettings);
 
 userSchema.pre("save", function (next) {
     if (!this.createdAt) {

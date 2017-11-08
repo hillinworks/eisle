@@ -1,3 +1,7 @@
+import { StringBuilder } from "../../music-core/Core/Utilities/StringBuilder";
+import { TextRange } from "../../music-core/Core/Parsing/TextRange";
+import { LogLevel } from "../../music-core/Core/Logging/LogLevel";
+import { TuningInfo, Tunings } from "./Tunings";
 import { Server } from "../../server";
 import { Chord } from "../../music-core/Core/MusicTheory/Chord";
 import { LogMessage } from "../../music-core/Core/Logging/LogMessage";
@@ -29,6 +33,7 @@ export class ChordIntroModel {
     readonly hasError: false;
     messages: LogMessage[];
     input: string;
+    tuning: string;
     plainName: string;
     nameImageUrl: string;
     staffImageUrl: string;
@@ -55,12 +60,14 @@ const chordDiagramCacheVersion = 0;
 class ChordIntroCreator {
 
     private readonly input: string;
+    private readonly tuningInfo: TuningInfo;
     private readonly chord: Chord;
 
     private model: ChordIntroModel;
 
-    constructor(input: string, chord: Chord) {
+    constructor(input: string, tuningInfo: TuningInfo, chord: Chord) {
         this.input = input;
+        this.tuningInfo = tuningInfo;
         this.chord = chord;
     }
 
@@ -91,12 +98,12 @@ class ChordIntroCreator {
     }
 
     getScaleImageUrl(): string {
-        const fileName = `${ChordUtilities.normalizeChordFileName(this.model.plainName)}-${ChordUtilities.normalizeTuningFileName(GuitarTunings.standard)}.svg`;
+        const fileName = `${ChordUtilities.normalizeChordFileName(this.model.plainName)}-${this.tuningInfo.key}.svg`;
         const savePath = path.join(Cache.getCacheFolder(`chord/scale/${chordScaleCacheVersion}`), fileName);
 
         if (!fs.existsSync(savePath)) {
             const canvas = ChordCanvas.createCanvas(160, 580, "svg");
-            ChordScaleRenderer.draw(this.chord, GuitarTunings.standard, canvas, 12, 12, 1);
+            ChordScaleRenderer.draw(this.chord, this.tuningInfo.tuning, canvas, 12, 12, 1);
             fs.writeFileSync(savePath, canvas.toBuffer());
         }
 
@@ -104,13 +111,11 @@ class ChordIntroCreator {
     }
 
     getDiagramUrls(): IChordDiagramCollection[] {
-        const details = ChordDetail.getChordDetail(this.chord, GuitarTunings.standard);
+        const details = ChordDetail.getChordDetail(this.chord, this.tuningInfo.tuning);
         const result: IChordDiagramCollection[] = [];
         for (const detail of L(details).take(6)) {
-            const key = ChordUtilities.normalizeNoteFileName(this.chord.root.toString()) + "-"
-                + L(detail.frets).select(f => isNaN(f) ? "x" : f.toString()).toArray().join("-");
+            const fileName = `${ChordUtilities.normalizeNoteFileName(this.chord.root.toString())}-${this.tuningInfo.key}-${L(detail.frets).select(f => isNaN(f) ? "x" : f.toString()).toArray().join("-")}.svg`;
 
-            const fileName = key + ".svg";
             const savePath = path.join(Cache.getCacheFolder(`chord/diagrams/${chordDiagramCacheVersion}`), fileName);
 
             if (!fs.existsSync(savePath)) {
@@ -128,10 +133,32 @@ class ChordIntroCreator {
         return result;
     }
 
+    private getTuningString(): string {
+        const builder = new StringBuilder();
+        builder.append(this.tuningInfo.fullName)
+            .append("（");
+
+        for (let i = 0; i < this.tuningInfo.tuning.stringTunings.length; ++i) {
+            const pitch = this.tuningInfo.tuning.stringTunings[i];
+            if (i > 0) {
+                builder.append(" ");
+            }
+            builder.append(pitch.noteName.toString())
+                .append("<sub>")
+                .append(pitch.octaveGroup.toString())
+                .append("</sub>");
+        }
+
+        builder.append("）");
+
+        return builder.toString();
+    }
+
     create(): ChordIntroModel {
         this.model = new ChordIntroModel();
         this.model.plainName = ChordName.getOrdinalNamePlain(this.chord);
         this.model.input = this.input.toUpperCase() === this.model.plainName.toUpperCase() ? undefined : this.input;
+        this.model.tuning = this.getTuningString();
         this.model.nameImageUrl = this.getNameImagePath();
         this.model.staffImageUrl = this.getStaffImagePath();
         this.model.scaleImageUrl = this.getScaleImageUrl();
@@ -143,7 +170,7 @@ class ChordIntroCreator {
 
 export namespace ChordIntroPage {
 
-    export function create(input: string): ChordIntroModel | ChordSyntaxError {
+    export function create(input: string, tuningInput: string): ChordIntroModel | ChordSyntaxError {
         const scanner = new Scanner(input);
         const readChordNameResult = LiteralParsers.readChordName(scanner);
         if (!ParseHelper.isSuccessful(readChordNameResult)) {
@@ -160,8 +187,19 @@ export namespace ChordIntroPage {
 
         const chord = parseChordResult.value;
 
-        const model = new ChordIntroCreator(input, chord).create();
-        model.messages = parseChordResult.messages.length > 0 ? parseChordResult.messages : undefined;
+        const messages = [...parseChordResult.messages];
+
+        let tuning = Tunings.defaultTuning;
+        if (tuningInput) {
+            tuning = Tunings.getTuning(tuningInput);
+            if (!tuning) {
+                messages.push(new LogMessage(LogLevel.Warning, undefined, "无法识别指定的调弦方式，已改用吉他默认调弦"));
+                tuning = Tunings.defaultTuning;
+            }
+        }
+
+        const model = new ChordIntroCreator(input, tuning, chord).create();
+        model.messages = messages.length > 0 ? messages : undefined;
 
         return model;
     }

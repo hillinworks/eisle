@@ -7,28 +7,29 @@ import { BaseRoute } from "./route";
 
 export class IndexRoute extends BaseRoute {
 
-  public static create(router: Router) {
-    console.log("[IndexRoute::create] Creating index route.");
+    public static create(router: Router) {
+        console.log("[IndexRoute::create] Creating index route.");
 
-    router.get("/", (req: Request, res: Response, next: NextFunction) => {
-      new IndexRoute().index(req, res, next);
-    });
+        router.get("/", (req: Request, res: Response, next: NextFunction) => {
+            new IndexRoute().index(req, res, next);
+        });
 
-    router.get("/cmd/:command", (req: Request, res: Response, next: NextFunction) => {
-      new IndexRoute().test(req, res, next);
-    });
-  }
+        router.get("/cmd/:command", (req: Request, res: Response, next: NextFunction) => {
+            new IndexRoute().test(req, res, next);
+        });
+    }
 
-  public index(req: Request, res: Response, next: NextFunction) {
-    this.title = "Home | Echo Isles";
+    public index(req: Request, res: Response, next: NextFunction) {
+        this.title = "Home | Echo Isles";
 
-    this.render(req, res, "index");
-  }
+        this.render(req, res, "index");
+    }
 
-  public test(req: Request, res: Response, next: NextFunction) {
-    const command = req.params["command"];
-    const url = (REPL.process(command) as REPLArticlesResult).articles[0].picUrl;
-    const options = { "image":  url };
-    this.render(req, res, "weixin/test", options);
-  }
+    public async test(req: Request, res: Response, next: NextFunction) {
+        const command = req.params["command"];
+        const result = await REPL.process(command, { tuning: "guitar-drop-d" }) as REPLArticlesResult;
+        const url = result.articles[0].picUrl;
+        const options = { "image": url };
+        this.render(req, res, "weixin/test", options);
+    }
 }

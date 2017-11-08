@@ -27,8 +27,9 @@ export class ChordRoute extends BaseRoute {
     public chord(req: Request, res: Response, next: NextFunction) {
 
         const input = req.params["input"];
+        const tuning = req.query.tuning;
 
-        const chordIntro = ChordIntroPage.create(input);
+        const chordIntro = ChordIntroPage.create(input, tuning);
         if (chordIntro === undefined) {
             res.status(404).send("无法识别的和弦");
             return;

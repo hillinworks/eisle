@@ -1,3 +1,4 @@
+import { TuningInfo } from "./Tunings";
 import { Chord } from "../../music-core/Core/MusicTheory/Chord";
 import { ChordName } from "../../music-core/Core/MusicTheory/ChordName";
 import { Cache } from "../../eisle-core/cache/Cache";
@@ -5,7 +6,6 @@ import * as path from "path";
 import * as fs from "fs";
 import { ChordCanvas } from "../../eisle-core/chord/ChordCanvas";
 import { ChordDetail } from "../../music-core/Core/MusicTheory/String/ChordDetail";
-import { GuitarTunings } from "../../music-core/Core/MusicTheory/String/Plucked/GuitarTunings";
 import * as Canvas from "canvas-prebuilt";
 import { ChordNameRenderer } from "../../eisle-core/chord/elements/ChordNameRenderer";
 import { ChordStaffRenderer } from "../../eisle-core/chord/elements/ChordStaffRenderer";
@@ -33,14 +33,14 @@ export namespace ChordTitleImage {
         }
     }
 
-    export function getTitleImagePath(chord: Chord): string {
+    export function getTitleImagePath(chord: Chord, tuningInfo: TuningInfo): string {
         const plainName = ChordName.getOrdinalNamePlain(chord);
-        const fileName = ChordUtilities.normalizeChordFileName(plainName) + ".png";
+        const fileName = `${ChordUtilities.normalizeChordFileName(plainName)}-${tuningInfo.key}.png`;
         const savePath = path.join(Cache.getCacheFolder(`chord/title-image/${titleImageVersion}`), fileName);
 
         if (!fs.existsSync(savePath)) {
             const canvas = ChordCanvas.createCanvas(360, 200);
-            const details = ChordDetail.getChordDetail(chord, GuitarTunings.standard);
+            const details = ChordDetail.getChordDetail(chord, tuningInfo.tuning);
             drawTitlePicture(canvas, chord, details);
             fs.writeFileSync(savePath, canvas.toBuffer());
         }
