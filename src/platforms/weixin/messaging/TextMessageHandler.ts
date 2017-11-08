@@ -1,6 +1,7 @@
 import { REPL } from "../../../repl/repl";
-import { MessageHandler } from "./MessageHandler";
-export class TextMessageHandler extends MessageHandler {
+import { IMessageHandler } from "./MessageHandler";
+
+export class TextMessageHandler implements IMessageHandler {
     static readonly instance = new TextMessageHandler();
     public handle(request: any, response: any): Promise<void> {
         const message = request.xml.Content[0];

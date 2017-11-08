@@ -1,8 +1,8 @@
 import { Server } from "../../../server";
 import { IUser } from "../db/interfaces/IUser";
-import { MessageHandler } from "./MessageHandler";
+import { IMessageHandler } from "./MessageHandler";
 
-export class EventHandler extends MessageHandler {
+export class EventHandler implements IMessageHandler {
     static readonly instance = new EventHandler();
 
     private async handleSubscribeEvent(request: any, response: any): Promise<void> {

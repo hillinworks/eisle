@@ -2,13 +2,13 @@ import { EventHandler } from "./EventHandler";
 import { TextMessageHandler } from "./TextMessageHandler";
 import * as xml2js from "xml2js";
 
-export abstract class MessageHandler {
-    abstract handle(request: any, response: any): Promise<void>;
+export interface IMessageHandler {
+    handle(request: any, response: any): Promise<void>;
 }
 
 export namespace MessageHandler {
 
-    const handlers: { [key: string]: MessageHandler } = {
+    const handlers: { [key: string]: IMessageHandler } = {
         "text": TextMessageHandler.instance,
         "event": EventHandler.instance
     };
