@@ -1,3 +1,6 @@
+import { DatabaseInitializer } from "./platforms/weixin/db/DatabaseInitializer";
+import { IModel } from "./platforms/weixin/db/models/IModel";
+import { TextBodyParser } from "./middlewares/TextBodyParser";
 import * as express from "Express";
 import { Request } from "Express";
 import { ChordRoute } from "./routes/chord";
@@ -13,92 +16,83 @@ import { WeixinRoute } from "./routes/weixin";
 
 export class Server {
 
-  public app: express.Application;
+    public app: express.Application;
 
-  public static bootstrap(): Server {
-    Server.current = new Server();
-    return Server.current;
-  }
+    public readonly model: IModel
 
-  constructor() {
-    this.app = express();
-    this.config();
-    this.routes();
-    this.api();
-  }
-
-  public api() {
-    // empty for now
-  }
-
-  public config() {
-
-    console.log(__dirname);
-
-    if (fs.existsSync(path.join(__dirname, "config/eisleconf.json"))) {
-      this.app.locals.eisle = JSON.parse(fs.readFileSync(path.join(__dirname, "config/eisleconf.json"), "utf8"));
+    public static bootstrap(): Server {
+        Server.current = new Server();
+        return Server.current;
     }
 
-    if (fs.existsSync(path.join(__dirname, "config/eisleconf.override.json"))) {
-      Object.assign(this.app.locals.eisle, JSON.parse(fs.readFileSync(path.join(__dirname, "config/eisleconf.override.json"), "utf8")));
+    constructor() {
+        this.model = IModel.createEmpty();
+        this.app = express();
+        this.config();
+        this.routes();
+        this.api();
     }
 
-    this.app.use(express.static(path.join(__dirname, "public")));
+    public api() {
+        // empty for now
+    }
 
-    this.app.set("views", path.join(__dirname, "views"));
-    this.app.set("view engine", "pug");
+    public config() {
 
-    this.app.use(logger("dev"));
+        console.log(__dirname);
 
-    this.app.use(bodyParser.json());
+        //use q promises
+        global.Promise = require("q").Promise;
 
-    // text body parser
-    this.app.use(function (req, res, next) {
-      const contentType = req.header("content-type") || "";
-      const mime = contentType.split(";")[0];
+        if (fs.existsSync(path.join(__dirname, "config/eisleconf.json"))) {
+            this.app.locals.eisle = JSON.parse(fs.readFileSync(path.join(__dirname, "config/eisleconf.json"), "utf8"));
+        }
 
-      if (!mime.startsWith("text/")) {
-        return next();
-      }
-      let data = "";
-      req.setEncoding("utf8");
-      req.on("data", function (chunk) {
-        data += chunk;
-      });
-      req.on("end", function () {
-        req.body = data;
-        next();
-      });
-    });
+        if (fs.existsSync(path.join(__dirname, "config/eisleconf.override.json"))) {
+            Object.assign(this.app.locals.eisle, JSON.parse(fs.readFileSync(path.join(__dirname, "config/eisleconf.override.json"), "utf8")));
+        }
 
-    this.app.use(bodyParser.urlencoded({
-      extended: true
-    }));
+        this.app.use(express.static(path.join(__dirname, "public")));
 
-    this.app.use(cookieParser("SECRET_GOES_HERE"));
+        this.app.set("views", path.join(__dirname, "views"));
+        this.app.set("view engine", "pug");
 
-    this.app.use(methodOverride());
+        this.app.use(logger("dev"));
 
-    this.app.use(function (err: any, req: express.Request, res: express.Response, next: express.NextFunction) {
-      err.status = 404;
-      next(err);
-    });
+        this.app.use(bodyParser.json());
 
-    this.app.use(errorHandler());
-  }
+        this.app.use(TextBodyParser);
 
-  public routes() {
-    let router: express.Router;
-    router = express.Router();
+        this.app.use(bodyParser.urlencoded({
+            extended: true
+        }));
 
-    IndexRoute.create(router);
-    WeixinRoute.create(router);
-    ChordRoute.create(router);
+        this.app.use(cookieParser("SECRET_GOES_HERE"));
 
-    this.app.use(router);
-  }
+        this.app.use(DatabaseInitializer);
+
+        this.app.use(methodOverride());
+
+        this.app.use(function (err: any, req: express.Request, res: express.Response, next: express.NextFunction) {
+            err.status = 404;
+            next(err);
+        });
+
+        this.app.use(errorHandler());
+    }
+
+    public routes() {
+        let router: express.Router;
+        router = express.Router();
+
+        IndexRoute.create(router);
+        WeixinRoute.create(router);
+        ChordRoute.create(router);
+
+        this.app.use(router);
+    }
 }
 
 export namespace Server {
-  export let current: Server;
+    export let current: Server;
 }
