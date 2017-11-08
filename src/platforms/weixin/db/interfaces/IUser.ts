@@ -2,7 +2,7 @@ import { IUserSettings } from "./IUserSettings";
 export interface IUser {
     weixinId: string;
     isSubscribed: boolean;
-    createdAt: Date,
+    createdAt: Date;
     subscribeTime?: Date;
     unsubscribeTime?: Date;
     lastSeen?: Date;

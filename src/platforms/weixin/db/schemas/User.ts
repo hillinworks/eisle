@@ -1,6 +1,5 @@
 import { IUserSettings } from "../interfaces/IUserSettings";
 import { Schema } from "mongoose";
-import { ObjectID } from "mongodb";
 
 export const userSchema = new Schema({
     weixinId: { type: String, index: true, unique: true },
@@ -9,8 +8,8 @@ export const userSchema = new Schema({
     subscribeTime: Date,
     unsubscribeTime: Date,
     lastSeen: { type: Date, default: Date.now },
-    settings: ObjectID,
-})
+    settings: Schema.Types.ObjectId,
+});
 
 userSchema.pre("save", function (next) {
     if (!this.createdAt) {

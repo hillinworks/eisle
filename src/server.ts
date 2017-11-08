@@ -18,7 +18,7 @@ export class Server {
 
     public app: express.Application;
 
-    public readonly model: IModel
+    public readonly model: IModel;
 
     public static bootstrap(): Server {
         Server.current = new Server();
@@ -41,7 +41,6 @@ export class Server {
 
         console.log(__dirname);
 
-        //use q promises
         global.Promise = require("q").Promise;
 
         if (fs.existsSync(path.join(__dirname, "config/eisleconf.json"))) {
