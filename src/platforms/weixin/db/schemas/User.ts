@@ -1,3 +1,5 @@
+import { IUserModel } from "../models/IUserModel";
+import { IUserSettingsModel } from "../models/IUserSettingsModel";
 import { IUserSettings } from "../interfaces/IUserSettings";
 import { Schema } from "mongoose";
 
@@ -8,7 +10,19 @@ export const userSchema = new Schema({
     subscribeTime: Date,
     unsubscribeTime: Date,
     lastSeen: { type: Date, default: Date.now },
-    settings: Schema.Types.ObjectId,
+    settings: { type: Schema.Types.ObjectId, ref: IUserSettingsModel.name }
+});
+
+userSchema.method("getSettings", async function (this: IUserModel): Promise<IUserSettingsModel> {
+    if (!this.populated("settings")) {
+        await this.populate("settings").execPopulate();
+    }
+
+    if (!this.settings) {
+        this.settings = await IUserSettingsModel.create();
+    }
+
+    return this.settings as IUserSettingsModel;
 });
 
 userSchema.pre("save", function (next) {

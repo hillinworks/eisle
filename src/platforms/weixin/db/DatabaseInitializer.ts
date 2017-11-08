@@ -13,8 +13,8 @@ export function DatabaseInitializer(req: Request, res: Response, next: NextFunct
     const connection: mongoose.Connection = mongoose.createConnection(server.app.locals.eisle.mongodb.connectionString);
     connection.on("error", console.error.bind(console, "connection error:"));
 
-    server.model.User = connection.model<IUserModel>("User", userSchema);
-    server.model.UserSettings = connection.model<IUserSettingsModel>("UserSettings", userSettingsSchema);
+    server.model.User = connection.model<IUserModel>(IUserModel.name, userSchema);
+    server.model.UserSettings = connection.model<IUserSettingsModel>(IUserSettingsModel.name, userSettingsSchema);
 
     return next();
 }

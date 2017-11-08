@@ -1,3 +1,4 @@
+import { IUserModel } from "../db/models/IUserModel";
 import { Server } from "../../../server";
 import { IUser } from "../db/interfaces/IUser";
 import { IMessageHandler } from "./MessageHandler";
@@ -9,26 +10,10 @@ export class EventHandler implements IMessageHandler {
         response.xml.MsgType = "text";
         response.xml.Content = "Hi！\n虽然说不上来以后会变成什么样子，但我现在可以帮你查询和弦。\n随便回复一个什么和弦名试试看，比如……C！";
 
-        const now = Date.now();
-        const user: IUser = {
-            weixinId: request.xml.FromUserName,
-            isSubscribed: true,
-            createdAt: now,
-            subscribeTime: now,
-            lastSeen: now
-        };
-
         try {
-            const users = await Server.current.model.User.find({ weixinId: request.xml.FromUserName }).exec();
-            if (users.length === 0) {
-                console.log(`new weixin user subscribing: '${request.xml.FromUserName}'`);
-                await new Server.current.model.User(user).save();
-                console.log(`weixin user created and subscribed: '${request.xml.FromUserName}'`);
-            } else {
-                console.log(`returned weixin user subscribing: '${request.xml.FromUserName}'`);
-                await users[0].update(user).exec();
-                console.log(`weixin user subscribed: '${request.xml.FromUserName}'`);
-            }
+            const user = await IUserModel.subscribe(request.xml.FromUserName);
+            const settings = await user.getSettings();
+            console.log(`user setting: ${settings.instrument}, ${settings.tuning}`);
         }
         catch (err) {
             console.error(`failed to create weixin user '${request.xml.FromUserName}'`);
@@ -41,11 +26,7 @@ export class EventHandler implements IMessageHandler {
         const now = Date.now();
 
         try {
-            await Server.current.model.User.findOneAndUpdate(
-                { weixinId: request.xml.FromUserName },
-                { "$set": { isSubscribed: false, unsubscribeTime: now, lastSeen: now } }).exec();
-
-            console.log(`weixin user unsubscribed: '${request.xml.FromUserName}'`);
+            await IUserModel.unsubscribe(request.xml.FromUserName);
         }
         catch (err) {
             console.error(`failed to unsubscribe weixin user '${request.xml.FromUserName}'`);
