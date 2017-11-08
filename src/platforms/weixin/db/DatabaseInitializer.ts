@@ -14,4 +14,6 @@ export function DatabaseInitializer(req: Request, res: Response, next: NextFunct
 
     server.model.user = connection.model<IUserModel>("User", userSchema);
     server.model.userSettings = connection.model<IUserSettingsModel>("UserSettings", userSettingsSchema);
+
+    return next();
 }
