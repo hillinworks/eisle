@@ -4,11 +4,11 @@ import { IUserModel } from "./IUserModel";
 
 export interface IModel {
     user: Model<IUserModel>;
-    userSetting: Model<IUserSettingsModel>;
+    userSettings: Model<IUserSettingsModel>;
 }
 
 export namespace IModel {
     export function createEmpty(): IModel {
-        return { user: undefined, userSetting: undefined };
+        return { user: undefined, userSettings: undefined };
     }
 }
