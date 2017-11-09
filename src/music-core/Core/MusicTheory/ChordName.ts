@@ -96,16 +96,19 @@ export namespace ChordName {
             testType &= ~ChordType.Mask13;
         }
 
-        const isPlainTriad = chord.type === ChordType.BT_MajorTriad
-            || chord.type === ChordType.BT_MinorTriad
-            || chord.type === ChordType.BT_AugmentedTriad
-            || chord.type === ChordType.BT_DiminishedTriad;
+        const baseType = testType & ChordType.BT_Mask;
+
+        const isPlainTriad = baseType === ChordType.BT_MajorTriad
+            || baseType === ChordType.BT_MinorTriad
+            || baseType === ChordType.BT_AugmentedTriad
+            || baseType === ChordType.BT_DiminishedTriad;
+
         const hasThird = (testType & ChordType.Mask3) !== 0;
         const isSus2 = !hasThird && (testType & ChordType.Mask2) === ChordType.M2;
         const isSus4 = !hasThird && (testType & ChordType.Mask4) === ChordType.P4;
 
         let nameRule = baseNameLookup[testType & ChordType.BT_MaskWithSuspension]
-            || baseNameLookup[testType & ChordType.BT_Mask];
+            || baseNameLookup[baseType];
 
         if (!nameRule) {
             return { baseName: "", superscript: "", subscript: "" };
@@ -123,7 +126,7 @@ export namespace ChordName {
         const thirteenth = chord.type & ChordType.Mask13;
 
         const shortAdded = shortAddedTones[ninth | eleventh | thirteenth];
-        if (isPlainTriad && shortAdded) {
+        if (isPlainTriad && !isSus2 && !isSus4 && shortAdded) {
             addBuilder.append(shortAdded);
         } else {
             // the highest possible extension degree (e.g. 13 in c7addb9add11addb13)
@@ -169,22 +172,26 @@ export namespace ChordName {
                 }
             }
 
-            switch (ninth) {
-                case ChordType.M2:
-                    appendAdded("2"); break;
-                case ChordType.A2:
-                    appendAdded("♯2"); break;
-                case ChordType.m2:
-                    appendAdded("♭2"); break;
+            if (!isSus2) {
+                switch (ninth) {
+                    case ChordType.M2:
+                        appendAdded("2"); break;
+                    case ChordType.A2:
+                        appendAdded("♯2"); break;
+                    case ChordType.m2:
+                        appendAdded("♭2"); break;
+                }
             }
 
-            switch (eleventh) {
-                case ChordType.P4:
-                    appendAdded("4"); break;
-                case ChordType.A4:
-                    appendAdded("♯4"); break;
-                case ChordType.d4:
-                    appendAdded("♭4"); break;
+            if (!isSus4) {
+                switch (eleventh) {
+                    case ChordType.P4:
+                        appendAdded("4"); break;
+                    case ChordType.A4:
+                        appendAdded("♯4"); break;
+                    case ChordType.d4:
+                        appendAdded("♭4"); break;
+                }
             }
 
             switch (thirteenth) {
