@@ -96,8 +96,8 @@ class Renderer {
     private decideFretRange(): { min: number, max: number } {
         const fretWidth = this.instrumentInfo.chordResolvingOptions.maxChordFretWidth;
         const fretRange = L(this.chordDetail.frets).where(f => !isNaN(f) && f > 0).minMax();
-        if (fretRange.max <= fretWidth) {
-            return { min: 1, max: Math.max(fretRange.max, fretWidth) };
+        if (fretRange === undefined || fretRange.max <= fretWidth) {
+            return { min: 1, max: fretRange ? Math.max(fretRange.max, fretWidth) : fretWidth };
         }
 
         return { min: fretRange.min, max: fretRange.min + Math.max(fretRange.max - fretRange.min, fretWidth - 1) };
@@ -138,16 +138,16 @@ class Renderer {
         for (let i = 1; i < this.chordDetail.frets.length - 1; ++i) {
             this.context.beginPath();
             const x = this.gridLeft + i * cellWidth * this.scale;
-            this.context.lineTo(this.x + x, this.gridTop);
-            this.context.lineTo(this.x + x, this.gridTop + this.gridHeight);
+            this.context.lineTo(x, this.gridTop);
+            this.context.lineTo(x, this.gridTop + this.gridHeight);
             this.context.stroke();
         }
 
         for (let i = 1; i < this.fretRange.max - this.fretRange.min + 1; ++i) {
             this.context.beginPath();
             const y = this.gridTop + i * this.cellHeight;
-            this.context.lineTo(this.gridLeft, this.y + y);
-            this.context.lineTo(this.gridLeft + this.gridWidth, this.y + y);
+            this.context.lineTo(this.gridLeft, y);
+            this.context.lineTo(this.gridLeft + this.gridWidth, y);
             this.context.stroke();
         }
     }
@@ -197,8 +197,7 @@ class Renderer {
         if (this.fretRange.min <= 1) {
             return;
         }
-        const x = this.x
-            + this.gridLeft
+        const x = this.gridLeft
             + this.gridWidth
             + fretOffsetMargin * this.scale
             + centerTextOffsetX * this.scale;
@@ -273,8 +272,11 @@ class Renderer {
 }
 
 export namespace ChordDiagramRenderer {
-    export function draw(detail: ChordDetail, instrumentInfo: InstrumentInfo, canvas: Canvas, x: number, y: number, scale: number) {
-        new Renderer(detail, instrumentInfo).render(canvas, x, y, scale, false);
+    export function drawCentered(detail: ChordDetail, instrumentInfo: InstrumentInfo, canvas: Canvas, x: number, y: number, scale: number) {
+        const renderer = new Renderer(detail, instrumentInfo);
+        const size = renderer.measure(scale, true);
+        console.log(JSON.stringify(size));
+        renderer.render(canvas, x - size.width / 2, y - size.height / 2, scale, true);
     }
 
     export function drawFitted(detail: ChordDetail, instrumentInfo: InstrumentInfo, scale: number, symmetric: boolean): Canvas {

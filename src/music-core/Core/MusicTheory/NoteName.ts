@@ -51,6 +51,10 @@ export class NoteName {
     toString(): string {
         return `${BaseNoteName[this.baseName]}${Accidental.toString(this.accidental)}`;
     }
+
+    inspect(): string {
+        return this.toString();
+    }
 }
 
 export namespace NoteName {

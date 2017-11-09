@@ -21,7 +21,7 @@ export namespace ChordTitleImage {
 
         ChordNameRenderer.draw(chordName, ChordName.getOmitsEnglish(chord, details[0] ? details[0].omits : []), canvas, 16, 24, 1.5);
 
-        ChordStaffRenderer.draw(chord, canvas, 16, 64, 1.5);
+        ChordStaffRenderer.draw(chord, canvas, 16, 72, 1.5);
 
         if (details.length === 0) {
             const context = canvas.getContext("2d");
@@ -29,7 +29,7 @@ export namespace ChordTitleImage {
             unknownChordImage.src = fs.readFileSync("./public/images/unknown-chord.png");
             context.drawImage(unknownChordImage, 160, 0);
         } else {
-            ChordDiagramRenderer.draw(details[0], instrumentInfo, canvas, 160, 0, 1.2);
+            ChordDiagramRenderer.drawCentered(details[0], instrumentInfo, canvas, 240, 100, 1.2);
         }
     }
 

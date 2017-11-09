@@ -638,10 +638,17 @@ export function lastOrUndefined<T>(source: Iterable<T> | T[], predicate: Predica
  * @param selector A transform function to apply to each element.
  * @return The maximum value in the sequence.
  */
-export function max<T>(source: Iterable<T>, selector: Selector<T, number> = defaultNumberSelector): number {
+export function max<T>(source: Iterable<T>, selector: Selector<T, number> = defaultNumberSelector): number | undefined {
     let max = Number.MIN_VALUE;
+
+    let isEmpty = true;
     for (const item of source) {
         max = Math.max(max, selector(item));
+    isEmpty = false;
+    }
+
+    if (isEmpty) {
+        return undefined;
     }
 
     return max;
@@ -654,11 +661,17 @@ export function max<T>(source: Iterable<T>, selector: Selector<T, number> = defa
  * @param selector A transform function to apply to each element.
  * @return The minimum value in the sequence.
  */
-export function min<T>(source: Iterable<T>, selector: Selector<T, number> = defaultNumberSelector): number {
+export function min<T>(source: Iterable<T>, selector: Selector<T, number> = defaultNumberSelector): number | undefined {
     let min = Number.MAX_VALUE;
 
+    let isEmpty = true;
     for (const item of source) {
         min = Math.min(min, selector(item));
+        isEmpty = false;
+    }
+
+    if (isEmpty) {
+        return undefined;
     }
 
     return min;
@@ -671,15 +684,22 @@ export function min<T>(source: Iterable<T>, selector: Selector<T, number> = defa
  * @returns The minimum and maximum value in the sequence.
  */
 export function minMax<T>(source: Iterable<T>, selector: Selector<T, number> = defaultNumberSelector)
-    : { min: number, max: number } {
+    : { min: number, max: number } | undefined {
 
     let min = Number.MAX_VALUE;
     let max = Number.MIN_VALUE;
 
+    let isEmpty = true;
     for (const item of source) {
         const value = selector(item);
         min = Math.min(min, value);
         max = Math.max(max, value);
+
+        isEmpty = false;
+    }
+
+    if (isEmpty) {
+        return undefined;
     }
 
     return { min, max };

@@ -150,6 +150,12 @@ class ChordFingeringArranger {
 
     arrange(): ChordFingering {
 
+        if (this.fretRange === undefined) {
+            return new ChordFingering(
+                ChordFingering.allFingersIdle,
+                ChordFingering.calculateFingeringRating(this.frets, ChordFingering.allFingersIdle));
+        }
+
         const context = new ArrangeContext();
         context.pressabilities = this.analysePressabilities();
         context.fingers = [];
@@ -233,7 +239,7 @@ class ChordFingeringArranger {
     }
 
     private tryArrangeFingering(allowBarre: boolean, context: ArrangeContext, result: ChordFingering[]): void {
-        const columnIndex = context.columnIndex;
+        const fret = context.columnIndex + this.fretRange.min;
 
         if (context.fingers.length < 4) {
             const contextWithIdle = context.clone();
@@ -295,11 +301,11 @@ class ChordFingeringArranger {
                 barreEnd = Math.min(barreStart + maxBarreRange - 1, extendedBarreEnd);
             }
 
-            context.fingers.push(new FingerRange(context.columnIndex + this.fretRange.min, barreStart, barreEnd));
+            context.fingers.push(new FingerRange(fret, barreStart, barreEnd));
         } else {
             for (; context.stringIndex < this.frets.length; ++context.stringIndex) {
                 if (context.currentFretPressability === FretPressablility.MustPress) {
-                    context.fingers.push(new FingerRange(context.columnIndex + this.fretRange.min, context.stringIndex));
+                    context.fingers.push(new FingerRange(fret, context.stringIndex));
                     ++context.stringIndex;
                     break;
                 }
@@ -313,7 +319,7 @@ class ChordFingeringArranger {
         }
 
         // if we are still in the same column, we should not start a barre attempt
-        const canBarre = columnIndex !== context.columnIndex;
+        const canBarre = fret !== context.columnIndex;
 
         if (context.fingers.length === 5) {
             if (context.isEndOfContext) {
@@ -342,6 +348,19 @@ export class FingerRange {
         this.from = from;
         this.to = isNaN(to) ? from : to;
     }
+
+    inspect(): string {
+        if (isNaN(this.fret)) {
+            return "idle";
+        }
+
+        if (this.from === this.to) {
+            return `${this.fret}:${this.from}`;
+        } else {
+            return `${this.fret}:${this.from}-${this.to}`;
+        }
+
+    }
 }
 
 export class ChordFingering {
@@ -355,6 +374,9 @@ export class ChordFingering {
 
 
 export namespace ChordFingering {
+
+    export const allFingersIdle = [FingerRange.idle, FingerRange.idle, FingerRange.idle, FingerRange.idle, FingerRange.idle];
+
     export function arrangeFingering(frets: ReadonlyArray<number>): ChordFingering {
         return new ChordFingeringArranger(frets).arrange();
     }
@@ -366,7 +388,7 @@ export namespace ChordFingering {
 
     export function calculateFingeringRating(frets: ReadonlyArray<number>, fingering: ReadonlyArray<FingerRange>): number {
         const fretRange = L(frets).where(f => !isNaN(f) && f > 0).minMax();
-        const fretSpan = fretRange.max - fretRange.min + 1;
+        const fretSpan = fretRange ? fretRange.max - fretRange.min + 1 : 0;
 
         let rating = 0;
         if (fretSpan > 3) {
@@ -374,7 +396,7 @@ export namespace ChordFingering {
             rating += (fretSpan - 3) * 5;
         }
 
-        rating += fretRange.min * 0.55;
+        rating += fretRange ? fretRange.min * 0.55 : 0;
 
         // prefer fingering with less breaks (more continuity, e.g. prefer x02220 more than x02x20)
         let noteAppeared = false;
