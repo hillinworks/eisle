@@ -1,2 +1,2 @@
-call npm run grunt
-call npm start
+call npm run build
+call npm run serve
