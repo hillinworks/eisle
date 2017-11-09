@@ -12,9 +12,10 @@ html
             img.name.image(src=nameImageUrl)
           div.right.aligned.column
             img.image(src=staffImageUrl)
-        div.ui.label
+        div.ui.large.label
             i.music.icon
-            | !{tuning}
+            | #{tuning.name}
+            div.detail !{tuning.pitches}
         if input || messages
           div(class=(messages ? "ui warning message" : "ui message")) 
             if input

@@ -33,7 +33,10 @@ export class ChordIntroModel {
     readonly hasError: false;
     messages: LogMessage[];
     input: string;
-    tuning: string;
+    tuning: {
+        name: string,
+        pitches: string
+    };
     plainName: string;
     nameImageUrl: string;
     staffImageUrl: string;
@@ -133,10 +136,8 @@ class ChordIntroCreator {
         return result;
     }
 
-    private getTuningString(): string {
+    private getTuningDescriptor() {
         const builder = new StringBuilder();
-        builder.append(this.tuningInfo.fullName)
-            .append("（");
 
         for (let i = 0; i < this.tuningInfo.tuning.stringTunings.length; ++i) {
             const pitch = this.tuningInfo.tuning.stringTunings[i];
@@ -149,16 +150,14 @@ class ChordIntroCreator {
                 .append("</sub>");
         }
 
-        builder.append("）");
-
-        return builder.toString();
+        return { name: this.tuningInfo.fullName, pitches: builder.toString() };
     }
 
     create(): ChordIntroModel {
         this.model = new ChordIntroModel();
         this.model.plainName = ChordName.getOrdinalNamePlain(this.chord);
         this.model.input = this.input.toUpperCase() === this.model.plainName.toUpperCase() ? undefined : this.input;
-        this.model.tuning = this.getTuningString();
+        this.model.tuning = this.getTuningDescriptor();
         this.model.nameImageUrl = this.getNameImagePath();
         this.model.staffImageUrl = this.getStaffImagePath();
         this.model.scaleImageUrl = this.getScaleImageUrl();
