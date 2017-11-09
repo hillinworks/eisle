@@ -19,9 +19,9 @@ export namespace ChordTitleImage {
     function drawTitlePicture(canvas: Canvas, chord: Chord, instrumentInfo: InstrumentInfo, details: ReadonlyArray<ChordDetail>) {
         const chordName = ChordName.getOrdinalName(chord);
 
-        ChordNameRenderer.draw(chordName, ChordName.getOmitsEnglish(chord, details[0] ? details[0].omits : []), canvas, 16, 24, 1.5);
+        ChordNameRenderer.draw(chordName, ChordName.getOmitsEnglish(chord, details[0] ? details[0].omits : []), canvas, 32, 48, 3);
 
-        ChordStaffRenderer.draw(chord, canvas, 16, 72, 1.5);
+        ChordStaffRenderer.draw(chord, canvas, 32, 144, 3);
 
         if (details.length === 0) {
             const context = canvas.getContext("2d");
@@ -29,7 +29,7 @@ export namespace ChordTitleImage {
             unknownChordImage.src = fs.readFileSync("./public/images/unknown-chord.png");
             context.drawImage(unknownChordImage, 160, 0);
         } else {
-            ChordDiagramRenderer.drawCentered(details[0], instrumentInfo, canvas, 240, 100, 1.2);
+            ChordDiagramRenderer.drawCentered(details[0], instrumentInfo, canvas, 480, 200, 2.4);
         }
     }
 
@@ -39,7 +39,7 @@ export namespace ChordTitleImage {
         const savePath = path.join(Cache.getCacheFolder(`chord/title-image/${titleImageVersion}`), fileName);
 
         if (!fs.existsSync(savePath)) {
-            const canvas = ChordCanvas.createCanvas(360, 200);
+            const canvas = ChordCanvas.createCanvas(720, 400);
             const details = ChordDetail.getChordDetail(chord, instrumentInfo);
             drawTitlePicture(canvas, chord, instrumentInfo, details);
             fs.writeFileSync(savePath, canvas.toBuffer());
