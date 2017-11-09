@@ -1,14 +1,17 @@
-import { L, range } from "../../../music-core/Core/Utilities/LinqLite";
+import { InstrumentInfo } from "../InstrumentTunings";
+import { L, range, sum } from "../../../music-core/Core/Utilities/LinqLite";
 import { Tuning } from "../../../music-core/Core/MusicTheory/String/Tuning";
 import { NoteName } from "../../../music-core/Core/MusicTheory/NoteName";
 import { Chord } from "../../../music-core/Core/MusicTheory/Chord";
 import * as Canvas from "canvas-prebuilt";
-import { CanvasColors } from "../../../eisle-core/drawing/CanvasColors";
-import { DrawingHelper } from "../../../eisle-core/drawing/DrawingHelper";
+import { CanvasColors } from "../../drawing/CanvasColors";
+import { DrawingHelper } from "../../drawing/DrawingHelper";
+import { ChordCanvas } from "../ChordCanvas";
 
 
-const topMargin = 32;
-const leftMargin = 12;
+const margin = 12;
+const gridTopMargin = 32;
+const gridLeftMargin = margin;
 const cellWidth = 22;
 const firstFretHeight = 96;
 
@@ -38,7 +41,7 @@ const noteFont = `${12}px 'Text'`;
 class Renderer {
 
     private readonly chord: Chord;
-    private readonly tuning: Tuning;
+    private readonly instrumentInfo: InstrumentInfo;
     private readonly notes: NoteName[];
     private canvas: Canvas;
     private context: Canvas.Context2d;
@@ -46,20 +49,31 @@ class Renderer {
     private y: number;
     private scale: number;
 
-    constructor(chord: Chord, tuning: Tuning) {
+    constructor(chord: Chord, instrumentInfo: InstrumentInfo) {
         this.chord = chord;
-        this.tuning = tuning;
+        this.instrumentInfo = instrumentInfo;
         this.notes = chord.getNotes();
     }
 
-    private get gridWidth(): number {
-        return cellWidth * (this.tuning.stringTunings.length - 1) * this.scale;
+    measure(scale: number): { width: number, height: number } {
+        return {
+            width: gridLeftMargin * scale
+            + cellWidth * (this.instrumentInfo.stringCount - 1) * scale
+            + margin * scale,
+            height: gridTopMargin * scale
+            + sum(fretHeights) * scale
+            + margin * scale
+        };
     }
 
-    private drawFrame() {
+    private get gridWidth(): number {
+        return cellWidth * (this.instrumentInfo.stringCount - 1) * this.scale;
+    }
 
-        const x = this.x + leftMargin * this.scale;
-        let y = this.y + topMargin * this.scale;
+    private drawGrid() {
+
+        const x = this.x + gridLeftMargin * this.scale;
+        let y = this.y + gridTopMargin * this.scale;
 
         // zero fret
         this.context.lineWidth = nutLineWidth * this.scale;
@@ -72,7 +86,7 @@ class Renderer {
 
         y += nutSpacing * this.scale;
 
-        const frameTop = y;
+        const gridTop = y;
 
         this.context.lineWidth = gridLineWidth * this.scale;
         for (let i = 0; i < 12; ++i) {
@@ -101,10 +115,10 @@ class Renderer {
             }
         }
 
-        for (let i = 1; i < this.tuning.stringTunings.length - 1; ++i) {
+        for (let i = 1; i < this.instrumentInfo.stringCount - 1; ++i) {
             this.context.beginPath();
             const xi = x + i * cellWidth * this.scale;
-            this.context.lineTo(xi, frameTop);
+            this.context.lineTo(xi, gridTop);
             this.context.lineTo(xi, y);
             this.context.stroke();
         }
@@ -113,9 +127,9 @@ class Renderer {
         this.context.strokeStyle = CanvasColors.black;
         this.context.strokeRect(
             x,
-            frameTop,
+            gridTop,
             this.gridWidth,
-            y - frameTop);
+            y - gridTop);
     }
 
     private drawNotes() {
@@ -140,11 +154,11 @@ class Renderer {
             _this.context.fillText(note.toString(), x + centerTextOffsetX * _this.scale, y + centerTextOffsetY * _this.scale);
         }
 
-        const baseY = this.y + topMargin * this.scale + nutSpacing * this.scale;
+        const baseY = this.y + gridTopMargin * this.scale + nutSpacing * this.scale;
 
-        for (let i = 0; i < this.tuning.stringTunings.length; ++i) {
-            const x = this.x + leftMargin * this.scale + i * cellWidth * this.scale;
-            const baseNote = this.tuning.stringTunings[i].noteName;
+        for (let i = 0; i < this.instrumentInfo.stringCount; ++i) {
+            const x = this.x + gridLeftMargin * this.scale + i * cellWidth * this.scale;
+            const baseNote = this.instrumentInfo.tuning.pitches[i].noteName;
             for (const note of this.notes) {
                 const semitones = baseNote.getSemitonesTo(note);
                 if (semitones === 0) {
@@ -165,13 +179,21 @@ class Renderer {
         this.y = y;
         this.scale = scale;
 
-        this.drawFrame();
+        this.drawGrid();
         this.drawNotes();
     }
 }
 
 export namespace ChordScaleRenderer {
-    export function draw(chord: Chord, tuning: Tuning, canvas: Canvas, x: number, y: number, scale: number) {
-        new Renderer(chord, tuning).render(canvas, x, y, scale);
+    export function draw(chord: Chord, instrumentInfo: InstrumentInfo, canvas: Canvas, x: number, y: number, scale: number) {
+        new Renderer(chord, instrumentInfo).render(canvas, x, y, scale);
+    }
+
+    export function drawFitted(chord: Chord, instrumentInfo: InstrumentInfo, scale: number): Canvas {
+        const renderer = new Renderer(chord, instrumentInfo);
+        const size = renderer.measure(scale);
+        const canvas = ChordCanvas.createCanvas(size.width, size.height, "svg");
+        renderer.render(canvas, 0, 0, scale);
+        return canvas;
     }
 }

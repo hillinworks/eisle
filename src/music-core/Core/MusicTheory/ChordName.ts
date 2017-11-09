@@ -116,7 +116,7 @@ export namespace ChordName {
 
         nameRule = Object.assign({}, nameRule);
 
-        let extensionText = nameRule.extendable ? "7" : undefined;
+        let extensionText: string = undefined;
 
         const alterBuilder = new StringBuilder();
         const addBuilder = new StringBuilder();

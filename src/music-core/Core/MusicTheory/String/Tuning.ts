@@ -3,19 +3,19 @@ import { all, L } from "../../Utilities/LinqLite";
 
 export class Tuning {
     readonly name?: string;
-    readonly stringTunings: Pitch[];
+    readonly pitches: Pitch[];
 
     constructor(name: string | undefined, ...stringTunings: Pitch[]) {
         this.name = name;
-        this.stringTunings = stringTunings;
+        this.pitches = stringTunings;
     }
 
     equals(other: Tuning): boolean {
-        return other && all(this.stringTunings, (p, i) => other.stringTunings[i].equals(p));
+        return other && all(this.pitches, (p, i) => other.pitches[i].equals(p));
     }
 
     inOctaveEquals(other: Tuning): boolean {
-        return other && all(this.stringTunings, (p, i) => other.stringTunings[i].noteName.equals(p.noteName));
+        return other && all(this.pitches, (p, i) => other.pitches[i].noteName.equals(p.noteName));
     }
 }
 

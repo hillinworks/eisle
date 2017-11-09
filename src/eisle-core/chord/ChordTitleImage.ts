@@ -1,4 +1,4 @@
-import { TuningInfo } from "./Tunings";
+import { InstrumentInfo } from "./InstrumentTunings";
 import { Chord } from "../../music-core/Core/MusicTheory/Chord";
 import { ChordName } from "../../music-core/Core/MusicTheory/ChordName";
 import { Cache } from "../../eisle-core/cache/Cache";
@@ -16,7 +16,7 @@ export namespace ChordTitleImage {
 
     export const titleImageVersion = 1;
 
-    function drawTitlePicture(canvas: Canvas, chord: Chord, details: ReadonlyArray<ChordDetail>) {
+    function drawTitlePicture(canvas: Canvas, chord: Chord, instrumentInfo: InstrumentInfo, details: ReadonlyArray<ChordDetail>) {
         const chordName = ChordName.getOrdinalName(chord);
 
         ChordNameRenderer.draw(chordName, ChordName.getOmitsEnglish(chord, details[0] ? details[0].omits : []), canvas, 16, 24, 1.5);
@@ -29,19 +29,19 @@ export namespace ChordTitleImage {
             unknownChordImage.src = fs.readFileSync("./public/images/unknown-chord.png");
             context.drawImage(unknownChordImage, 160, 0);
         } else {
-            ChordDiagramRenderer.draw(details[0], canvas, 160, 0, 1.2);
+            ChordDiagramRenderer.draw(details[0], instrumentInfo, canvas, 160, 0, 1.2);
         }
     }
 
-    export function getTitleImagePath(chord: Chord, tuningInfo: TuningInfo): string {
+    export function getTitleImagePath(chord: Chord, instrumentInfo: InstrumentInfo): string {
         const plainName = ChordName.getOrdinalNamePlain(chord);
-        const fileName = `${ChordUtilities.normalizeChordFileName(plainName)}-${tuningInfo.key}.png`;
+        const fileName = `${ChordUtilities.normalizeChordFileName(plainName)}-${instrumentInfo.key}.png`;
         const savePath = path.join(Cache.getCacheFolder(`chord/title-image/${titleImageVersion}`), fileName);
 
         if (!fs.existsSync(savePath)) {
             const canvas = ChordCanvas.createCanvas(360, 200);
-            const details = ChordDetail.getChordDetail(chord, tuningInfo.tuning);
-            drawTitlePicture(canvas, chord, details);
+            const details = ChordDetail.getChordDetail(chord, instrumentInfo);
+            drawTitlePicture(canvas, chord, instrumentInfo, details);
             fs.writeFileSync(savePath, canvas.toBuffer());
         }
 

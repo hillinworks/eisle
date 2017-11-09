@@ -14,7 +14,7 @@ import { Chord } from "../../music-core/Core/MusicTheory/Chord";
 import * as Canvas from "canvas-prebuilt";
 import { IREPLResult, REPLTextResult, REPLArticlesResult } from "../REPLResult";
 import { ChordTitleImage } from "../../eisle-core/chord/ChordTitleImage";
-import { Tunings } from "../../eisle-core/chord/Tunings";
+import { Instruments } from "../../eisle-core/chord/InstrumentTunings";
 import { GuitarTunings } from "../../music-core/Core/MusicTheory/String/Plucked/GuitarTunings";
 
 export class GuitarChord implements ICommandProcessor {
@@ -105,12 +105,15 @@ export class GuitarChord implements ICommandProcessor {
         }
 
         const chord = parseChordResult.value;
-        let tuning = userSettings.tuning ? Tunings.getTuning(userSettings.tuning) : Tunings.defaultTuning;
+        let tuning = userSettings.tuning ? Instruments.getTuning(userSettings.tuning) : Instruments.defaultTuning;
         if (!tuning) {
             console.warn(`unknown user tuning '${userSettings.tuning}', fall back to default tuning`);
-            tuning = Tunings.defaultTuning;
+            tuning = Instruments.defaultTuning;
         }
         const titleImagePath = ChordTitleImage.getTitleImagePath(chord, tuning);
+
+        const details = ChordDetail.getChordDetail(chord, tuning);
+        this.logResult(parseChordResult, details);
 
         return new REPLArticlesResult({
             title: ChordName.getOrdinalNamePlain(chord),

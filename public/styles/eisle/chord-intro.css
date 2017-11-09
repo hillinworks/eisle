@@ -34,7 +34,6 @@ body {
 }
 
 .chord.diagram .omits {
-    margin-left: -2em;
     text-align: center;
     width:100%;
 }

@@ -1,3 +1,4 @@
+import { InstrumentInfo } from "../InstrumentTunings";
 import { ChordDetail } from "../../../music-core/Core/MusicTheory/String/ChordDetail";
 import * as Canvas from "canvas-prebuilt";
 import { minMax, L, contains } from "../../../music-core/Core/Utilities/LinqLite";
@@ -8,6 +9,7 @@ import { Accidental } from "../../../music-core/Core/MusicTheory/Accidental";
 import { BaseNoteName } from "../../../music-core/Core/MusicTheory/BaseNoteName";
 import { StringBuilder } from "../../../music-core/Core/Utilities/StringBuilder";
 import { DrawingHelper } from "../../../eisle-core/drawing/DrawingHelper";
+import { ChordCanvas } from "../ChordCanvas";
 
 const margin = 12;
 const cellWidth = 22;
@@ -44,24 +46,31 @@ class Renderer {
     private canvas: Canvas;
     private context: Canvas.Context2d;
     private readonly chordDetail: ChordDetail;
+    private readonly instrumentInfo: InstrumentInfo;
     private readonly fretRange: { min: number, max: number };
     private x: number;
     private y: number;
     private scale: number;
+    private symmetric: boolean;
     private gridVerticalScale: number;
 
+    private gridLeft: number;
     private gridTop: number;
 
-    constructor(chordDetail: ChordDetail) {
+    constructor(chordDetail: ChordDetail, instrumentInfo: InstrumentInfo) {
         this.chordDetail = chordDetail;
+        this.instrumentInfo = instrumentInfo;
         this.fretRange = this.decideFretRange();
         this.gridVerticalScale = 1 - Math.max(this.fretRange.max - this.fretRange.min - 2, 0) * 0.1;
     }
 
-    measure(scale: number): { width: number, height: number } {
+    measure(scale: number, symmetric: boolean): { width: number, height: number } {
         this.scale = scale;
+
+        const symmetricFactor = symmetric ? 2 : 1;
+
         const width = gridLeftMargin * this.scale + this.gridWidth + margin * this.scale
-            + (this.fretRange.min !== 1 ? fretOffsetMargin + fretOffsetWidth : 0) * this.scale;
+            + (this.fretRange.min !== 1 ? fretOffsetMargin + fretOffsetWidth : 0) * this.scale * symmetricFactor;
 
         const height = gridTopMargin * this.scale
             + (this.fretRange.min === 1 ? nutSpacing : 0) * this.scale
@@ -85,25 +94,33 @@ class Renderer {
     }
 
     private decideFretRange(): { min: number, max: number } {
+        const fretWidth = this.instrumentInfo.chordResolvingOptions.maxChordFretWidth;
         const fretRange = L(this.chordDetail.frets).where(f => !isNaN(f) && f > 0).minMax();
-        if (fretRange.max <= 4) {
-            return { min: 1, max: Math.max(fretRange.max, 4) };
+        if (fretRange.max <= fretWidth) {
+            return { min: 1, max: Math.max(fretRange.max, fretWidth) };
         }
 
-        return { min: fretRange.min, max: fretRange.min + Math.max(fretRange.max - fretRange.min, 3) };
+        return { min: fretRange.min, max: fretRange.min + Math.max(fretRange.max - fretRange.min, fretWidth - 1) };
+    }
+
+    private initializeCoordinates() {
+        this.gridLeft = this.x + gridLeftMargin * this.scale
+
+        if (this.symmetric) {
+            this.gridLeft += (this.fretRange.min !== 1 ? fretOffsetMargin + fretOffsetWidth : 0) * this.scale;
+        }
+
+        this.gridTop = this.y + gridTopMargin * this.scale;
     }
 
     private drawGrid() {
-
-        const gridLeft = this.x + gridLeftMargin * this.scale;
-        this.gridTop = this.y + gridTopMargin * this.scale;
 
         if (this.fretRange.min === 1) {
             this.context.lineWidth = nutLineWidth * this.scale;
             this.context.strokeStyle = CanvasColors.black;
             this.context.beginPath();
-            this.context.lineTo(gridLeft - borderLineWidth * this.scale / 2, this.gridTop);
-            this.context.lineTo(gridLeft + this.gridWidth + borderLineWidth * this.scale / 2, this.gridTop);
+            this.context.lineTo(this.gridLeft - borderLineWidth * this.scale / 2, this.gridTop);
+            this.context.lineTo(this.gridLeft + this.gridWidth + borderLineWidth * this.scale / 2, this.gridTop);
             this.context.stroke();
 
             this.gridTop += nutSpacing * this.scale;
@@ -112,7 +129,7 @@ class Renderer {
         this.context.lineWidth = borderLineWidth * this.scale;
         this.context.strokeStyle = CanvasColors.black;
         this.context.strokeRect(
-            gridLeft,
+            this.gridLeft,
             this.gridTop,
             this.gridWidth,
             this.gridHeight);
@@ -120,7 +137,7 @@ class Renderer {
         this.context.lineWidth = gridLineWidth;
         for (let i = 1; i < this.chordDetail.frets.length - 1; ++i) {
             this.context.beginPath();
-            const x = gridLeftMargin * this.scale + i * cellWidth * this.scale;
+            const x = this.gridLeft + i * cellWidth * this.scale;
             this.context.lineTo(this.x + x, this.gridTop);
             this.context.lineTo(this.x + x, this.gridTop + this.gridHeight);
             this.context.stroke();
@@ -129,8 +146,8 @@ class Renderer {
         for (let i = 1; i < this.fretRange.max - this.fretRange.min + 1; ++i) {
             this.context.beginPath();
             const y = this.gridTop + i * this.cellHeight;
-            this.context.lineTo(gridLeft, this.y + y);
-            this.context.lineTo(gridLeft + this.gridWidth, this.y + y);
+            this.context.lineTo(this.gridLeft, this.y + y);
+            this.context.lineTo(this.gridLeft + this.gridWidth, this.y + y);
             this.context.stroke();
         }
     }
@@ -151,8 +168,8 @@ class Renderer {
             }
             const relativeFret = finger.fret - this.fretRange.min;
             const y = this.gridTop + this.cellHeight * (relativeFret + 0.5);
-            const fromX = this.x + (gridLeftMargin + finger.from * cellWidth) * this.scale;
-            const toX = this.x + (gridLeftMargin + finger.to * cellWidth) * this.scale;
+            const fromX = this.gridLeft + (finger.from * cellWidth) * this.scale;
+            const toX = this.gridLeft + (finger.to * cellWidth) * this.scale;
             if (finger.to === finger.from) {
                 this.context.beginPath();
                 this.context.arc(fromX, y, radius, 0, Math.PI * 2);
@@ -181,7 +198,7 @@ class Renderer {
             return;
         }
         const x = this.x
-            + gridLeftMargin * this.scale
+            + this.gridLeft
             + this.gridWidth
             + fretOffsetMargin * this.scale
             + centerTextOffsetX * this.scale;
@@ -207,7 +224,7 @@ class Renderer {
         for (let i = 0; i < this.chordDetail.frets.length; ++i) {
             const fret = this.chordDetail.frets[i];
             const text = isNaN(fret) ? "×" : fret.toString();
-            const x = this.x + gridLeftMargin * this.scale + cellWidth * this.scale * i + centerTextOffsetX * this.scale;
+            const x = this.gridLeft + cellWidth * this.scale * i + centerTextOffsetX * this.scale;
             this.context.fillText(text, x, y);
         }
     }
@@ -232,19 +249,21 @@ class Renderer {
                 continue;
             }
 
-            const x = this.x + gridLeftMargin * this.scale + cellWidth * i * this.scale + centerTextOffsetX * this.scale;
+            const x = this.gridLeft + cellWidth * i * this.scale + centerTextOffsetX * this.scale;
 
             this.context.fillText(note.toString(), x, y);
         }
     }
 
-    render(canvas: Canvas, x: number, y: number, scale: number) {
+    render(canvas: Canvas, x: number, y: number, scale: number, symmetric: boolean) {
         this.canvas = canvas;
         this.context = canvas.getContext("2d");
         this.x = x;
         this.y = y;
         this.scale = scale;
-
+        this.symmetric = symmetric;
+        
+        this.initializeCoordinates();
         this.drawFretRow();
         this.drawGrid();
         this.drawFretOffset();
@@ -254,7 +273,15 @@ class Renderer {
 }
 
 export namespace ChordDiagramRenderer {
-    export function draw(detail: ChordDetail, canvas: Canvas, x: number, y: number, scale: number) {
-        new Renderer(detail).render(canvas, x, y, scale);
+    export function draw(detail: ChordDetail, instrumentInfo: InstrumentInfo, canvas: Canvas, x: number, y: number, scale: number) {
+        new Renderer(detail, instrumentInfo).render(canvas, x, y, scale, false);
+    }
+
+    export function drawFitted(detail: ChordDetail, instrumentInfo: InstrumentInfo, scale: number, symmetric: boolean): Canvas {
+        const renderer = new Renderer(detail, instrumentInfo);
+        const size = renderer.measure(scale, symmetric);
+        const canvas = ChordCanvas.createCanvas(size.width, size.height, "svg");
+        renderer.render(canvas, 0, 0, scale, symmetric);
+        return canvas;
     }
 }

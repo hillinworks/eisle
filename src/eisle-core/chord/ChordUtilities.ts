@@ -25,6 +25,6 @@ export namespace ChordUtilities {
             return tuning.name.toLowerCase().replace(/[^\w\d]/g, "-");
         }
 
-        return normalizeNoteFileName(L(tuning.stringTunings).select(t => t.toString()).toArray().join("-"));
+        return normalizeNoteFileName(L(tuning.pitches).select(t => t.toString()).toArray().join("-"));
     }
 }

@@ -1,3 +1,5 @@
+import { ChordInversionTolerance } from "./ChordInversionTolerance";
+import { InstrumentInfo } from "../../../../eisle-core/chord/InstrumentTunings";
 import { Chord } from "../Chord";
 import { Tuning } from "./Tuning";
 import { NoteName } from "../NoteName";
@@ -39,52 +41,53 @@ export class ChordDetail {
     readonly frets: ReadonlyArray<number>;
     readonly omits: ReadonlyArray<OmittedInterval>;
     readonly omitsRating: number;
+    readonly fretRating: number;
     fingering: ChordFingering;
     rating: number;
 
-    constructor(chord: Chord, notes: ReadonlyArray<NoteName>, frets: ReadonlyArray<number>, omittedInterval: ReadonlyArray<OmittedInterval>) {
+    constructor(chord: Chord, notes: ReadonlyArray<NoteName>, frets: ReadonlyArray<number>, omittedInterval: ReadonlyArray<OmittedInterval>, fretRating: number) {
         this.chord = chord;
         this.notes = notes;
         this.frets = frets;
         this.omits = omittedInterval;
         this.omitsRating = sum(omittedInterval, i => i.rating);
+        this.fretRating = fretRating;
     }
 }
 
 export namespace ChordDetail {
 
-    export function getChordDetail(chord: Chord, tuning: Tuning): ChordDetail[] {
-        return new ChordDetailResolver(chord, tuning).resolve();
+    export function getChordDetail(chord: Chord, instrumentInfo: InstrumentInfo): ChordDetail[] {
+        return new ChordDetailResolver(chord, instrumentInfo).resolve();
     }
 
 }
 
 
-const MaxFretToFindRoot = 11;
 const MaxChordFretWidth = 4;
 
 class ChordDetailResolver {
 
     private readonly chord: Chord;
-    private readonly tuning: Tuning;
+    private readonly instrumentInfo: InstrumentInfo;
     private readonly stringRemapping: number[];
     private notes: NoteName[];
     private omittedIntervals: OmittedInterval[];
 
-    constructor(chord: Chord, tuning: Tuning) {
+    constructor(chord: Chord, instrumentInfo: InstrumentInfo) {
         this.chord = chord;
-        this.tuning = tuning;
+        this.instrumentInfo = instrumentInfo;
         this.stringRemapping = this.remapStrings();
     }
 
     private remapStrings(): number[] {
         let lowestStringIndex = 0;
-        let lowestPitchSemitones = this.tuning.stringTunings[0].semitones;
+        let lowestPitchSemitones = this.instrumentInfo.tuning.pitches[0].semitones;
 
-        const remapping = toArray(range(0, this.tuning.stringTunings.length));
+        const remapping = toArray(range(0, this.instrumentInfo.stringCount));
 
-        for (let i = 1; i < this.tuning.stringTunings.length; ++i) {
-            const semitones = this.tuning.stringTunings[i].semitones;
+        for (let i = 1; i < this.instrumentInfo.stringCount; ++i) {
+            const semitones = this.instrumentInfo.tuning.pitches[i].semitones;
             if (semitones < lowestPitchSemitones) {
                 lowestPitchSemitones = semitones;
                 lowestStringIndex = i;
@@ -101,14 +104,14 @@ class ChordDetailResolver {
         return L(this.stringRemapping).select(i => array[i]).toArray();
     }
 
-    resolve(): ChordDetail[] {
+    resolve(allowInversion = false): ChordDetail[] {
         this.notes = this.chord.getNotes();
         this.omittedIntervals = this.getOmittedIntervals();
 
         const leastNoteCount = this.notes.length - this.omittedIntervals.length;
 
         let candidates: ChordDetail[] = [];
-        for (let i = 0; i <= this.tuning.stringTunings.length - leastNoteCount; ++i) {
+        for (let i = 0; i <= this.instrumentInfo.stringCount - leastNoteCount; ++i) {
             this.resolveChordFretting(candidates, i);
         }
 
@@ -134,7 +137,7 @@ class ChordDetailResolver {
             }
 
             candidate.fingering = fingering;
-            candidate.rating = fingering.rating + candidate.omitsRating;
+            candidate.rating = fingering.rating + candidate.omitsRating + candidate.fretRating;
         }
     }
 
@@ -204,7 +207,7 @@ class ChordDetailResolver {
     }
 
     private getNoteFretOnString(note: NoteName, stringIndex: number): number {
-        return (note.semitones + 12 - this.tuning.stringTunings[this.stringRemapping[stringIndex]].noteName.semitones) % 12;
+        return (note.semitones + 12 - this.instrumentInfo.tuning.pitches[this.stringRemapping[stringIndex]].noteName.semitones) % 12;
     }
 
     private getNoteFretOnStringInRange(note: NoteName, stringIndex: number, fromFret: number, toFret: number): number | undefined {
@@ -283,28 +286,52 @@ class ChordDetailResolver {
         return omittedIntervals;
     }
 
-
     private resolveChordFretting(candidates: ChordDetail[], stringIndex: number) {
+
         const frets: number[] = [];
         const currentNotes: NoteName[] = [];
+
         for (let i = 0; i < stringIndex; ++i) {
             frets.push(NaN);
             currentNotes.push(undefined);
         }
-        const rootFret = this.getNoteFretOnString(this.notes[0], stringIndex);
-        frets.push(rootFret);
-        currentNotes.push(this.notes[0]);
+
+        // the bass note must be on the lowest pitch string if:
+        //  1) chord inversion is not allowed on specified instrument, or
+        //  2) the chord has an explicit bass (slash chord)
+        const fixedBass = this.instrumentInfo.chordResolvingOptions.chordInversionTolerance === ChordInversionTolerance.NotAllowed
+            || (this.chord.bass && !this.chord.bass.equals(this.chord.root));
+
+        let minFret: number, maxFret: number;
+        if (fixedBass) {
+            const rootFret = this.getNoteFretOnStringInRange(this.notes[0], stringIndex, 0, this.instrumentInfo.chordResolvingOptions.maxFretToFindRoot);
+            if (rootFret === undefined) {
+                return;
+            }
+            frets.push(rootFret);
+            currentNotes.push(this.notes[0]);
+            minFret = rootFret - this.instrumentInfo.chordResolvingOptions.maxChordFretWidth + 1;
+            maxFret = rootFret + this.instrumentInfo.chordResolvingOptions.maxChordFretWidth - 1;
+        } else {
+            minFret = 0;
+            maxFret = this.instrumentInfo.chordResolvingOptions.maxFretToFindRoot;
+        }
+
+        const _this = this;
+        function resolve(notes: NoteName[], omittedIntervals: OmittedInterval[]) {
+            _this.resolveChordFrettingRecursive(
+                /* candidates */ candidates,
+                /* currentFrets */ frets,
+                /* allNotes */ notes,
+                /* remainingNotes */ fixedBass ? L(notes).skip(0).toArray() : notes,
+                /* currentNotes */ currentNotes,
+                /* omittedIntervals */  omittedIntervals,
+                /* minFret */ minFret,
+                /* maxFret */ maxFret);
+        }
 
         if (this.omittedIntervals.length === 0) {
-            this.resolveChordFrettingRecursive(
-                candidates,
-                frets,
-                this.notes,
-                L(this.notes).skip(1).toArray(),
-                currentNotes,
-                [],
-                rootFret - MaxChordFretWidth + 1,
-                rootFret + MaxChordFretWidth - 1);
+            resolve(this.notes, []);
         } else {
             // make full combination of omittable notes
             for (let mask = 0; mask < (1 << this.omittedIntervals.length); ++mask) {
@@ -314,20 +341,13 @@ class ChordDetailResolver {
                         omittedIntervals.push(this.omittedIntervals[i]);
                     }
                 }
-                const allNotes = L(this.notes)
+                const unomittedNotes = L(this.notes)
                     .where(n => {
                         const interval = this.chord.root.getIntervalTo(n);
                         return all(omittedIntervals, i => !i.interval.equals(interval));
                     }).toArray();
-                this.resolveChordFrettingRecursive(
-                    candidates,
-                    frets,
-                    allNotes,
-                    L(allNotes).skip(1).toArray(),
-                    currentNotes,
-                    omittedIntervals,
-                    rootFret - MaxChordFretWidth + 1,
-                    rootFret + MaxChordFretWidth - 1);
+
+                resolve(unomittedNotes, omittedIntervals);
             }
         }
 
@@ -362,8 +382,8 @@ class ChordDetailResolver {
             } else {
 
                 newFrets.push(fret);
-                newMinFret = Math.max(minFret, fret - MaxChordFretWidth + 1);
-                newMaxFret = Math.min(maxFret, fret + MaxChordFretWidth - 1);
+                newMinFret = Math.max(minFret, fret - this.instrumentInfo.chordResolvingOptions.maxChordFretWidth + 1);
+                newMaxFret = Math.min(maxFret, fret + this.instrumentInfo.chordResolvingOptions.maxChordFretWidth - 1);
 
                 newCurrentNotes.push(note);
 
@@ -374,9 +394,10 @@ class ChordDetailResolver {
                 }
             }
 
-            if (stringIndex === this.tuning.stringTunings.length - 1) {
+            if (stringIndex === this.instrumentInfo.stringCount - 1) {
                 if (newRemainingNotes.length === 0) {
-                    candidates.push(new ChordDetail(this.chord, this.remapBackArray(newCurrentNotes), this.remapBackArray(newFrets), omittedIntervals));
+                    const notes = this.remapBackArray(newCurrentNotes);
+                    candidates.push(new ChordDetail(this.chord, notes, this.remapBackArray(newFrets), omittedIntervals, this.getFretRating(notes)));
                 }
             } else {
                 this.resolveChordFrettingRecursive(
@@ -390,5 +411,15 @@ class ChordDetailResolver {
                     newMaxFret);
             }
         }
+    }
+
+    private getFretRating(notes: ReadonlyArray<NoteName>) {
+        if (notes[this.stringRemapping[0]] !== this.notes[0]) {
+            if (this.instrumentInfo.chordResolvingOptions.chordInversionTolerance !== ChordInversionTolerance.Allowed) {
+                return 5;
+            }
+        }
+
+        return 0;
     }
 }
