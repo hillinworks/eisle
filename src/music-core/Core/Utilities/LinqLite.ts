@@ -639,12 +639,12 @@ export function lastOrUndefined<T>(source: Iterable<T> | T[], predicate: Predica
  * @return The maximum value in the sequence.
  */
 export function max<T>(source: Iterable<T>, selector: Selector<T, number> = defaultNumberSelector): number | undefined {
-    let max = Number.MIN_VALUE;
+    let max = -Infinity;
 
     let isEmpty = true;
     for (const item of source) {
         max = Math.max(max, selector(item));
-    isEmpty = false;
+        isEmpty = false;
     }
 
     if (isEmpty) {
@@ -662,7 +662,7 @@ export function max<T>(source: Iterable<T>, selector: Selector<T, number> = defa
  * @return The minimum value in the sequence.
  */
 export function min<T>(source: Iterable<T>, selector: Selector<T, number> = defaultNumberSelector): number | undefined {
-    let min = Number.MAX_VALUE;
+    let min = Infinity;
 
     let isEmpty = true;
     for (const item of source) {
@@ -686,8 +686,8 @@ export function min<T>(source: Iterable<T>, selector: Selector<T, number> = defa
 export function minMax<T>(source: Iterable<T>, selector: Selector<T, number> = defaultNumberSelector)
     : { min: number, max: number } | undefined {
 
-    let min = Number.MAX_VALUE;
-    let max = Number.MIN_VALUE;
+    let min = Infinity;
+    let max = -Infinity;
 
     let isEmpty = true;
     for (const item of source) {
@@ -1219,7 +1219,7 @@ export function* unionHash<T>(first: Iterable<T>, second: Iterable<T>, hash: Has
  * @return an array of elements from the input sequence that has the maximum value calculated by the specified selector.
  */
 export function withMax<T>(source: Iterable<T>, selector: Selector<T, number>): T[] {
-    let max = Number.MIN_VALUE;
+    let max = -Infinity;
     let elements = new Array<T>();
     for (const item of source) {
         const value = selector(item);
@@ -1241,7 +1241,7 @@ export function withMax<T>(source: Iterable<T>, selector: Selector<T, number>): 
  * @return an array of elements from the input sequence that has the minimum value calculated by the specified selector.
  */
 export function withMin<T>(source: Iterable<T>, selector: Selector<T, number>): T[] {
-    let min = Number.MAX_VALUE;
+    let min = Infinity;
     let elements = new Array<T>();
     for (const item of source) {
         const value = selector(item);

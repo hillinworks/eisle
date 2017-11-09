@@ -382,12 +382,12 @@ export namespace ChordFingering {
     }
 
     const fingerSpanPenalty = [0, 0, 1.5, 2, 0.5];
-    const fingerPressingCost = [3, 1, 1, 1, 2.5];
+    const fingerPressingCost = [3, 1, 1.01, 1.02, 2.5];
     const barreBaseCost = [0, 2, 3, 2, 4];
     const barreAdditionalCost = [0, 0.1, 1, 1, 2];
 
     export function calculateFingeringRating(frets: ReadonlyArray<number>, fingering: ReadonlyArray<FingerRange>): number {
-        const fretRange = L(frets).where(f => !isNaN(f) && f > 0).minMax();
+        const fretRange = L(frets).where(f => !isNaN(f) && f > 0).minMax(); // could be undefined
         const fretSpan = fretRange ? fretRange.max - fretRange.min + 1 : 0;
 
         let rating = 0;
@@ -401,17 +401,20 @@ export namespace ChordFingering {
         // prefer fingering with less breaks (more continuity, e.g. prefer x02220 more than x02x20)
         let noteAppeared = false;
         let breaks = 0;
+        let preEmptyStrings = 0;
         for (let i = 0; i < frets.length; ++i) {
             const fret = frets[i];
             if (isNaN(fret)) {
                 if (noteAppeared) {
                     ++breaks;
+                } else {
+                    ++preEmptyStrings;
                 }
             } else {
                 noteAppeared = true;
             }
         }
-        rating += breaks * 5;
+        rating += preEmptyStrings * 1 + breaks * 5;
 
         let lastFingerFret = 0;
         for (let i = 0; i < fingering.length; ++i) {
