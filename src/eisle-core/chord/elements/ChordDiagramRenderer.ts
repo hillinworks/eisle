@@ -104,7 +104,7 @@ class Renderer {
     }
 
     private initializeCoordinates() {
-        this.gridLeft = this.x + gridLeftMargin * this.scale
+        this.gridLeft = this.x + gridLeftMargin * this.scale;
 
         if (this.symmetric) {
             this.gridLeft += (this.fretRange.min !== 1 ? fretOffsetMargin + fretOffsetWidth : 0) * this.scale;
@@ -262,7 +262,7 @@ class Renderer {
         this.y = y;
         this.scale = scale;
         this.symmetric = symmetric;
-        
+
         this.initializeCoordinates();
         this.drawFretRow();
         this.drawGrid();
