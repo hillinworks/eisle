@@ -112,8 +112,8 @@ export class GuitarChord implements ICommandProcessor {
         }
         const titleImagePath = ChordTitleImage.getTitleImagePath(chord, instrumentInfo);
 
-        const details = ChordDetail.getChordDetail(chord, instrumentInfo);
-        this.logResult(parseChordResult, details);
+        // const details = ChordDetail.getChordDetail(chord, instrumentInfo);
+        // this.logResult(parseChordResult, details);
 
         return new REPLArticlesResult({
             title: ChordName.getOrdinalNamePlain(chord),

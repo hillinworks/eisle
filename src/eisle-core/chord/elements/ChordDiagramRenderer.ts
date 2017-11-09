@@ -275,7 +275,6 @@ export namespace ChordDiagramRenderer {
     export function drawCentered(detail: ChordDetail, instrumentInfo: InstrumentInfo, canvas: Canvas, x: number, y: number, scale: number) {
         const renderer = new Renderer(detail, instrumentInfo);
         const size = renderer.measure(scale, true);
-        console.log(JSON.stringify(size));
         renderer.render(canvas, x - size.width / 2, y - size.height / 2, scale, true);
     }
 
