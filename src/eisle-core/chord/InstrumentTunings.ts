@@ -51,7 +51,7 @@ export namespace Instruments {
         instrumentLookup[key] = info;
     }
 
-    export function getTuning(key: string): InstrumentInfo {
+    export function getInstrumentInfo(key: string): InstrumentInfo {
         return instrumentLookup[key];
     }
 
@@ -98,5 +98,5 @@ export namespace Instruments {
     addInstrument("高音班卓/吉他", false, "tenor-banjor-b", "芝加哥", "高音班卓/吉他芝加哥式调弦", GuitarTunings.baritoneA, banjoChordResolvingOptions);
     addInstrument("高音班卓/吉他", false, "tenor-banjor-bflat", "爱尔兰", "高音班卓/吉他爱尔兰式调弦", GuitarTunings.baritoneA, banjoChordResolvingOptions);
 
-    export const defaultTuning = instrumentLookup["guitar-standard"];
+    export const defaultInstrument = instrumentLookup["guitar-standard"];
 }

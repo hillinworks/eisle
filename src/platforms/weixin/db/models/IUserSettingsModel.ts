@@ -10,7 +10,7 @@ export namespace IUserSettingsModel {
     export const name = "UserSettings";
 
     export function create(): Promise<IUserSettingsModel> {
-        const settings: IUserSettings = { tuning: "standard" };
+        const settings: IUserSettings = { instrument: "guitar-standard" };
         return new Server.current.model.UserSettings(settings).save();
     }
 }

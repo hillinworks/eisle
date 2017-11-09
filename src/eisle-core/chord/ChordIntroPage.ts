@@ -169,7 +169,7 @@ class ChordIntroCreator {
 
 export namespace ChordIntroPage {
 
-    export function create(input: string, tuningInput: string): ChordIntroModel | ChordSyntaxError {
+    export function create(input: string, instrumentInput: string): ChordIntroModel | ChordSyntaxError {
         const scanner = new Scanner(input);
         const readChordNameResult = LiteralParsers.readChordName(scanner);
         if (!ParseHelper.isSuccessful(readChordNameResult)) {
@@ -188,16 +188,16 @@ export namespace ChordIntroPage {
 
         const messages = [...parseChordResult.messages];
 
-        let tuning = Instruments.defaultTuning;
-        if (tuningInput) {
-            tuning = Instruments.getTuning(tuningInput);
-            if (!tuning) {
+        let instrumentInfo = Instruments.defaultInstrument;
+        if (instrumentInput) {
+            instrumentInfo = Instruments.getInstrumentInfo(instrumentInput);
+            if (!instrumentInfo) {
                 messages.push(new LogMessage(LogLevel.Warning, undefined, "无法识别指定的调弦方式，已改用吉他默认调弦"));
-                tuning = Instruments.defaultTuning;
+                instrumentInfo = Instruments.defaultInstrument;
             }
         }
 
-        const model = new ChordIntroCreator(input, tuning, chord).create();
+        const model = new ChordIntroCreator(input, instrumentInfo, chord).create();
         model.messages = messages.length > 0 ? messages : undefined;
 
         return model;

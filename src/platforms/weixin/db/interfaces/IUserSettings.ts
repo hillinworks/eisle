@@ -1,3 +1,3 @@
 export interface IUserSettings {
-    tuning?: string;
+    instrument?: string;
 }

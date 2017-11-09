@@ -105,21 +105,21 @@ export class GuitarChord implements ICommandProcessor {
         }
 
         const chord = parseChordResult.value;
-        let tuning = userSettings.tuning ? Instruments.getTuning(userSettings.tuning) : Instruments.defaultTuning;
-        if (!tuning) {
-            console.warn(`unknown user tuning '${userSettings.tuning}', fall back to default tuning`);
-            tuning = Instruments.defaultTuning;
+        let instrumentInfo = userSettings.instrument ? Instruments.getInstrumentInfo(userSettings.instrument) : Instruments.defaultInstrument;
+        if (!instrumentInfo) {
+            console.warn(`unknown user instrument '${userSettings.instrument}', fall back to default instrument`);
+            instrumentInfo = Instruments.defaultInstrument;
         }
-        const titleImagePath = ChordTitleImage.getTitleImagePath(chord, tuning);
+        const titleImagePath = ChordTitleImage.getTitleImagePath(chord, instrumentInfo);
 
-        const details = ChordDetail.getChordDetail(chord, tuning);
+        const details = ChordDetail.getChordDetail(chord, instrumentInfo);
         this.logResult(parseChordResult, details);
 
         return new REPLArticlesResult({
             title: ChordName.getOrdinalNamePlain(chord),
             description: "点击查看详情",
             picUrl: `${titleImagePath}?${Date.now()})}`,
-            url: `${Server.current.app.locals.eisle.host}/chord/${encodeURIComponent(chordName)}?tuning=${encodeURIComponent(tuning.key)}&epoch=${Date.now()}`,
+            url: `${Server.current.app.locals.eisle.host}/chord/${encodeURIComponent(chordName)}?instrument=${encodeURIComponent(instrumentInfo.key)}&epoch=${Date.now()}`,
         });
     }
 
