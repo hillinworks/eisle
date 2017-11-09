@@ -27,7 +27,7 @@ export namespace ChordTitleImage {
             const context = canvas.getContext("2d");
             const unknownChordImage = new Canvas.Image();
             unknownChordImage.src = fs.readFileSync("./public/images/unknown-chord.png");
-            context.drawImage(unknownChordImage, 160, 0);
+            context.drawImage(unknownChordImage, 160, 0, unknownChordImage.width * 2, unknownChordImage.height * 2);
         } else {
             ChordDiagramRenderer.drawCentered(details[0], instrumentInfo, canvas, 480, 200, 2.4);
         }
