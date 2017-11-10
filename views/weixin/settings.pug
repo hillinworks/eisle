@@ -1,0 +1,33 @@
+mixin instrumentItem(instrument)
+    div.field
+        div.ui.radio.checkbox
+            input(type="radio" name="instrument" value=instrument.key)
+            label 
+                div.ui.basic.label #{instrument.shortName} 
+                    div.detail !{instrument.tuningDescriptor}
+        
+html
+    head
+        include ../include/head.pug
+        include ../include/accordion.pug
+        include ../include/checkbox.pug
+        script(src=eisle.host+"/scripts/settings.js")
+        script initializeRadios("#{selectedInstrument}");
+        link(href=eisle.host+"/styles/eisle/settings.css" rel="stylesheet" type="text/css")
+        title= title + " - Echo Isles"
+    body
+        h1.ui.dividing.header 乐器和调弦
+        form.ui.form(method="post")
+            input.hidden(type="hidden" name="wxid" value=auth.weixinId)
+            input.hidden(type="hidden" name="token" value=auth.token)
+            input.hidden(type="hidden" name="epoch" value=auth.epoch)
+            div.grouped.fields
+                div.ui.styled.fluid.accordion
+                    each group, key in instrumentGroups               
+                        div.title
+                            i.dropdown.icon
+                            |  #{key}
+                        div.content
+                            each instrument in group
+                                +instrumentItem(instrument)
+            button.ui.primary.button(type="submit") 保存

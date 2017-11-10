@@ -28,7 +28,7 @@ export class IndexRoute extends BaseRoute {
     public async test(req: Request, res: Response, next: NextFunction) {
         const command = req.params["command"];
         const instrument = req.query.instrument;
-        const result = await REPL.process(command, { instrument: instrument }) as REPLArticlesResult;
+        const result = await REPL.process(command, undefined, { instrument: instrument }) as REPLArticlesResult;
         const url = result.articles[0].picUrl;
         const options = { "image": url };
         this.render(req, res, "weixin/test", options);

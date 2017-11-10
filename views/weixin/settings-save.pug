@@ -1,0 +1,12 @@
+html
+    head
+        include ../include/head.pug
+        link(href=eisle.host+"/styles/eisle/chord-intro.css" rel="stylesheet" type="text/css")
+        title= title + " - Echo Isles"
+    body
+        div.ui.icon.message
+            i.green.checkmark.icon
+            div.content
+                p 设置修改成功，以后和弦将以
+                span.ui.label #{instrumentName}
+                | 显示。

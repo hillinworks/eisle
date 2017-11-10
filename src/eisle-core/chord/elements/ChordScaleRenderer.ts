@@ -1,4 +1,4 @@
-import { InstrumentInfo } from "../InstrumentTunings";
+import { InstrumentInfo } from "../Instruments";
 import { L, range, sum } from "../../../music-core/Core/Utilities/LinqLite";
 import { Tuning } from "../../../music-core/Core/MusicTheory/String/Tuning";
 import { NoteName } from "../../../music-core/Core/MusicTheory/NoteName";

@@ -10,7 +10,7 @@ export class TextMessageHandler implements IMessageHandler {
 
         const user = await IUserModel.getOrSubscribe(request.xml.FromUserName);
 
-        const replResult = await REPL.process(message, await user.getSettings());
+        const replResult = await REPL.process(message, user, await user.getSettings());
 
         if (!replResult) {
             throw "REPL process failed";

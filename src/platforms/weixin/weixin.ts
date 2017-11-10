@@ -1,16 +1,18 @@
 import sha1 = require("sha1");
 
-export class Weixin {
+export namespace Weixin {
 
-    static readonly token: string = "C2B4FAE05F9E4CD58FC87DFC8F8ECED4";
+    export const token: string = "C2B4FAE05F9E4CD58FC87DFC8F8ECED4";
 
-    static authenticate(signature: string, timestamp: string, nonce: string): boolean {
-        const list = [Weixin.token, timestamp, nonce];
+    export function encode(timestamp: string, data: string): string {
+        const list = [Weixin.token, timestamp, data];
         list.sort();
 
-        const hashcode = sha1(list.join(""));
+        return sha1(list.join("")).toString();
+    }
 
-        return hashcode === signature;
+    export function authenticate(signature: string, timestamp: string, data: string): boolean {
+        return encode(timestamp, data) === signature;
     }
 
 }

@@ -1,7 +1,7 @@
 import { StringBuilder } from "../../music-core/Core/Utilities/StringBuilder";
 import { TextRange } from "../../music-core/Core/Parsing/TextRange";
 import { LogLevel } from "../../music-core/Core/Logging/LogLevel";
-import { InstrumentInfo, Instruments } from "./InstrumentTunings";
+import { InstrumentInfo, Instruments } from "./Instruments";
 import { Server } from "../../server";
 import { Chord } from "../../music-core/Core/MusicTheory/Chord";
 import { LogMessage } from "../../music-core/Core/Logging/LogMessage";
@@ -136,28 +136,12 @@ class ChordIntroCreator {
         return result;
     }
 
-    private getTuningDescriptor() {
-        const builder = new StringBuilder();
-
-        for (let i = 0; i < this.instrumentInfo.stringCount; ++i) {
-            const pitch = this.instrumentInfo.tuning.pitches[i];
-            if (i > 0) {
-                builder.append(" ");
-            }
-            builder.append(pitch.noteName.toString())
-                .append("<sub>")
-                .append(pitch.octaveGroup.toString())
-                .append("</sub>");
-        }
-
-        return { name: this.instrumentInfo.fullName, pitches: builder.toString() };
-    }
 
     create(): ChordIntroModel {
         this.model = new ChordIntroModel();
         this.model.plainName = ChordName.getOrdinalNamePlain(this.chord);
         this.model.input = this.input.toUpperCase() === this.model.plainName.toUpperCase() ? undefined : this.input;
-        this.model.tuning = this.getTuningDescriptor();
+        this.model.tuning = { name: this.instrumentInfo.fullName, pitches: this.instrumentInfo.tuningDescriptor };
         this.model.nameImageUrl = this.getNameImagePath();
         this.model.staffImageUrl = this.getStaffImagePath();
         this.model.scaleImageUrl = this.getScaleImageUrl();

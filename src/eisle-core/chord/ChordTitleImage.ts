@@ -1,4 +1,4 @@
-import { InstrumentInfo } from "./InstrumentTunings";
+import { InstrumentInfo } from "./Instruments";
 import { Chord } from "../../music-core/Core/MusicTheory/Chord";
 import { ChordName } from "../../music-core/Core/MusicTheory/ChordName";
 import { Cache } from "../../eisle-core/cache/Cache";

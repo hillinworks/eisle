@@ -25,10 +25,6 @@
     max-width: none !important;
 }
 
-body {
-    padding: 1em;
-}
-
 .chord.diagram {
     width:auto !important;
 }

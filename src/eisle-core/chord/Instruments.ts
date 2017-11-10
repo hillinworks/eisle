@@ -3,6 +3,7 @@ import { Tuning } from "../../music-core/Core/MusicTheory/String/Tuning";
 import { GuitarTunings } from "../../music-core/Core/MusicTheory/String/Plucked/GuitarTunings";
 import { BanjoTunings } from "../../music-core/Core/MusicTheory/String/Plucked/BanjoTunings";
 import { UkuleleTunings } from "../../music-core/Core/MusicTheory/String/Plucked/UkuleleTunings";
+import { StringBuilder } from "../../music-core/Core/Utilities/StringBuilder";
 
 export interface IChordResolvingOptions {
     readonly chordInversionTolerance: ChordInversionTolerance;
@@ -10,10 +11,28 @@ export interface IChordResolvingOptions {
     readonly maxChordFretWidth: number;
 }
 
+function getTuningDescriptor(tuning: Tuning) {
+    const builder = new StringBuilder();
+
+    for (let i = 0; i < tuning.pitches.length; ++i) {
+        const pitch = tuning.pitches[i];
+        if (i > 0) {
+            builder.append(" ");
+        }
+        builder.append(pitch.noteName.toString())
+            .append("<sub>")
+            .append(pitch.octaveGroup.toString())
+            .append("</sub>");
+    }
+
+    return builder.toString();
+}
+
 export class InstrumentInfo {
     readonly shortName: string;
     readonly fullName: string;
     readonly key: string;
+    readonly tuningDescriptor: string;
     readonly tuning: Tuning;
     readonly stringCount: number;
     readonly chordResolvingOptions: IChordResolvingOptions;
@@ -23,6 +42,7 @@ export class InstrumentInfo {
         this.shortName = shortName;
         this.fullName = fullName;
         this.tuning = tuning;
+        this.tuningDescriptor = getTuningDescriptor(tuning);
         this.stringCount = tuning.pitches.length;
         this.chordResolvingOptions = chordResolvingOptions;
     }
@@ -30,9 +50,8 @@ export class InstrumentInfo {
 
 export namespace Instruments {
 
-    type infoGroup = { [isCommon: number]: InstrumentInfo[] };
 
-    export const groups: { [key: string]: infoGroup } = {};
+    export const groups: { [key: string]: InstrumentInfo[] } = {};
     export const instrumentLookup: { [key: string]: InstrumentInfo } = {};
 
     function addInstrument(
@@ -43,11 +62,9 @@ export namespace Instruments {
         fullName: string,
         tuning: Tuning,
         chordResolvingOptions: IChordResolvingOptions) {
-        const group = groups[groupName] || (groups[groupName] = {});
-        const commonKey = common ? 1 : 0;
-        const commonGroup = group[commonKey] || (group[commonKey] = []);
+        const group = groups[groupName] || (groups[groupName] = []);
         const info = new InstrumentInfo(key, shortName, fullName, tuning, chordResolvingOptions);
-        commonGroup.push(info);
+        group.push(info);
         instrumentLookup[key] = info;
     }
 

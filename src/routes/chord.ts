@@ -39,6 +39,8 @@ export class ChordRoute extends BaseRoute {
             this.title = "无法识别的和弦";
             this.render(req, res, "weixin/chord-error", chordIntro);
         } else if (chordIntro instanceof ChordIntroModel) {
+            const from = req.body.from;
+            res.locals.showWeixinChatSettings = from === "wxchat";
             this.title = chordIntro.plainName;
             this.render(req, res, "weixin/chord", chordIntro);
         }

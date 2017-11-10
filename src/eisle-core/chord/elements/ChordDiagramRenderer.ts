@@ -1,4 +1,4 @@
-import { InstrumentInfo } from "../InstrumentTunings";
+import { InstrumentInfo } from "../Instruments";
 import { ChordDetail } from "../../../music-core/Core/MusicTheory/String/ChordDetail";
 import * as Canvas from "canvas-prebuilt";
 import { minMax, L, contains } from "../../../music-core/Core/Utilities/LinqLite";

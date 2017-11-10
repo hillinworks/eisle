@@ -1,3 +1,4 @@
+import { IUser } from "../../platforms/weixin/db/interfaces/IUser";
 import { IUserSettings } from "../../platforms/weixin/db/interfaces/IUserSettings";
 import { Server } from "../../server";
 import { ICommandProcessor } from "../ICommandProcessor";
@@ -14,7 +15,7 @@ import { Chord } from "../../music-core/Core/MusicTheory/Chord";
 import * as Canvas from "canvas-prebuilt";
 import { IREPLResult, REPLTextResult, REPLArticlesResult } from "../REPLResult";
 import { ChordTitleImage } from "../../eisle-core/chord/ChordTitleImage";
-import { Instruments } from "../../eisle-core/chord/InstrumentTunings";
+import { Instruments } from "../../eisle-core/chord/Instruments";
 import { GuitarTunings } from "../../music-core/Core/MusicTheory/String/Plucked/GuitarTunings";
 
 export class GuitarChord implements ICommandProcessor {
@@ -80,7 +81,7 @@ export class GuitarChord implements ICommandProcessor {
         console.log(logBuilder.toString());
     }
 
-    async process(scanner: Scanner, userSettings: IUserSettings): Promise<IREPLResult> {
+    async process(scanner: Scanner, user: IUser, userSettings: IUserSettings): Promise<IREPLResult> {
         const readChordNameResult = LiteralParsers.readChordName(scanner);
         if (ParseHelper.isFailed(readChordNameResult)) {
             return this.showChordSyntax();
@@ -98,8 +99,8 @@ export class GuitarChord implements ICommandProcessor {
             const result = this.showChordSyntax();
             result.articles.push({
                 title: "问题出在哪里？",
-                picUrl: `${Server.current.app.locals.eisle.host}/images/unknown-chord.png`,
-                url: `${Server.current.app.locals.eisle.host}/chord/${encodeURIComponent(chordName)}?epoch=${Date.now()}`,
+                picUrl: `${Server.host}/images/unknown-chord.png`,
+                url: `${Server.host}/chord/${encodeURIComponent(chordName)}?epoch=${Date.now()}`,
             });
             return result;
         }
@@ -119,7 +120,7 @@ export class GuitarChord implements ICommandProcessor {
             title: ChordName.getOrdinalNamePlain(chord),
             description: `${instrumentInfo.fullName} - 点击查看详情`,
             picUrl: `${titleImagePath}?${Date.now()})}`,
-            url: `${Server.current.app.locals.eisle.host}/chord/${encodeURIComponent(chordName)}?instrument=${encodeURIComponent(instrumentInfo.key)}&epoch=${Date.now()}`,
+            url: `${Server.host}/chord/${encodeURIComponent(chordName)}?instrument=${encodeURIComponent(instrumentInfo.key)}&epoch=${Date.now()}&from=wxchat`,
         });
     }
 
@@ -127,8 +128,8 @@ export class GuitarChord implements ICommandProcessor {
         return new REPLArticlesResult({
             title: "这个和弦我不认识！看看 Echo Isles 能识别怎样的和弦吧~",
             description: "Echo Isles 和弦语法",
-            picUrl: `${Server.current.app.locals.eisle.host}/images/unknown-chord-title.png`,
-            url: `${Server.current.app.locals.eisle.host}/chord/syntax`,
+            picUrl: `${Server.host}/images/unknown-chord-title.png`,
+            url: `${Server.host}/chord/syntax`,
         });
     }
 

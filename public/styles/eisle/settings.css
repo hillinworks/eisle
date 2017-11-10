@@ -1,0 +1,4 @@
+.ui.radio.checkbox .box:after, .ui.radio.checkbox label:after,
+.ui.radio.checkbox .box:before, .ui.radio.checkbox label:before {
+    top: 5px;
+}

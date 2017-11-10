@@ -1,43 +1,47 @@
+import { Settings } from "./CommandProcessors/Settings";
 import { IUserSettings } from "../platforms/weixin/db/interfaces/IUserSettings";
 import { Scanner } from "../music-core/Parsing/Scanner";
 import { IREPLResult, REPLTextResult } from "./REPLResult";
 import { ICommandProcessor } from "./ICommandProcessor";
 import { GuitarChord } from "./CommandProcessors/GuitarChord";
+import { IUser } from "../platforms/weixin/db/interfaces/IUser";
 
-export class REPL {
+export namespace REPL {
 
-    private static readonly commandProcessors: { [command: string]: ICommandProcessor }
-    = {
-        "gc": GuitarChord.Instance,
-        "guitar-chord": GuitarChord.Instance,
-        "jthx": GuitarChord.Instance,
-        "吉他和弦": GuitarChord.Instance,
-    };
+    const commandProcessors: { [command: string]: ICommandProcessor }
+        = {
+            "gc": GuitarChord.Instance,
+            "guitar-chord": GuitarChord.Instance,
+            "jthx": GuitarChord.Instance,
+            "吉他和弦": GuitarChord.Instance,
+            "settings": Settings.Instance,
+            "设置": Settings.Instance
+        };
 
-    public static process(input: string, userSettings: IUserSettings): Promise<IREPLResult> {
+    export function process(input: string, user: IUser, userSettings: IUserSettings): Promise<IREPLResult> {
         const scanner = new Scanner(input);
         const command = scanner.readPattern("[\\w-]+");
         if (!command) {
-            return GuitarChord.Instance.process(new Scanner(input), userSettings);
-            // console.log(`Unknown command '${input}'`);
-            // return REPL.showHelp();
+            return processDefault(input, user, userSettings);
         }
 
-        const processor = REPL.commandProcessors[command.toLowerCase()];
+        const processor = commandProcessors[command.toLowerCase()];
         if (!processor) {
-            return GuitarChord.Instance.process(new Scanner(input), userSettings);
-            // console.log(`Unknown command '${input}'`);
-            // return REPL.showHelp();
+            return processDefault(input, user, userSettings);
         }
 
         console.log(`Using processor ${processor.name} to process '${input}'`);
 
         scanner.skipWhitespaces();
 
-        return processor.process(scanner, userSettings);
+        return processor.process(scanner, user, userSettings);
     }
 
-    public static showHelp(): IREPLResult {
+    function processDefault(input: string, user: IUser, userSettings: IUserSettings): Promise<IREPLResult> {
+        return GuitarChord.Instance.process(new Scanner(input), user, userSettings);
+    }
+
+    export function showHelp(): IREPLResult {
         return new REPLTextResult(
             "试试看以下命令：\n"
             + "\tgc Fmaj7\n"

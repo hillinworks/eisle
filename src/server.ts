@@ -16,6 +16,10 @@ import { WeixinRoute } from "./routes/weixin";
 
 export class Server {
 
+    static get host(): string {
+        return Server.current.app.locals.eisle.host;
+    }
+
     public app: express.Application;
 
     public readonly model: IModel;

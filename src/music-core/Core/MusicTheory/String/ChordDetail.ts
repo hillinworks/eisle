@@ -1,5 +1,5 @@
 import { ChordInversionTolerance } from "./ChordInversionTolerance";
-import { InstrumentInfo } from "../../../../eisle-core/chord/InstrumentTunings";
+import { InstrumentInfo } from "../../../../eisle-core/chord/Instruments";
 import { Chord } from "../Chord";
 import { Tuning } from "./Tuning";
 import { NoteName } from "../NoteName";
