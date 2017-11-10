@@ -72,6 +72,8 @@ export class WeixinRoute extends BaseRoute {
         const token = req.body.token;
         const epoch = req.body.epoch;
 
+        console.log(`authenticating: epoch=${epoch}, token=${token}, wxid=${weixinId}`);
+        console.log(`reference token: ${WeixinService.encode(epoch, weixinId)}`);
         if (!WeixinService.authenticate(token, epoch, weixinId)) {
             res.status(403).send("未知用户");
             return;

@@ -12,6 +12,7 @@ export class Settings implements ICommandProcessor {
     public async process(scanner: Scanner, user: IUser, userSettings: IUserSettings): Promise<IREPLResult> {
         const epoch = Date.now().toString();
         const token = Weixin.encode(epoch, user.weixinId);
+        console.log(`opening settings page: epoch=${epoch}, token=${token}, wxid=${user.weixinId}`);
         return new REPLArticlesResult({
             title: "设置",
             description: "点击打开设置页面",
