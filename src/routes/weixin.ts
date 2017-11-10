@@ -68,9 +68,9 @@ export class WeixinRoute extends BaseRoute {
     }
 
     public async showSettings(req: Request, res: Response, next: NextFunction) {
-        const weixinId = req.body.wxid;
-        const token = req.body.token;
-        const epoch = req.body.epoch;
+        const weixinId = req.query.wxid;
+        const token = req.query.token;
+        const epoch = req.query.epoch;
 
         console.log(`authenticating: epoch=${epoch}, token=${token}, wxid=${weixinId}`);
         console.log(`reference token: ${WeixinService.encode(epoch, weixinId)}`);
