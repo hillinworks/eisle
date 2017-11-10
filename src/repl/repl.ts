@@ -20,7 +20,7 @@ export namespace REPL {
 
     export function process(input: string, user: IUser, userSettings: IUserSettings): Promise<IREPLResult> {
         const scanner = new Scanner(input);
-        const command = scanner.readPattern("[\\w-]+");
+        const command = scanner.readPattern("[\\w\\-\\u4E00-\\u9FA5\\uF900-\\uFA2D]+");
         if (!command) {
             return processDefault(input, user, userSettings);
         }
