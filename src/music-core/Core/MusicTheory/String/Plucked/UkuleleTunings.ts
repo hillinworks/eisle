@@ -15,6 +15,9 @@ export namespace UkuleleTunings {
     export const baritone
         = new Tuning("Baritone", Pitch.D(3), Pitch.G(3), Pitch.B(3), Pitch.E(4));
 
+    export const guitalele
+        = new Tuning("Guitalele", Pitch.A(2), Pitch.D(3), Pitch.G(3), Pitch.C(4), Pitch.E(4), Pitch.A(4));
+
     export const knownTunings: { [key: string]: Tuning } = {};
     for (const tuning of [standard, standardA, lowG, baritone]) {
         knownTunings[tuning.name!.toLowerCase()] = tuning;
