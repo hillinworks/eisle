@@ -13,6 +13,7 @@ import {
     first,
     L,
     min,
+    orderBy,
     range,
     repeat,
     select,
@@ -81,21 +82,11 @@ class ChordDetailResolver {
     }
 
     private remapStrings(): number[] {
-        let lowestStringIndex = 0;
-        let lowestPitchSemitones = this.instrumentInfo.tuning.pitches[0].semitones;
+        const remapping = [];
 
-        const remapping = toArray(range(0, this.instrumentInfo.stringCount));
-
-        for (let i = 1; i < this.instrumentInfo.stringCount; ++i) {
-            const semitones = this.instrumentInfo.tuning.pitches[i].semitones;
-            if (semitones < lowestPitchSemitones) {
-                lowestPitchSemitones = semitones;
-                lowestStringIndex = i;
-            }
+        for (const pitch of orderBy(this.instrumentInfo.tuning.pitches, p => p.semitones)) {
+            remapping.push(this.instrumentInfo.tuning.pitches.indexOf(pitch));
         }
-
-        remapping[lowestStringIndex] = 0;
-        remapping[0] = lowestStringIndex;
 
         return remapping;
     }
@@ -414,9 +405,16 @@ class ChordDetailResolver {
     }
 
     private getFretRating(notes: ReadonlyArray<NoteName>) {
-        if (notes[this.stringRemapping[0]] !== this.notes[0]) {
-            if (this.instrumentInfo.chordResolvingOptions.chordInversionTolerance !== ChordInversionTolerance.Allowed) {
-                return 5;
+
+        if (this.instrumentInfo.chordResolvingOptions.chordInversionTolerance !== ChordInversionTolerance.Allowed) {
+            // punishment for implicit inversion
+            for (let i = 0; i < this.instrumentInfo.stringCount; ++i) {
+                if (this.notes[i] === undefined) {
+                    continue;
+                }
+                if (notes[this.stringRemapping[i]] !== this.notes[i]) {
+                    return 5;
+                }
             }
         }
 

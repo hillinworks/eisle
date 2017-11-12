@@ -86,7 +86,7 @@ export class WeixinRoute extends BaseRoute {
             epoch: newEpoch,
             token: WeixinService.encode(newEpoch, weixinId)
         };
-        this.render(req, res, "weixin/settings", Settings.createViewModel(weixinId));
+        this.render(req, res, "weixin/settings", await Settings.createViewModel(weixinId));
     }
 
     public async showSettingsTest(req: Request, res: Response, next: NextFunction) {
