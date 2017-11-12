@@ -1,2 +1,2 @@
 git pull --no-edit
-node .\copyStaticAssets.js
+npm run build
