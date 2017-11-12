@@ -54,6 +54,10 @@ export class ChordDetail {
         this.omitsRating = sum(omittedInterval, i => i.rating);
         this.fretRating = fretRating;
     }
+
+    fretsToString() {
+        return L(this.frets).select(f => isNaN(f) ? "x" : f.toString()).toArray().join(" ");
+    }
 }
 
 export namespace ChordDetail {
@@ -171,6 +175,7 @@ class ChordDetailResolver {
                 if (comparer(candidates[i], candidates[j])) {
                     skipped = true;
                     skipMap[i] = true;
+                    console.log(`skipping [${candidates[i].fretsToString()}]: defered to [${candidates[j].fretsToString()}]`)
                     break;
                 }
             }
@@ -314,7 +319,7 @@ class ChordDetailResolver {
                 /* candidates */ candidates,
                 /* currentFrets */ frets,
                 /* allNotes */ notes,
-                /* remainingNotes */ fixedBass ? L(notes).skip(0).toArray() : notes,
+                /* remainingNotes */ fixedBass ? L(notes).skip(1).toArray() : notes,
                 /* currentNotes */ currentNotes,
                 /* omittedIntervals */  omittedIntervals,
                 /* minFret */ minFret,
@@ -354,9 +359,14 @@ class ChordDetailResolver {
         omittedIntervals: ReadonlyArray<OmittedInterval>,
         minFret: number,
         maxFret: number) {
+
+        // if we don't have additional strings for existed notes, iterate through remainingNotes
+        const notesToIterate = this.instrumentInfo.stringCount - currentFrets.length > remainingNotes.length
+            ? allNotes : remainingNotes;
+
         const stringIndex = currentFrets.length;
-        for (let i = 0; i < allNotes.length; ++i) {
-            const note = allNotes[i];
+        for (let i = 0; i < notesToIterate.length; ++i) {
+            const note = notesToIterate[i];
 
             const newFrets: number[] = Object.assign([], currentFrets);
             const newCurrentNotes: NoteName[] = Object.assign([], currentNotes);

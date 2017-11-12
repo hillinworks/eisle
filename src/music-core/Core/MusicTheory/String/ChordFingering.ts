@@ -396,7 +396,7 @@ export namespace ChordFingering {
             rating += (fretSpan - 3) * 5;
         }
 
-        rating += fretRange ? fretRange.min * 0.55 : 0;
+        rating += fretRange ? fretRange.min * 0.8 : 0;
 
         // prefer fingering with less breaks (more continuity, e.g. prefer x02220 more than x02x20)
         let noteAppeared = false;
